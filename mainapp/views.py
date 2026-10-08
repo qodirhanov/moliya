@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.db import models, transaction
-from django.db.models import Sum
+from django.db.models import Q, Sum
 import logging
 import secrets
 from datetime import timedelta
@@ -17,7 +17,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import AllowAny, BasePermission, SAFE_METHODS, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -242,7 +242,8 @@ def change_password_api(request):
 @permission_classes([IsAuthenticated])
 def delete_account_api(request):
     """Sozlamalar - parolni tasdiqlab, akkauntni o'chirish.
-    User.delete() soft delete: akkauntga qayta kirib bo'lmaydi, moliyaviy tarix bazada saqlanadi"""
+    close_account(): akkauntga qayta kirib bo'lmaydi, shaxsiy ma'lumotlar tozalanadi va login nomi bo'shaydi,
+    moliyaviy tarix bazada saqlanadi"""
     password = str(request.data.get("password") or "")
     if not password:
         return Response({"password": "Tasdiqlash uchun parolni kiriting"}, status=status.HTTP_400_BAD_REQUEST)
@@ -250,7 +251,7 @@ def delete_account_api(request):
     if not user.check_password(password):
         return Response({"password": "Parol noto'g'ri"}, status=status.HTTP_400_BAD_REQUEST)
 
-    user.delete()
+    user.close_account()
     logout(request)
     return Response({"message": "Akkaunt o'chirildi"})
 
@@ -451,17 +452,49 @@ class UserViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         is_self = instance.pk == request.user.pk
-        self.perform_destroy(instance)
+        if is_self:
+            instance.close_account()
+        else:
+            self.perform_destroy(instance)
         if is_self:
             logout(request)
         return Response({"message": "Akkaunt o'chirildi"}, status=status.HTTP_200_OK)
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CanEditCategory(BasePermission):
+    """O'qish hammaga ochiq. Yaratish - tizimga kirgan foydalanuvchiga (shaxsiy kategoriya).
+    O'zgartirish/o'chirish - faqat kategoriya egasiga; umumiy kategoriyalarni (egasi yo'q) faqat admin"""
+
+    def has_permission(self, request, view):
+        return request.method in SAFE_METHODS or bool(request.user and request.user.is_authenticated)
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        if obj.user_id is None:
+            return bool(request.user.is_staff)
+        return obj.user_id == request.user.id
+
+
+class PersonalCategoryMixin:
+    """Umumiy kategoriyalar hammaga ko'rinadi; foydalanuvchi qo'shganlari faqat o'ziga"""
+    permission_classes = [CanEditCategory]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = self.request.user
+        if user.is_authenticated:
+            return qs.filter(Q(user__isnull=True) | Q(user=user))
+        return qs.filter(user__isnull=True)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class CategoryViewSet(PersonalCategoryMixin, viewsets.ModelViewSet):
     """Daromad turlari (Oylik, Freelance, Sovg'a...)"""
     queryset = Category.objects.filter(status=True)
     serializer_class = CategorySerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
     pagination_class = None
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ["status"]
@@ -470,11 +503,10 @@ class CategoryViewSet(viewsets.ModelViewSet):
     ordering = ["name"]
 
 
-class ExpenseCategoryViewSet(viewsets.ModelViewSet):
+class ExpenseCategoryViewSet(PersonalCategoryMixin, viewsets.ModelViewSet):
     """Harajat turlari (Ovqat, Transport, Kiyim...)"""
     queryset = ExpenseCategory.objects.filter(status=True)
     serializer_class = ExpenseCategorySerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
     pagination_class = None
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ["status"]

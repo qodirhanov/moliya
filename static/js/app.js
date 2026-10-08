@@ -189,10 +189,11 @@ function showToast(message, type = 'success') {
 
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
-  toast.innerHTML = `
-    <span>${type === 'success' ? icon('check') : icon('warning')}</span>
-    <div>${message}</div>
-  `;
+  const iconEl = document.createElement('span');
+  iconEl.innerHTML = type === 'success' ? icon('check') : icon('warning');
+  const textEl = document.createElement('div');
+  textEl.textContent = message;
+  toast.append(iconEl, textEl);
   container.appendChild(toast);
 
   setTimeout(() => {

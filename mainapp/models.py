@@ -42,6 +42,20 @@ class User(AbstractUser):
     def __str__(self):
         return f"{self.first_name} {self.last_name}".strip() or self.username
 
+    def close_account(self):
+        """Foydalanuvchi o'z akkauntini o'chirganda: shaxsiy ma'lumotlar (ism, email, telefon, parol) tozalanadi,
+        login nomi qayta ishlatish uchun bo'shaydi, moliyaviy yozuvlar esa bazada qoladi"""
+        self.username = f"deleted_{self.pk}"
+        self.first_name = ""
+        self.last_name = ""
+        self.email = ""
+        self.phone = None
+        self.set_unusable_password()
+        self.status = False
+        self.is_active = False
+        self.save(update_fields=["username", "first_name", "last_name", "email", "phone", "password", "status", "is_active"])
+        self.password_reset_codes.filter(used=False).update(used=True)
+
     def delete(self, *args, **kwargs):
         """Soft delete — akkaunt o'chirilganda moliyaviy tarix yo'qolmasligi uchun
         status=False va is_active=False qilinadi (is_active tufayli qayta kirib bo'lmaydi)"""
@@ -166,6 +180,10 @@ class Category(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     icon = models.CharField(max_length=50, blank=True, null=True, help_text="Frontend uchun icon nomi")
+    user = models.ForeignKey(
+        "User", on_delete=models.CASCADE, null=True, blank=True, related_name="income_categories",
+        help_text="Bo'sh bo'lsa umumiy kategoriya (hamma ko'radi), aks holda faqat shu foydalanuvchi ko'radi",
+    )
     status = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -185,6 +203,10 @@ class ExpenseCategory(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     icon = models.CharField(max_length=50, blank=True, null=True, help_text="Frontend uchun icon nomi")
+    user = models.ForeignKey(
+        "User", on_delete=models.CASCADE, null=True, blank=True, related_name="expense_categories",
+        help_text="Bo'sh bo'lsa umumiy kategoriya (hamma ko'radi), aks holda faqat shu foydalanuvchi ko'radi",
+    )
     status = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

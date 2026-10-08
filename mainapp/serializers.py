@@ -142,6 +142,10 @@ class IncomeSerializer(serializers.ModelSerializer):
         if wallet and user and wallet.user_id != user.id:
             raise serializers.ValidationError({"wallet": "Tanlangan hamyon ushbu foydalanuvchiga tegishli emas"})
 
+        category = attrs.get("category") or getattr(self.instance, "category", None)
+        if category and user and category.user_id not in (None, user.id):
+            raise serializers.ValidationError({"category": "Tanlangan kategoriya sizga tegishli emas"})
+
         if self.instance and wallet and summa:
             if self.instance.wallet_id == wallet.id and self.instance.summa > summa:
                 diff = self.instance.summa - summa
@@ -196,6 +200,10 @@ class ExpenseSerializer(serializers.ModelSerializer):
 
         if wallet and user and wallet.user_id != user.id:
             raise serializers.ValidationError({"wallet": "Tanlangan hamyon ushbu foydalanuvchiga tegishli emas"})
+
+        category = attrs.get("category") or getattr(self.instance, "category", None)
+        if category and user and category.user_id not in (None, user.id):
+            raise serializers.ValidationError({"category": "Tanlangan kategoriya sizga tegishli emas"})
 
         member = attrs.get("member") or getattr(self.instance, "member", None)
         if member and user and member.user_id != user.id:

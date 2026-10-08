@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -32,6 +33,20 @@ if not SECRET_KEY:
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+
+# Ishlab chiqarishda (DEBUG=False) cookie va ulanish xavfsizligi avtomatik yoqiladi.
+# HTTPS orqasida proksi (nginx va h.k.) bo'lsa: .env ga BEHIND_PROXY=True qo'shing.
+def _env_bool(name, default):
+    return os.environ.get(name, str(default)).lower() in ('true', '1', 'yes')
+
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = _env_bool('SECURE_SSL_REDIRECT', True)
+    SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', '31536000'))
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    if _env_bool('BEHIND_PROXY', False):
+        SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 # Application definition
@@ -105,6 +120,11 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+
+# Testlar tez ishlashi uchun (faqat `manage.py test` paytida) yengil parol shifrlash ishlatiladi
+if 'test' in sys.argv[1:2]:
+    PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
 
 
 # Internationalization
