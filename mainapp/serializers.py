@@ -78,6 +78,19 @@ class WalletSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "user", "created_at", "updated_at"]
+        extra_kwargs = {
+            "name": {"error_messages": {
+                "blank": "Hamyon nomi bo'sh bo'lishi mumkin emas",
+                "max_length": "Hamyon nomi 255 belgidan oshmasligi kerak",
+            }},
+            "currency": {"error_messages": {
+                "blank": "Valyuta bo'sh bo'lishi mumkin emas",
+                "max_length": "Valyuta 10 belgidan oshmasligi kerak",
+            }},
+        }
+
+    def validate_currency(self, value):
+        return value.upper()
 
     def validate_summa(self, value):
         if value < 0:

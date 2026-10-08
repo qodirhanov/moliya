@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap">
-  <link rel="stylesheet" href="/static/css/style.css?v=6.6">
+  <link rel="stylesheet" href="/static/css/style.css?v=6.7">
 </head>
 <body>
 
@@ -659,6 +659,36 @@
     </div>
   </div>
 
+  <!-- Hamyonni tahrirlash oynasi -->
+  <div class="modal-backdrop" id="modalEditWallet">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3><span><span class="ico-slot" data-icon="wallet"></span></span> Hamyonni tahrirlash</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modalEditWallet')">&times;</button>
+      </div>
+      <form id="formEditWallet">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="editWalletName">Hamyon nomi *</label>
+            <input type="text" id="editWalletName" class="form-control" maxlength="255" required>
+          </div>
+          <div class="form-group">
+            <label for="editWalletCurrency">Valyuta *</label>
+            <input type="text" id="editWalletCurrency" class="form-control" maxlength="10" required>
+          </div>
+          <div class="settings-account-hint">
+            Balansni bu yerda o'zgartirib bo'lmaydi: Kirim, Harajat yoki O'tkazma orqali o'zgartiring.
+            Valyutani o'zgartirish faqat belgini almashtiradi, summalar qayta hisoblanmaydi.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-subtle" onclick="closeModal('modalEditWallet')">Bekor qilish</button>
+          <button type="submit" class="btn btn-primary">Saqlash</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Akkauntni o'chirish tasdiqlash oynasi -->
   <div class="modal-backdrop" id="modalDeleteAccount">
     <div class="modal-window">
@@ -834,6 +864,27 @@
         </div>
       </div>
 
+      <!-- ── Hamyon sahifasi: hamyon ma'lumotlari + shu hamyon operatsiyalari ── -->
+      <div id="statsWalletSection" style="display:none;">
+        <div class="wallet-info-card" id="walletInfoCard"></div>
+        <div class="debt-stat-row" id="walletStatRow"></div>
+
+        <div class="stats-tx-section-header">
+          <span><span class="ico-slot" data-icon="receipt"></span> Operatsiyalar</span>
+          <div class="tx-page-tabs-inline" id="walletPageTabs">
+            <button class="tx-page-tab active" data-wallet-filter="all">Barchasi</button>
+            <button class="tx-page-tab" data-wallet-filter="incomes">Kirim</button>
+            <button class="tx-page-tab" data-wallet-filter="expenses">Chiqim</button>
+            <button class="tx-page-tab" data-wallet-filter="transfers">O'tkazma</button>
+            <button class="tx-page-tab" data-wallet-filter="debts">Qarz</button>
+          </div>
+        </div>
+
+        <div class="tx-page-list-inline" id="walletPageList">
+          <!-- rendered by JS -->
+        </div>
+      </div>
+
     </div><!-- /.tx-page-scroll-body -->
   </div><!-- /.tx-page-overlay -->
 
@@ -884,6 +935,6 @@
 
 
 
-  <script src="/static/js/app.js?v=3.31"></script>
+  <script src="/static/js/app.js?v=3.32"></script>
 </body>
 </html>

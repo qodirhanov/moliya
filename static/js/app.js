@@ -23,6 +23,7 @@ const ICONS = {
   transfer: '<path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/>',
   card:     '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
   trash:    '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/>',
+  edit:     '<path d=\"M12 20h9\"/><path d=\"M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z\"/>',
   check:    '<circle cx="12" cy="12" r="10"/><path d="M8 12.5l2.5 2.5L16 9.5"/>',
   warning:  '<path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
   person:   '<circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/>',
@@ -201,6 +202,11 @@ function showToast(message, type = 'success') {
     setTimeout(() => toast.remove(), 300);
   }, 3500);
 }
+
+// Hamyon sahifasi holati
+let _walletPageId = null;
+let _walletPageFilter = 'all';
+let _walletPageData = null;
 
 function getCurrentDateTimeLocal() {
   const now = new Date();
@@ -551,6 +557,9 @@ async function refreshAll() {
     fetchTransactions(),
     fetchDebts()
   ]);
+  if (_walletPageId && document.getElementById('txPageOverlay').classList.contains('open')) {
+    await loadWalletPageData();
+  }
 }
 
 // ==========================================
@@ -696,17 +705,17 @@ function renderWallets() {
   }
 
   container.innerHTML = state.wallets.map(w => `
-    <div class="wallet-compact-card">
+    <div class="wallet-compact-card is-clickable" data-wallet-id="${w.id}" role="button" tabindex="0" title="${escapeHtml(w.name)}: operatsiyalarni ko'rish va tahrirlash">
       <div>
         <div style="font-weight: 500; font-size: 0.95rem; color: var(--text-main);">${icon('card')} ${escapeHtml(w.name)}</div>
-        <div style="font-size: 0.75rem; color: var(--text-subtle);">${w.currency}</div>
+        <div style="font-size: 0.75rem; color: var(--text-subtle);">${escapeHtml(w.currency)}</div>
       </div>
       <div style="display: flex; align-items: center; gap: 10px;">
         <div style="font-weight: 600; font-size: 1.05rem; color: var(--text-main);">
-          ${formatNumber(w.summa)} <span style="font-size: 0.8rem; color: var(--text-muted);">${w.currency}</span>
+          ${formatNumber(w.summa)} <span style="font-size: 0.8rem; color: var(--text-muted);">${escapeHtml(w.currency)}</span>
         </div>
         ${state.wallets.length > 1 ? `
-          <button class="btn-icon" style="width: 24px; height: 24px; font-size: 0.72rem; opacity: 0.6;" title="Hamyonni o'chirish" onclick="deleteWallet(${w.id})">${icon('trash')}</button>
+          <button class="btn-icon" style="width: 24px; height: 24px; font-size: 0.72rem; opacity: 0.6;" title="Hamyonni o'chirish" onclick="event.stopPropagation(); deleteWallet(${w.id})">${icon('trash')}</button>
         ` : ''}
       </div>
     </div>
@@ -791,9 +800,10 @@ function _buildTxList(filter = 'all') {
 }
 
 function _txItemHtml(item) {
-  const sign = item.type === 'income' ? '+' : item.type === 'transfer' ? '' : '-';
+  const sign = item.sign !== undefined ? item.sign : (item.type === 'income' ? '+' : item.type === 'transfer' ? '' : '-');
+  const click = item.noDetail ? ' style="cursor:default;"' : ` onclick="openTxDetail('${item.key}','${item.type}',${item.id})"`;
   return `
-    <div class="tx-compact-item" onclick="openTxDetail('${item.key}','${item.type}',${item.id})">
+    <div class="tx-compact-item"${click}>
       <div class="tx-icon-badge ${item.type}">${icon(item.icon)}</div>
       <div class="tx-compact-body">
         <div class="tx-compact-name">${escapeHtml(item.title)}</div>
@@ -926,6 +936,9 @@ function openTxPage(mode = 'transactions', filter = 'all') {
   document.getElementById('statsOverviewSection').style.display = isStats ? '' : 'none';
   document.getElementById('statsOperationsSection').style.display = isStats ? 'none' : '';
   document.getElementById('statsDebtsSection').style.display = 'none';
+  document.getElementById('statsWalletSection').style.display = 'none';
+  _walletPageId = null;
+  _setTxPageMonthNav(true);
   document.getElementById('txPageTitleText').textContent = isStats ? 'Oylik Statistika' : (TX_FILTER_TITLES[filter] || TX_FILTER_TITLES.all);
   document.getElementById('txPageTitleIcon').innerHTML = icon(isStats ? 'chart' : 'receipt');
 
@@ -946,6 +959,9 @@ function openDebtsPage() {
   document.getElementById('statsOverviewSection').style.display = 'none';
   document.getElementById('statsOperationsSection').style.display = 'none';
   document.getElementById('statsDebtsSection').style.display = '';
+  document.getElementById('statsWalletSection').style.display = 'none';
+  _walletPageId = null;
+  _setTxPageMonthNav(false);
   document.getElementById('txPageTitleText').textContent = 'Qarzlar Tarixi';
   document.getElementById('txPageTitleIcon').innerHTML = icon('ledger');
   document.getElementById('txPageMonth').textContent = 'Barcha davr';
@@ -1045,7 +1061,247 @@ document.getElementById('debtPageTabs')?.addEventListener('click', (e) => {
   renderDebtPageList();
 });
 
+// ── Hamyon sahifasi: hamyon ma'lumotlari + shu hamyon bilan bog'liq operatsiyalar ──
+function _setTxPageMonthNav(visible) {
+  const nav = document.querySelector('#txPageOverlay .month-nav-controls');
+  if (nav) nav.style.display = visible ? '' : 'none';
+}
+
+// Sahifalangan API'dan barcha yozuvlarni yuklaydi (har so'rovda 200 tadan)
+async function _fetchAllPages(url) {
+  const limit = 200;
+  const out = [];
+  for (let offset = 0; offset < 10000; offset += limit) {
+    const res = await fetch(`${url}${url.includes('?') ? '&' : '?'}limit=${limit}&offset=${offset}`);
+    if (!res.ok) throw new Error(`So'rov muvaffaqiyatsiz: ${res.status}`);
+    const data = await res.json();
+    const items = Array.isArray(data) ? data : (data.results || []);
+    out.push(...items);
+    if (Array.isArray(data) || !data.next || items.length < limit) break;
+  }
+  return out;
+}
+
+function openWalletPage(walletId) {
+  if (!state.wallets.find(w => w.id === walletId)) return;
+
+  _walletPageId = walletId;
+  _walletPageFilter = 'all';
+  _walletPageData = null;
+  document.querySelectorAll('#walletPageTabs .tx-page-tab').forEach(btn =>
+    btn.classList.toggle('active', btn.dataset.walletFilter === 'all')
+  );
+
+  document.getElementById('statsOverviewSection').style.display = 'none';
+  document.getElementById('statsOperationsSection').style.display = 'none';
+  document.getElementById('statsDebtsSection').style.display = 'none';
+  document.getElementById('statsWalletSection').style.display = '';
+  document.getElementById('txPageTitleIcon').innerHTML = icon('wallet');
+  _setTxPageMonthNav(false);
+
+  document.getElementById('txPageOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderWalletPage();
+  loadWalletPageData();
+}
+
+async function loadWalletPageData() {
+  const id = _walletPageId;
+  if (!id) return;
+  let data;
+  try {
+    const [incomes, expenses, transfersOut, transfersIn, debts] = await Promise.all([
+      _fetchAllPages(`${API_BASE}/incomes/?wallet=${id}`),
+      _fetchAllPages(`${API_BASE}/expenses/?wallet=${id}`),
+      _fetchAllPages(`${API_BASE}/transfers/?from_wallet=${id}`),
+      _fetchAllPages(`${API_BASE}/transfers/?to_wallet=${id}`),
+      _fetchAllPages(`${API_BASE}/debts/?wallet=${id}`),
+    ]);
+    data = { incomes, expenses, transfersOut, transfersIn, debts };
+  } catch (err) {
+    console.error('Wallet page fetch error:', err);
+    data = { error: true };
+  }
+  if (id !== _walletPageId) return; // foydalanuvchi boshqa sahifaga o'tib ketgan
+  _walletPageData = data;
+  renderWalletPage();
+}
+
+function _walletPageItems(filter) {
+  const d = _walletPageData;
+  if (!d || d.error) return [];
+  const list = [];
+
+  if (filter === 'all' || filter === 'incomes') {
+    d.incomes.forEach(i => {
+      const key = `income_${i.id}`;
+      _txDetailMap[key] = i;
+      list.push({ type: 'income', key, id: i.id, title: i.category_name || 'Daromad', amount: i.summa, wallet: i.wallet_name || 'Hamyon', date: i.date, icon: 'incomeArrow' });
+    });
+  }
+  if (filter === 'all' || filter === 'expenses') {
+    d.expenses.forEach(e => {
+      const key = `expense_${e.id}`;
+      _txDetailMap[key] = e;
+      list.push({ type: 'expense', key, id: e.id, title: e.category_name || 'Harajat', amount: e.summa, wallet: e.wallet_name || 'Hamyon', date: e.date, icon: 'expenseArrow' });
+    });
+  }
+  if (filter === 'all' || filter === 'transfers') {
+    const add = (t, outgoing) => {
+      const key = `transfer_${t.id}`;
+      _txDetailMap[key] = t;
+      list.push({
+        type: 'transfer', key, id: t.id,
+        title: outgoing ? `O'tkazma → ${t.to_wallet_name}` : `O'tkazma ← ${t.from_wallet_name}`,
+        amount: t.summa, wallet: outgoing ? t.from_wallet_name : t.to_wallet_name,
+        date: t.date, icon: 'transfer', sign: outgoing ? '-' : '+'
+      });
+    };
+    d.transfersOut.forEach(t => add(t, true));
+    d.transfersIn.forEach(t => add(t, false));
+  }
+  if (filter === 'all' || filter === 'debts') {
+    d.debts.forEach(x => {
+      const give = x.debt_type === 'give';
+      list.push({
+        type: 'debt', key: `debt_${x.id}`, id: x.id, noDetail: true,
+        title: `${give ? 'Qarz berdim' : 'Qarz oldim'}: ${x.person_name}`,
+        amount: x.summa, wallet: x.wallet_name || 'Hamyon', date: x.created_at,
+        icon: 'ledger', sign: give ? '-' : '+'
+      });
+    });
+  }
+  list.sort((a, b) => new Date(b.date) - new Date(a.date));
+  return list;
+}
+
+function renderWalletPage() {
+  const wallet = state.wallets.find(w => w.id === _walletPageId);
+  if (!wallet) { closeTxPage(); return; } // hamyon o'chirilgan bo'lsa sahifa yopiladi
+
+  const cur = escapeHtml(wallet.currency);
+  document.getElementById('txPageTitleText').textContent = wallet.name;
+  document.getElementById('txPageMonth').textContent = `Hamyon · ${wallet.currency}`;
+
+  const created = wallet.created_at
+    ? new Date(wallet.created_at).toLocaleDateString('uz-UZ', { day: '2-digit', month: 'long', year: 'numeric' })
+    : '';
+  document.getElementById('walletInfoCard').innerHTML = `
+    <div class="wallet-info-main">
+      <div class="wallet-info-icon">${icon('wallet')}</div>
+      <div>
+        <div class="wallet-info-name">${escapeHtml(wallet.name)}</div>
+        <div class="wallet-info-sub">Valyuta: ${cur}${created ? ` · Yaratilgan: ${created}` : ''}</div>
+      </div>
+    </div>
+    <div class="wallet-info-side">
+      <div class="wallet-info-balance">
+        <span class="debt-stat-label">Joriy balans</span>
+        <b>${formatNumber(wallet.summa)} ${cur}</b>
+      </div>
+      <button type="button" class="btn btn-subtle" onclick="openEditWallet()">${icon('edit')} Tahrirlash</button>
+    </div>`;
+
+  const statRow = document.getElementById('walletStatRow');
+  const listEl = document.getElementById('walletPageList');
+  const d = _walletPageData;
+
+  if (!d) {
+    statRow.innerHTML = '';
+    listEl.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-subtle);font-size:0.88rem;">Yuklanmoqda...</div>`;
+    return;
+  }
+  if (d.error) {
+    statRow.innerHTML = '';
+    listEl.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-subtle);font-size:0.88rem;">
+      Operatsiyalarni yuklab bo'lmadi. <button type="button" class="btn btn-subtle btn-xs" onclick="loadWalletPageData()">Qayta urinish</button></div>`;
+    return;
+  }
+
+  const sum = arr => arr.reduce((acc, x) => acc + Number(x.summa || 0), 0);
+  const count = d.incomes.length + d.expenses.length + d.transfersOut.length + d.transfersIn.length + d.debts.length;
+  statRow.innerHTML = `
+    <div class="debt-stat-box">
+      <span class="debt-stat-label">Daromadlar</span>
+      <span class="debt-stat-value" style="color:var(--emerald);">+${formatNumber(sum(d.incomes))} ${cur}</span>
+    </div>
+    <div class="debt-stat-box">
+      <span class="debt-stat-label">Harajatlar</span>
+      <span class="debt-stat-value" style="color:var(--rose);">-${formatNumber(sum(d.expenses))} ${cur}</span>
+    </div>
+    <div class="debt-stat-box">
+      <span class="debt-stat-label">Operatsiyalar soni</span>
+      <span class="debt-stat-value">${count} ta</span>
+    </div>`;
+
+  const items = _walletPageItems(_walletPageFilter);
+  if (!items.length) {
+    const text = _walletPageFilter === 'all' ? "Bu hamyon bilan hali operatsiyalar yo'q" : "Bu bo'limda operatsiyalar yo'q";
+    listEl.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-subtle);font-size:0.88rem;">${text}</div>`;
+    return;
+  }
+  listEl.innerHTML = items.map(_txItemHtml).join('');
+}
+
+function openEditWallet() {
+  const wallet = state.wallets.find(w => w.id === _walletPageId);
+  if (!wallet) return;
+  document.getElementById('editWalletName').value = wallet.name;
+  document.getElementById('editWalletCurrency').value = wallet.currency;
+  openModal('modalEditWallet');
+  document.getElementById('editWalletName').focus();
+}
+
+document.getElementById('formEditWallet')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = _walletPageId;
+  if (!id) return;
+  const payload = {
+    name: document.getElementById('editWalletName').value.trim(),
+    currency: document.getElementById('editWalletCurrency').value.trim().toUpperCase(),
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/wallets/${id}/`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      showToast("Hamyon ma'lumotlari saqlandi");
+      closeModal('modalEditWallet');
+      await refreshAll();
+    } else {
+      showToast(extractErrorMessage(data, 'Hamyonni saqlashda xatolik'), 'error');
+    }
+  } catch (err) {
+    showToast('Tarmoq xatosi', 'error');
+  }
+});
+
+document.getElementById('walletPageTabs')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('.tx-page-tab');
+  if (!btn) return;
+  _walletPageFilter = btn.dataset.walletFilter;
+  document.querySelectorAll('#walletPageTabs .tx-page-tab').forEach(b => b.classList.toggle('active', b === btn));
+  renderWalletPage();
+});
+
+// Hamyon kartochkasini bosish (yoki Enter/Space) hamyon sahifasini ochadi
+document.addEventListener('click', (e) => {
+  const card = e.target.closest('.wallet-compact-card.is-clickable');
+  if (card) openWalletPage(Number(card.dataset.walletId));
+});
+document.addEventListener('keydown', (e) => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('.wallet-compact-card.is-clickable')) {
+    e.preventDefault();
+    openWalletPage(Number(e.target.dataset.walletId));
+  }
+});
+
 function closeTxPage() {
+  _walletPageId = null;
   document.getElementById('txPageOverlay').classList.remove('open');
   document.body.style.overflow = '';
 }
@@ -1238,10 +1494,10 @@ document.getElementById('btnNextMonth')?.addEventListener('click', () => {
 
 // Tab switching inside tx page
 document.addEventListener('click', e => {
-  const tab = e.target.closest('.tx-page-tab');
+  const tab = e.target.closest('#txPageTabs .tx-page-tab');
   if (!tab) return;
   _txPageFilter = tab.dataset.filter;
-  document.querySelectorAll('.tx-page-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#txPageTabs .tx-page-tab').forEach(b => b.classList.remove('active'));
   tab.classList.add('active');
   renderTxPageList();
 });

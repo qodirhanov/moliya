@@ -801,7 +801,7 @@ class DebtViewSet(viewsets.ModelViewSet):
     queryset = Debt.objects.filter(status=True)
     serializer_class = DebtSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ["debt_type", "is_settled", "status"]
+    filterset_fields = ["debt_type", "is_settled", "status", "wallet"]
     search_fields = ["person_name", "description"]
     ordering_fields = ["id", "summa", "due_date", "created_at"]
     ordering = ["is_settled", "-created_at"]

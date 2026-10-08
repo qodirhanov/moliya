@@ -330,3 +330,86 @@ class AccountDeletionTests(APITestCase):
         self.delete_account(PASSWORD)
         self.assertTrue(Expense.objects.filter(pk=self.expense.pk).exists())
         self.assertTrue(Wallet.objects.filter(pk=self.wallet.pk).exists())
+
+
+class WalletEditTests(APITestCase):
+    def setUp(self):
+        super().setUp()
+        self.user = make_user("ali")
+        self.wallet = make_wallet(self.user, 75000, name="Eski nom")
+        self.login_as(self.user)
+
+    def patch(self, payload, wallet=None):
+        return self.api.patch(f"{API}/wallets/{(wallet or self.wallet).id}/", payload, format="json")
+
+    def test_can_rename_and_change_currency(self):
+        res = self.patch({"name": "Yangi nom", "currency": "usd"})
+        self.assertEqual(res.status_code, 200)
+        self.wallet.refresh_from_db()
+        self.assertEqual((self.wallet.name, self.wallet.currency), ("Yangi nom", "USD"))
+        self.assertEqual(self.wallet.summa, 75000)
+
+    def test_balance_cannot_be_edited_directly(self):
+        self.assertEqual(self.patch({"summa": 1}).status_code, 400)
+        self.wallet.refresh_from_db()
+        self.assertEqual(self.wallet.summa, 75000)
+
+    def test_blank_name_or_currency_is_rejected_with_readable_message(self):
+        res = self.patch({"name": ""})
+        self.assertEqual(res.status_code, 400)
+        self.assertIn("bo'sh", res.json()["name"][0])
+        self.assertEqual(self.patch({"currency": ""}).status_code, 400)
+        self.assertEqual(self.patch({"currency": "X" * 11}).status_code, 400)
+        self.wallet.refresh_from_db()
+        self.assertEqual(self.wallet.name, "Eski nom")
+
+    def test_other_user_cannot_edit_wallet(self):
+        self.login_as(make_user("vali"))
+        self.assertEqual(self.patch({"name": "Buzildi"}).status_code, 404)
+        self.wallet.refresh_from_db()
+        self.assertEqual(self.wallet.name, "Eski nom")
+
+
+class WalletOperationsFilterTests(APITestCase):
+    """Hamyon sahifasi shu so'rovlarga tayanadi: har bir turdagi yozuvlar hamyon bo'yicha filtrlanadi"""
+
+    def setUp(self):
+        super().setUp()
+        self.user = make_user("ali")
+        self.a = make_wallet(self.user, 1_000_000, name="A")
+        self.b = make_wallet(self.user, 1_000_000, name="B")
+        self.exp_cat = ExpenseCategory.objects.create(name="Toifa")
+        self.inc_cat = Category.objects.create(name="Manba")
+        self.login_as(self.user)
+
+    def post(self, path, payload):
+        res = self.api.post(f"{API}/{path}/", payload, format="json")
+        self.assertEqual(res.status_code, 201, res.content)
+        return res.json()
+
+    def ids(self, path):
+        return sorted(row["id"] for row in rows(self.api.get(f"{API}/{path}")))
+
+    def test_each_resource_filters_by_wallet(self):
+        inc_a = self.post("incomes", {"wallet": self.a.id, "category": self.inc_cat.id, "summa": 1000})
+        inc_b = self.post("incomes", {"wallet": self.b.id, "category": self.inc_cat.id, "summa": 2000})
+        exp_a = self.post("expenses", {"wallet": self.a.id, "category": self.exp_cat.id, "summa": 3000})
+        exp_b = self.post("expenses", {"wallet": self.b.id, "category": self.exp_cat.id, "summa": 4000})
+        out_a = self.post("transfers", {"from_wallet": self.a.id, "to_wallet": self.b.id, "summa": 5000})
+        in_a = self.post("transfers", {"from_wallet": self.b.id, "to_wallet": self.a.id, "summa": 6000})
+        debt_a = self.post("debts", {"person_name": "X", "debt_type": "take", "summa": 7000, "wallet": self.a.id})
+        self.post("debts", {"person_name": "Y", "debt_type": "take", "summa": 8000})
+
+        self.assertEqual(self.ids(f"incomes/?wallet={self.a.id}"), [inc_a["id"]])
+        self.assertEqual(self.ids(f"incomes/?wallet={self.b.id}"), [inc_b["id"]])
+        self.assertEqual(self.ids(f"expenses/?wallet={self.a.id}"), [exp_a["id"]])
+        self.assertEqual(self.ids(f"expenses/?wallet={self.b.id}"), [exp_b["id"]])
+        self.assertEqual(self.ids(f"transfers/?from_wallet={self.a.id}"), [out_a["id"]])
+        self.assertEqual(self.ids(f"transfers/?to_wallet={self.a.id}"), [in_a["id"]])
+        self.assertEqual(self.ids(f"debts/?wallet={self.a.id}"), [debt_a["id"]])
+
+    def test_large_limit_returns_every_record(self):
+        for _ in range(12):
+            self.post("incomes", {"wallet": self.a.id, "category": self.inc_cat.id, "summa": 100})
+        self.assertEqual(len(self.ids(f"incomes/?wallet={self.a.id}&limit=200&offset=0")), 12)
+        self.assertEqual(len(self.ids(f"incomes/?wallet={self.a.id}")), 10)  # standart sahifa hajmi
