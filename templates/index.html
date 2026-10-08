@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moliya — Shaxsiy Byudjet va Xarajatlar Kalkulyatori</title>
+  <meta name="description" content="O'zbekistondagi eng qulay shaxsiy moliya boshqaruvi: daromad, harajat, hamyonlararo o'tkazma va qarzlar daftari.">
+  <script>
+    (function () {
+      var saved = localStorage.getItem('moliyaTheme');
+      var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap">
+  <link rel="stylesheet" href="/static/css/style.css?v=6.5">
+</head>
+<body>
+
+  <!-- ================= NAVBAR ================= -->
+  <nav class="navbar">
+    <div class="container nav-wrapper">
+      <a href="/" class="brand" id="brandLogo">
+        <div class="brand-badge-box"></div>
+        <span class="brand-title">Moliya</span>
+      </a>
+
+      <!-- Bo'limlar: to'liq ro'yxatlarni ochadi (faqat tizimga kirgandan keyin) -->
+      <div class="nav-sections" id="navSections" style="display: none;">
+        <button type="button" class="nav-section-link" onclick="openTxPage('transactions', 'incomes')" title="Barcha kirimlar">
+          <span class="ico-slot arrow-badge income" data-icon="incomeArrow"></span>
+          <span class="nav-section-label">Kirim</span>
+        </button>
+        <button type="button" class="nav-section-link" onclick="openTxPage('transactions', 'expenses')" title="Barcha chiqimlar">
+          <span class="ico-slot arrow-badge expense" data-icon="expenseArrow"></span>
+          <span class="nav-section-label">Chiqim</span>
+        </button>
+        <button type="button" class="nav-section-link" onclick="openDebtsPage()" title="Qarzlar tarixi">
+          <span class="ico-slot" data-icon="ledger"></span>
+          <span class="nav-section-label">Qarz</span>
+        </button>
+      </div>
+
+      <div class="nav-actions" id="navActions" style="display: flex; align-items: center; gap: 14px;">
+        <div id="userProfileNav" style="display: none; align-items: center; gap: 10px;">
+          <button type="button" class="nav-profile-btn" id="btnOpenSettings" title="Sozlamalar">
+            <span class="avatar" id="userAvatar" style="width: 30px; height: 30px; font-size: 13px;">A</span>
+            <span class="user-name" id="userName" style="color: var(--text-main); font-weight: 600; font-size: 0.95rem;">Admin</span>
+            <span class="nav-profile-gear" data-icon="settings"></span>
+          </button>
+        </div>
+        <button type="button" class="nav-theme-toggle" id="btnThemeToggle" title="Yorug'/qorong'u rejim">
+          <span class="theme-ico-sun"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></span>
+          <span class="theme-ico-moon" style="display:none;"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg></span>
+        </button>
+        <div class="notif-wrap" id="notifWrap" style="display: none;">
+          <button type="button" class="nav-theme-toggle nav-bell-btn" id="btnNotif" title="Xabarlar" aria-haspopup="true" aria-expanded="false" aria-controls="notifPanel">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="notif-badge" id="notifBadge" style="display:none;"></span>
+          </button>
+          <div class="notif-panel" id="notifPanel" role="dialog" aria-label="Xabarlar" hidden>
+            <div class="notif-panel-head">
+              <span class="notif-panel-title">Xabarlar</span>
+            </div>
+            <div class="notif-list" id="notifList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ================= AUTH SCREEN (LOGIN & REGISTER) ================= -->
+  <div class="auth-screen-wrapper" id="authSection" style="display: none;">
+    <div class="auth-card">
+      <div class="auth-card-header">
+        <div class="brand-badge-box" style="width: 36px; height: 36px; border-radius: 10px; margin: 0 auto 12px auto;"></div>
+        <h2 id="authScreenTitle">Moliya Tizimiga Kirish</h2>
+        <p>Hisoblaringizni xavfsiz boshqarish uchun tizimga kiring</p>
+      </div>
+
+      <!-- Auth Tabs -->
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab-btn active" id="authTabLogin">Tizimga kirish</button>
+        <button type="button" class="auth-tab-btn" id="authTabRegister">Ro'yxatdan o'tish</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="formLoginMain" class="auth-form-content">
+        <div class="form-group">
+          <label for="loginUsername">Foydalanuvchi nomi yoki email *</label>
+          <input type="text" id="loginUsername" class="form-control" placeholder="Masalan: admin yoki admin@example.com" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Maxfiy parol *</label>
+          <div class="password-input-group">
+            <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+            <button type="button" class="toggle-password-btn" data-target="loginPassword" title="Parolni ko'rsatish/yashirish" tabindex="-1">
+              <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="eye-hide" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+            </button>
+          </div>
+        </div>
+        
+        <button type="button" class="auth-link-btn auth-forgot-link" id="btnForgotPassword">Parolni unutdingizmi?</button>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 1rem; margin-top: 6px; justify-content: center;">
+          Tizimga kirish
+        </button>
+
+        <div class="auth-hint-box">
+          <span style="color: var(--text-muted); font-size: 0.78rem;">Sinov hisobi:</span>
+          <div><b>Login: <code>admin</code></b> &bull; <b>Parol: <code>admin123</code></b></div>
+        </div>
+      </form>
+
+      <!-- Register Form -->
+      <form id="formRegisterMain" class="auth-form-content" style="display: none;">
+        <div class="form-group">
+          <label for="regUsername">Yangi foydalanuvchi nomi (Login) *</label>
+          <input type="text" id="regUsername" class="form-control" placeholder="yangi_user" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="regPassword">Yangi parol (kamida 8 ta belgi) *</label>
+          <div class="password-input-group">
+            <input type="password" id="regPassword" class="form-control" placeholder="••••••••" minlength="8" required autocomplete="new-password">
+            <button type="button" class="toggle-password-btn" data-target="regPassword" title="Parolni ko'rsatish/yashirish" tabindex="-1">
+              <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="eye-hide" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="regFirstName">Ismingiz</label>
+          <input type="text" id="regFirstName" class="form-control" placeholder="Masalan: Ali">
+        </div>
+        <div class="form-group">
+          <label for="regPhone">Telefon raqam</label>
+          <input type="text" id="regPhone" class="form-control" placeholder="+998901234567">
+        </div>
+
+        <button type="submit" class="btn btn-emerald" style="width: 100%; padding: 12px; font-size: 1rem; margin-top: 6px; justify-content: center;">
+          Ro'yxatdan o'tish
+        </button>
+      </form>
+
+      <!-- Forgot Password Form (2 bosqich: kod so'rash -> kod + yangi parol) -->
+      <form id="formForgotPassword" class="auth-form-content" style="display: none;" novalidate>
+        <p class="auth-forgot-intro" id="forgotIntro">Foydalanuvchi nomingiz yoki emailingizni kiriting — akkauntga ulangan emailga 6 xonali tiklash kodi yuboramiz.</p>
+
+        <div class="form-group">
+          <label for="forgotUsername">Foydalanuvchi nomi yoki email *</label>
+          <input type="text" id="forgotUsername" class="form-control" placeholder="Masalan: admin yoki admin@example.com" autocomplete="username">
+        </div>
+
+        <div id="forgotStep2" class="auth-form-content" hidden>
+          <div class="form-group">
+            <label for="forgotCode">Emailga kelgan kod *</label>
+            <input type="text" id="forgotCode" class="form-control auth-code-input" placeholder="000000" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+          </div>
+          <div class="form-group">
+            <label for="forgotNewPassword">Yangi parol (kamida 8 ta belgi) *</label>
+            <div class="password-input-group">
+              <input type="password" id="forgotNewPassword" class="form-control" placeholder="••••••••" minlength="8" autocomplete="new-password">
+              <button type="button" class="toggle-password-btn" data-target="forgotNewPassword" title="Parolni ko'rsatish/yashirish" tabindex="-1">
+              <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="eye-hide" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="forgotNewPassword2">Yangi parolni takrorlang *</label>
+            <div class="password-input-group">
+              <input type="password" id="forgotNewPassword2" class="form-control" placeholder="••••••••" autocomplete="new-password">
+              <button type="button" class="toggle-password-btn" data-target="forgotNewPassword2" title="Parolni ko'rsatish/yashirish" tabindex="-1">
+              <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="eye-hide" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="btnForgotSubmit" style="width: 100%; padding: 12px; font-size: 1rem; margin-top: 6px; justify-content: center;">
+          Kod yuborish
+        </button>
+
+        <div class="auth-forgot-actions">
+          <button type="button" class="auth-link-btn" id="btnForgotBack">&larr; Kirish sahifasiga qaytish</button>
+          <button type="button" class="auth-link-btn" id="btnForgotResend" hidden>Kodni qayta yuborish</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MAIN APP ================= -->
+  <main class="container app-container" id="mainApp" style="display: none;">
+    
+    <!-- 1. Hero Balance Banner -->
+    <div class="hero-balance-banner">
+      <div class="hero-balance-top">
+        <div class="hero-balance-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+          Umumiy balans
+        </div>
+        <button type="button" class="hero-eye-toggle" id="btnToggleBalance" title="Balansni yashirish/ko'rsatish">
+          <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="eye-hide" style="display:none" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+        </button>
+      </div>
+      <div class="hero-balance-sum" id="heroBalanceSum">
+        <span id="statTotalBalance">0</span> <span class="hero-curr">UZS</span>
+      </div>
+    </div>
+
+    <!-- 2. 4 Action Buttons Row -->
+    <div class="action-grid-row">
+      <!-- Kirim -->
+      <button class="action-card-btn btn-action-income" id="btnOpenIncomeModal" onclick="openModal('modalIncome')">
+        <span class="action-icon-circle">
+          <svg class="action-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="7" y1="17" x2="17" y2="7"></line>
+            <polyline points="7 7 17 7 17 17"></polyline>
+          </svg>
+        </span>
+        <span class="action-card-label">Kirim</span>
+        <span class="action-card-amount income">+<span id="statMonthlyIncome">0</span></span>
+      </button>
+
+      <!-- Harajat -->
+      <button class="action-card-btn btn-action-expense" id="btnOpenExpenseModal" onclick="openModal('modalExpense')">
+        <span class="action-icon-circle">
+          <svg class="action-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="7" y1="7" x2="17" y2="17"></line>
+            <polyline points="17 7 17 17 7 17"></polyline>
+          </svg>
+        </span>
+        <span class="action-card-label">Harajat</span>
+        <span class="action-card-amount expense">−<span id="statMonthlyExpense">0</span></span>
+      </button>
+
+      <!-- O'tkazma -->
+      <button class="action-card-btn btn-action-transfer" id="btnOpenTransferModal" onclick="openModal('modalTransfer')">
+        <span class="action-icon-circle">
+          <svg class="action-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="17 1 21 5 17 9"></polyline>
+            <path d="M3 5h18"></path>
+            <polyline points="7 23 3 19 7 15"></polyline>
+            <path d="M21 19H3"></path>
+          </svg>
+        </span>
+        <span class="action-card-label">O'tkazma</span>
+      </button>
+
+      <!-- Qarz -->
+      <button class="action-card-btn btn-action-debt" id="btnOpenDebtModal" onclick="openModal('modalDebt')">
+        <span class="action-icon-circle">
+          <svg class="action-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </span>
+        <span class="action-card-label">Qarz</span>
+      </button>
+    </div>
+
+    <!-- 3. So'nggi operatsiyalar — kichik preview -->
+    <div class="card-surface ops-card" style="cursor:pointer;" onclick="openTxPage()">
+      <div class="card-surface-header" style="pointer-events:none;">
+        <h4><span class="ico-slot" data-icon="receipt"></span> So'nggi operatsiyalar</h4>
+        <span class="btn btn-subtle btn-xs" style="pointer-events:all;" onclick="event.stopPropagation(); openTxPage()">
+          Barchasi →
+        </span>
+      </div>
+      <div id="txPreviewList" style="pointer-events:none;">
+        <!-- top 3, rendered by JS -->
+      </div>
+    </div>
+
+    <!-- 4. Hafta kunlari bo'yicha xarajat grafigi -->
+    <div class="card-surface chart-card-compact" style="cursor:pointer;" onclick="openTxPage('stats')">
+      <div class="card-surface-header" style="flex-direction: column; align-items: flex-start; gap: 2px;">
+        <h4><span class="ico-slot" data-icon="chart"></span> Hafta kunlari bo'yicha xarajat</h4>
+        <span style="font-size: 0.78rem; color: var(--text-subtle);">Qaysi kuni eng ko'p sarflaysiz · to'liq statistika uchun bosing</span>
+      </div>
+      <div class="weekly-rank-list" id="weeklyExpenseChart"></div>
+    </div>
+
+    <!-- 5. Wallets & Debts Row -->
+    <div class="sub-features-grid">
+      <!-- Hamyonlar -->
+      <div class="card-surface">
+        <div class="card-surface-header">
+          <h4><span class="ico-slot" data-icon="wallet"></span> Hamyonlarim</h4>
+          <button class="btn btn-subtle btn-xs" onclick="openModal('modalWallet')">+ Yangi hamyon</button>
+        </div>
+        <div class="wallets-compact-list" id="walletsList">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Qarzlar -->
+      <div class="card-surface">
+        <div class="card-surface-header">
+          <h4><span class="ico-slot" data-icon="ledger"></span> Qarzlar Daftari</h4>
+          <button class="btn btn-subtle btn-xs" onclick="openModal('modalDebt')">+ Qarz yozish</button>
+        </div>
+        <div class="debts-compact-list" id="debtsList">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- A'zolar -->
+      <div class="card-surface" style="grid-column: 1 / -1;">
+        <div class="card-surface-header">
+          <h4><span class="ico-slot" data-icon="members"></span> A'zolarim</h4>
+          <button class="btn btn-subtle btn-xs" onclick="openModal('modalMember')">+ Yangi a'zo</button>
+        </div>
+        <div class="members-compact-list" id="membersList">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- 1. Modal Expense -->
+  <div class="modal-backdrop" id="modalExpense">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3><span><span class="ico-slot" data-icon="expense"></span></span> Harajat Kiritish</h3>
+        <button class="modal-close" onclick="closeModal('modalExpense')">&times;</button>
+      </div>
+      <form id="formAddExpense">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="expenseSumma">Summa (so'm) *</label>
+            <input type="number" id="expenseSumma" class="form-control" placeholder="Masalan: 35000" min="1" required>
+          </div>
+
+          <div class="form-group">
+            <label for="expenseCategorySelect">Nima narsaga? (Harajat toifasi) *</label>
+            <select id="expenseCategorySelect" class="form-control" required></select>
+            <div id="expenseCustomCategoryGroup" style="display: none; margin-top: 8px;">
+              <input type="text" id="expenseCustomCategory" class="form-control" placeholder="Yangi harajat toifasi nomini yozing...">
+            </div>
+          </div>
+
+          <div class="form-group" id="expenseWalletGroup">
+            <label for="expenseWalletSelect">Qaysi hamyondan? *</label>
+            <select id="expenseWalletSelect" class="form-control" required></select>
+          </div>
+
+          <div class="form-group" id="expenseMemberGroup" style="display: none;">
+            <label for="expenseMemberSelect">Kimga? (Ixtiyoriy)</label>
+            <select id="expenseMemberSelect" class="form-control">
+              <option value="">-- O'zim uchun --</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="expenseDate">Sana va vaqt</label>
+            <input type="datetime-local" id="expenseDate" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label for="expenseDescription">Qo'shimcha izoh</label>
+            <textarea id="expenseDescription" class="form-control" rows="2" placeholder="Ixtiyoriy eslatma..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-subtle" onclick="closeModal('modalExpense')">Bekor qilish</button>
+          <button type="submit" class="btn btn-rose">Saqlash</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. Modal Income -->
+  <div class="modal-backdrop" id="modalIncome">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3><span><span class="ico-slot" data-icon="income"></span></span> Daromad Kiritish</h3>
+        <button class="modal-close" onclick="closeModal('modalIncome')">&times;</button>
+      </div>
+      <form id="formAddIncome">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="incomeSumma">Kirim Summasi (so'm) *</label>
+            <input type="number" id="incomeSumma" class="form-control" placeholder="Masalan: 5000000" min="1" required>
+          </div>
+
+          <div class="form-group">
+            <label for="incomeCategorySelect">Daromad manbayi *</label>
+            <select id="incomeCategorySelect" class="form-control" required></select>
+            <div id="incomeCustomCategoryGroup" style="display: none; margin-top: 8px;">
+              <input type="text" id="incomeCustomCategory" class="form-control" placeholder="Yangi daromad manbayi nomini yozing...">
+            </div>
+          </div>
+
+          <div class="form-group" id="incomeWalletGroup">
+            <label for="incomeWalletSelect">Qaysi hamyonga tushdi? *</label>
+            <select id="incomeWalletSelect" class="form-control" required></select>
+          </div>
+
+          <div class="form-group">
+            <label for="incomeDate">Sana va vaqt</label>
+            <input type="datetime-local" id="incomeDate" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label for="incomeDescription">Izoh</label>
+            <textarea id="incomeDescription" class="form-control" rows="2" placeholder="Masalan: Sentyabr oyi maoshi"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-subtle" onclick="closeModal('modalIncome')">Bekor qilish</button>
+          <button type="submit" class="btn btn-emerald">Kirimni Saqlash</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. Modal Transfer -->
+  <div class="modal-backdrop" id="modalTransfer">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3><span><span class="ico-slot" data-icon="transfer"></span></span> Hamyonlararo O'tkazma</h3>
+        <button class="modal-close" onclick="closeModal('modalTransfer')">&times;</button>
+      </div>
+      <form id="formAddTransfer">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="transferFromWallet">Chiqadigan Hamyon *</label>
+            <select id="transferFromWallet" class="form-control" required></select>
+          </div>
+
+          <div class="form-group">
+            <label for="transferToWallet">Tushadigan Hamyon *</label>
+            <select id="transferToWallet" class="form-control" required></select>
+          </div>
+
+          <div class="form-group">
+            <label for="transferSumma">O'tkazma Summasi *</label>
+            <input type="number" id="transferSumma" class="form-control" placeholder="Masalan: 100000" min="1" required>
+          </div>
+
+          <div class="form-group">
+            <label for="transferDescription">Izoh</label>
+            <input type="text" id="transferDescription" class="form-control" placeholder="Masalan: Kartaga naqd pul solindi">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-subtle" onclick="closeModal('modalTransfer')">Bekor qilish</button>
+          <button type="submit" class="btn btn-cyan">O'tkazish</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. Modal Debt -->
+  <div class="modal-backdrop" id="modalDebt">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3><span><span class="ico-slot" data-icon="ledger"></span></span> Qarz Yozish</h3>
+        <button class="modal-close" onclick="closeModal('modalDebt')">&times;</button>
+      </div>
+      <form id="formAddDebt">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="debtPersonName">Shaxs ismi yoki Tashkilot *</label>
+            <input type="text" id="debtPersonName" class="form-control" placeholder="Masalan: Rustam aka" required>
+          </div>
+
+          <div class="form-group">
+            <label for="debtTypeSelect">Qarz turi *</label>
+            <select id="debtTypeSelect" class="form-control" required>
+              <option value="give">Qarz berdim (Menga qaytarishadi)</option>
+              <option value="take">Qarz oldim (Men qaytarishim kerak)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="debtSumma">Summa (so'm) *</label>
+            <input type="number" id="debtSumma" class="form-control" placeholder="Masalan: 200000" min="1" required>
+          </div>
+
+          <div class="form-group">
+            <label for="debtDueDate">Qaytarish muddati</label>
+            <input type="date" id="debtDueDate" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label for="debtWalletSelect">Bog'langan hamyon (Ixtiyoriy)</label>
+            <select id="debtWalletSelect" class="form-control"></select>
+          </div>
+
+          <div class="form-group">
+            <label for="debtDescription">Izoh</label>
+            <input type="text" id="debtDescription" class="form-control" placeholder="Ixtiyoriy izoh">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-subtle" onclick="closeModal('modalDebt')">Bekor qilish</button>
+          <button type="submit" class="btn btn-amber">Qarzni Saqlash</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 5. Modal Wallet -->
+  <div class="modal-backdrop" id="modalWallet">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3><span><span class="ico-slot" data-icon="wallet"></span></span> Yangi Hamyon Qo'shish</h3>
+        <button class="modal-close" onclick="closeModal('modalWallet')">&times;</button>
+      </div>
+      <form id="formAddWallet">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="walletName">Hamyon nomi *</label>
+            <input type="text" id="walletName" class="form-control" placeholder="Masalan: Aloqabank visa, Hamyon, Seyf" required>
+          </div>
+
+          <div class="form-group">
+            <label for="walletInitialSumma">Boshlang'ich mablag' (so'm)</label>
+            <input type="number" id="walletInitialSumma" class="form-control" placeholder="0" min="0" value="0">
+          </div>
+
+          <div class="form-group">
+            <label for="walletCurrency">Valyuta</label>
+            <input type="text" id="walletCurrency" class="form-control" value="UZS" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-subtle" onclick="closeModal('modalWallet')">Bekor qilish</button>
+          <button type="submit" class="btn btn-primary">Hamyonni Yaratish</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 6. Modal Member -->
+  <div class="modal-backdrop" id="modalMember">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3><span><span class="ico-slot" data-icon="members"></span></span> Yangi A'zo Qo'shish</h3>
+        <button class="modal-close" onclick="closeModal('modalMember')">&times;</button>
+      </div>
+      <form id="formAddMember">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="memberKind">Turi</label>
+            <select id="memberKind" class="form-control">
+              <option value="person">Bitta odam</option>
+              <option value="family">Butun oila</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="memberName">Nomi *</label>
+            <input type="text" id="memberName" class="form-control" placeholder="Masalan: Abdulaziz ukam, Akamning oilasi" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-subtle" onclick="closeModal('modalMember')">Bekor qilish</button>
+          <button type="submit" class="btn btn-primary">A'zoni Qo'shish</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 6b. Modal Settings (Sozlamalar) -->
+  <div class="modal-backdrop" id="modalSettings">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3><span><span class="ico-slot" data-icon="settings"></span></span> Sozlamalar</h3>
+        <button class="modal-close" onclick="closeModal('modalSettings')">&times;</button>
+      </div>
+      <div class="settings-tabs" role="tablist">
+        <button type="button" class="settings-tab active" data-settings-tab="profile" role="tab">Profil</button>
+        <button type="button" class="settings-tab" data-settings-tab="password" role="tab">Parol</button>
+      </div>
+
+      <form id="formSettingsProfile" data-settings-panel="profile">
+        <div class="modal-body">
+          <div class="settings-row">
+            <div class="form-group">
+              <label for="settingsFirstName">Ism</label>
+              <input type="text" id="settingsFirstName" class="form-control" maxlength="150" autocomplete="given-name">
+            </div>
+            <div class="form-group">
+              <label for="settingsLastName">Familiya</label>
+              <input type="text" id="settingsLastName" class="form-control" maxlength="150" autocomplete="family-name">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="settingsUsername">Foydalanuvchi nomi (login) *</label>
+            <input type="text" id="settingsUsername" class="form-control" maxlength="150" required autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label for="settingsEmail">Email</label>
+            <input type="email" id="settingsEmail" class="form-control" placeholder="ism@example.com" autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label for="settingsPhone">Telefon</label>
+            <input type="tel" id="settingsPhone" class="form-control" maxlength="20" placeholder="+998 90 123 45 67" autocomplete="tel">
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <div class="settings-footer-account">
+            <button type="button" class="btn btn-subtle" id="btnLogout" style="color: var(--rose); border-color: var(--rose-glow);">
+              <span class="ico-slot" data-icon="logout"></span> Chiqish
+            </button>
+            <button type="button" class="btn btn-subtle" id="btnDeleteAccount" style="color: var(--rose); border-color: var(--rose-glow);">Akkauntni o'chirish</button>
+          </div>
+          <button type="button" class="btn btn-subtle" onclick="closeModal('modalSettings')">Bekor qilish</button>
+          <button type="submit" class="btn btn-primary">Saqlash</button>
+        </div>
+      </form>
+
+      <form id="formSettingsPassword" data-settings-panel="password" hidden>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="settingsOldPassword">Joriy parol *</label>
+            <div class="password-input-group">
+              <input type="password" id="settingsOldPassword" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+              <button type="button" class="toggle-password-btn" data-target="settingsOldPassword" title="Parolni ko'rsatish/yashirish" tabindex="-1">
+                <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="eye-hide" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="settingsNewPassword">Yangi parol (kamida 8 ta belgi) *</label>
+            <div class="password-input-group">
+              <input type="password" id="settingsNewPassword" class="form-control" placeholder="••••••••" minlength="8" required autocomplete="new-password">
+              <button type="button" class="toggle-password-btn" data-target="settingsNewPassword" title="Parolni ko'rsatish/yashirish" tabindex="-1">
+                <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="eye-hide" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="settingsNewPassword2">Yangi parolni takrorlang *</label>
+            <div class="password-input-group">
+              <input type="password" id="settingsNewPassword2" class="form-control" placeholder="••••••••" required autocomplete="new-password">
+              <button type="button" class="toggle-password-btn" data-target="settingsNewPassword2" title="Parolni ko'rsatish/yashirish" tabindex="-1">
+                <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="eye-hide" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-subtle" onclick="closeModal('modalSettings')">Bekor qilish</button>
+          <button type="submit" class="btn btn-primary">Parolni o'zgartirish</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Akkauntni o'chirish tasdiqlash oynasi -->
+  <div class="modal-backdrop" id="modalDeleteAccount">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 style="color: var(--rose);">Akkauntni o'chirish</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modalDeleteAccount')">&times;</button>
+      </div>
+      <form id="formDeleteAccount">
+        <div class="modal-body">
+          <div class="settings-danger-zone" style="margin-top: 0;">
+            <div class="settings-account-title" style="color: var(--rose);">Diqqat!</div>
+            <div class="settings-account-hint">Akkauntingiz o'chiriladi va unga qayta kira olmaysiz. Tasdiqlash uchun joriy parolingizni kiriting.</div>
+          </div>
+          <div class="form-group" style="margin-top: 16px;">
+            <label for="deleteAccountPassword">Joriy parol *</label>
+            <div class="password-input-group">
+              <input type="password" id="deleteAccountPassword" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+              <button type="button" class="toggle-password-btn" data-target="deleteAccountPassword" title="Parolni ko'rsatish/yashirish" tabindex="-1">
+                <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="eye-hide" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-subtle" onclick="closeModal('modalDeleteAccount')">Bekor qilish</button>
+          <button type="submit" class="btn btn-rose">Akkauntni o'chirish</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 7. Modal Repay Debt -->
+  <div class="modal-backdrop" id="modalRepayDebt">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3><span><span class="ico-slot" data-icon="card"></span></span> Qarzni Qaytarish / To'lash</h3>
+        <button class="modal-close" onclick="closeModal('modalRepayDebt')">&times;</button>
+      </div>
+      <form id="formRepayDebt">
+        <div class="modal-body">
+          <p style="font-size: 0.9rem; margin-bottom: 14px; color: var(--text-muted);">
+            Shaxs: <b id="repayPersonName" style="color:var(--text-main);">-</b> | Qolgan qarz: <b id="repayRemaining" style="color:var(--emerald);">-</b>
+          </p>
+
+          <div class="form-group">
+            <label for="repayAmount">To'lov Summasi *</label>
+            <input type="number" id="repayAmount" class="form-control" min="1" required>
+          </div>
+
+          <div class="form-group">
+            <label for="repayWalletSelect">Qaysi hamyon orqali? *</label>
+            <select id="repayWalletSelect" class="form-control" required></select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-subtle" onclick="closeModal('modalRepayDebt')">Bekor qilish</button>
+          <button type="submit" class="btn btn-emerald">To'lovni Tasdiqlash</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 8. Modal Filtered Transactions (kun/a'zo bo'yicha) -->
+  <div class="modal-backdrop" id="modalTxFilter">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 id="txFilterTitle"><span><span class="ico-slot" data-icon="receipt"></span></span> Operatsiyalar</h3>
+        <button class="modal-close" onclick="closeModal('modalTxFilter')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="tx-filter-summary" id="txFilterSummary"></div>
+        <div class="tx-filter-list" id="txFilterList"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========= FULL TX PAGE (oylik statistika + operatsiyalar) ========= -->
+  <div class="tx-page-overlay" id="txPageOverlay">
+
+    <!-- Sticky header -->
+    <div class="tx-page-header">
+      <button class="tx-page-back" onclick="closeTxPage()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <div style="flex:1;">
+        <div class="tx-page-title"><span class="ico-slot" data-icon="chart" id="txPageTitleIcon"></span> <span id="txPageTitleText">Oylik Statistika</span></div>
+        <div class="tx-page-subtitle" id="txPageMonth">Joriy oy</div>
+      </div>
+      <!-- Oy tanlash -->
+      <div class="month-nav-controls">
+        <button class="month-nav-btn" id="btnPrevMonth" title="Oldingi oy">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span class="month-nav-label" id="monthNavLabel">Oct 2026</span>
+        <button class="month-nav-btn" id="btnNextMonth" title="Keyingi oy">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Scrollable full content -->
+    <div class="tx-page-scroll-body" id="txPageScrollBody">
+
+      <!-- ── Statistika ko'rinishi: Oylik dinamika + kategoriyalar ── -->
+      <div id="statsOverviewSection">
+        <div class="stats-section-card">
+          <div class="stats-section-header">
+            <span><span class="ico-slot" data-icon="chart"></span> Oylik dinamika</span>
+            <div class="trend-legend-inline">
+              <span class="trend-legend-item income"><span class="trend-legend-dot income"></span>Kirim</span>
+              <span class="trend-legend-item expense"><span class="trend-legend-dot expense"></span>Chiqim</span>
+            </div>
+          </div>
+          <div class="trend-chart-wrapper" id="monthlyTrendChart"></div>
+        </div>
+
+        <div class="stats-section-card">
+          <div class="stats-section-header">
+            <span><span class="ico-slot arrow-badge expense" data-icon="expenseArrow"></span> Harajat kategoriyalari</span>
+            <span class="stats-section-total" id="statsCatExpTotal">0 UZS</span>
+          </div>
+          <div class="stats-cat-list" id="statsCatExpList"></div>
+        </div>
+
+        <div class="stats-section-card">
+          <div class="stats-section-header">
+            <span><span class="ico-slot arrow-badge income" data-icon="incomeArrow"></span> Daromad kategoriyalari</span>
+            <span class="stats-section-total" id="statsCatIncTotal">0 UZS</span>
+          </div>
+          <div class="stats-cat-list" id="statsCatIncList"></div>
+        </div>
+      </div>
+
+      <!-- ── Operatsiyalar ko'rinishi: ro'yxat + filtrlar ── -->
+      <div id="statsOperationsSection">
+        <div class="stats-tx-section-header">
+          <span><span class="ico-slot" data-icon="receipt"></span> Operatsiyalar</span>
+          <div class="tx-page-tabs-inline" id="txPageTabs">
+            <button class="tx-page-tab active" data-filter="all">Barchasi</button>
+            <button class="tx-page-tab" data-filter="expenses"><span class="ico-slot arrow-badge expense" data-icon="expenseArrow"></span> Chiqim</button>
+            <button class="tx-page-tab" data-filter="incomes"><span class="ico-slot arrow-badge income" data-icon="incomeArrow"></span> Kirim</button>
+            <button class="tx-page-tab" data-filter="transfers"><span class="ico-slot" data-icon="transfer"></span> O'tkazma</button>
+          </div>
+        </div>
+
+        <!-- Operatsiyalar ro'yxati -->
+        <div class="tx-page-list-inline" id="txPageList">
+          <!-- rendered by JS -->
+        </div>
+      </div>
+
+      <!-- ── Qarzlar tarixi: to'langan va to'lanmagan ── -->
+      <div id="statsDebtsSection" style="display:none;">
+        <div class="debt-stat-row" id="debtStatRow">
+          <!-- rendered by JS -->
+        </div>
+
+        <div class="stats-tx-section-header">
+          <span><span class="ico-slot" data-icon="ledger"></span> Qarzlar tarixi</span>
+          <div class="tx-page-tabs-inline" id="debtPageTabs">
+            <button class="tx-page-tab active" data-debt-filter="all">Barchasi</button>
+            <button class="tx-page-tab" data-debt-filter="open">To'lanmagan</button>
+            <button class="tx-page-tab" data-debt-filter="settled">To'langan</button>
+          </div>
+        </div>
+
+        <div class="tx-page-list-inline" id="debtPageList">
+          <!-- rendered by JS -->
+        </div>
+      </div>
+
+    </div><!-- /.tx-page-scroll-body -->
+  </div><!-- /.tx-page-overlay -->
+
+  <!-- Transaction Detail Drawer -->
+  <div class="detail-drawer-backdrop" id="txDetailBackdrop" onclick="closeTxDetail(event)">
+    <div class="detail-drawer" id="txDetailDrawer">
+      <div class="detail-drawer-handle"></div>
+
+      <div class="detail-drawer-header">
+        <span class="detail-type-badge" id="detailTypeBadge">Harajat</span>
+        <span class="detail-drawer-title" id="detailTitle">—</span>
+        <button class="detail-drawer-close" onclick="closeTxDetail()">&times;</button>
+      </div>
+
+      <div class="detail-amount-row">
+        <span class="detail-amount-big" id="detailAmountBig">0</span>
+        <span class="detail-amount-currency">UZS</span>
+      </div>
+
+      <div class="detail-rows" id="detailRows">
+        <!-- filled by JS -->
+      </div>
+
+      <div class="detail-drawer-footer">
+        <button class="btn btn-subtle" style="flex:1; justify-content:center;" onclick="closeTxDetail()">Yopish</button>
+        <button class="btn btn-rose" style="flex:1; justify-content:center;" id="detailDeleteBtn"><span class="ico-slot" data-icon="trash"></span> O'chirish</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tasdiqlash oynasi (o'chirish va boshqa muhim amallar uchun) -->
+  <div class="modal-backdrop" id="modalConfirm" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMessage">
+    <div class="modal-window confirm-window">
+      <div class="modal-body confirm-body">
+        <div class="confirm-icon" id="confirmIcon"></div>
+        <h3 id="confirmTitle" class="confirm-title"></h3>
+        <p id="confirmMessage" class="confirm-message"></p>
+      </div>
+      <div class="modal-footer confirm-footer">
+        <button type="button" class="btn btn-subtle" id="btnConfirmCancel"></button>
+        <button type="button" class="btn btn-rose" id="btnConfirmOk"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+
+
+  <script src="/static/js/app.js?v=3.30"></script>
+</body>
+</html>
