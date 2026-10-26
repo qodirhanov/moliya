@@ -1,0 +1,43 @@
+{% extends "panel/base.html" %}
+{% load static panel_tags %}
+
+{% block title %}Yordam — {{ account.username }}{% endblock %}
+
+{% block content %}
+<a href="{% url 'panel-support' %}" class="panel-back">‹ Barcha suhbatlar</a>
+
+<section class="card-surface panel-card support-chat-card">
+  <header class="support-chat-head">
+    <a href="{% url 'panel-account' account.pk %}" class="panel-user">
+      <span class="avatar">{{ account|initial }}</span>
+      <span class="panel-user-text">
+        <span class="panel-user-name">{{ account }}</span>
+        <span class="panel-user-login">@{{ account.username }}{% if account.email %} · {{ account.email }}{% endif %}</span>
+      </span>
+    </a>
+  </header>
+
+  <!-- Yangi xabarlar static/js/panel-support.js orqali data-poll-url dan olinib qo'shiladi -->
+  <div class="chat-log" id="supportLog" data-poll-url="{% url 'panel-support-poll' account.pk %}" data-last-id="{{ last_id }}" aria-live="polite">
+    {% for m in messages %}
+    <div class="chat-msg {% if m.from_admin %}is-mine{% else %}is-theirs{% endif %}">
+      <div class="chat-bubble">{{ m.text }}</div>
+      <div class="chat-time">{% if m.from_admin %}{% if m.author %}{{ m.author.username }} · {% endif %}{% if m.is_read %}o'qildi · {% endif %}{% endif %}{{ m.created_at|uz_date }}</div>
+    </div>
+    {% empty %}
+    <p class="panel-empty" id="supportEmpty">Xabarlar yo'q. Birinchi bo'lib yozishingiz mumkin.</p>
+    {% endfor %}
+  </div>
+
+  <form method="post" class="chat-form" id="supportReplyForm">
+    {% csrf_token %}
+    <textarea name="text" class="form-control" rows="3" maxlength="{{ max_length }}" placeholder="Javob yozing… (Ctrl+Enter — yuborish)" required>{{ draft }}</textarea>
+    {% if error %}<p class="chat-error">{{ error }}</p>{% endif %}
+    <div class="chat-form-actions">
+      <button type="submit" class="btn btn-primary">Yuborish</button>
+    </div>
+  </form>
+</section>
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/panel-support.js' %}?v=1"></script>{% endblock %}

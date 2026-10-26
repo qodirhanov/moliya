@@ -1,30 +1,15 @@
 from django.core.management.base import BaseCommand
-from mainapp.models import User, Category, ExpenseCategory, Wallet, Income, Expense
+from mainapp.models import Category, ExpenseCategory
 
 
 class Command(BaseCommand):
-    help = "Boshlang'ich kategoriyalar va test foydalanuvchini yaratish"
+    help = "Boshlang'ich (umumiy) daromad va harajat toifalarini yaratish"
 
     def handle(self, *args, **options):
-        # 1. Admin foydalanuvchi
-        admin_user, created = User.objects.get_or_create(
-            username="admin",
-            defaults={
-                "email": "admin@example.com",
-                "first_name": "Admin",
-                "last_name": "Kalkulator",
-                "is_staff": True,
-                "is_superuser": True,
-            }
-        )
-        if created:
-            admin_user.set_password("admin123")
-            admin_user.save()
-            self.stdout.write(self.style.SUCCESS("Superuser 'admin' yaratildi (parol: admin123)"))
-        else:
-            self.stdout.write("Superuser 'admin' allaqachon mavjud.")
+        # Admin akkaunt bu yerda yaratilmaydi: oldin "admin / admin123" yaratilardi va serverda
+        # ishga tushirilsa, admin panel hammaga ochiq bo'lib qolardi. Admin uchun: python manage.py createsuperuser
 
-        # 2. Daromad kategoriyalari (Income Category)
+        # 1. Daromad kategoriyalari (Income Category)
         income_cats = [
             ("Oylik maosh", "salary", "Har oylik doimiy maosh"),
             ("Freelance / Qo'shimcha ish", "laptop", "Loyiha va qo'shimcha daromadlar"),
@@ -33,9 +18,9 @@ class Command(BaseCommand):
             ("Boshqa daromadlar", "plus-circle", "Boshqa manbalardan tushumlar"),
         ]
         for name, icon, desc in income_cats:
-            Category.objects.get_or_create(name=name, defaults={"icon": icon, "description": desc})
+            Category.objects.get_or_create(name=name, user=None, defaults={"icon": icon, "description": desc})
 
-        # 3. Harajat kategoriyalari (ExpenseCategory)
+        # 2. Harajat kategoriyalari (ExpenseCategory)
         expense_cats = [
             ("Oziq-ovqat va bozor", "shopping-cart", "Supermarket, bozor, yegulik"),
             ("Transport va yo'l kira", "truck", "Taksi, metro, benzin, avtobus"),
@@ -47,18 +32,7 @@ class Command(BaseCommand):
             ("Kutilmagan harajatlar", "alert-circle", "Favqulodda va kutilmagan harajatlar"),
         ]
         for name, icon, desc in expense_cats:
-            ExpenseCategory.objects.get_or_create(name=name, defaults={"icon": icon, "description": desc})
+            ExpenseCategory.objects.get_or_create(name=name, user=None, defaults={"icon": icon, "description": desc})
 
-        # 4. Standart hamyonlar
-        wallet1, w1_created = Wallet.objects.get_or_create(
-            user=admin_user,
-            name="Naqd pul",
-            defaults={"summa": 0, "currency": "UZS"}
-        )
-        wallet2, w2_created = Wallet.objects.get_or_create(
-            user=admin_user,
-            name="Plastik karta (Uzcard/Humo)",
-            defaults={"summa": 0, "currency": "UZS"}
-        )
-
-        self.stdout.write(self.style.SUCCESS("Boshlang'ich kategoriyalar va hamyonlar muvaffaqiyatli yuklandi!"))
+        self.stdout.write(self.style.SUCCESS("Boshlang'ich toifalar muvaffaqiyatli yuklandi!"))
+        self.stdout.write("Admin akkaunt kerak bo'lsa: python manage.py createsuperuser")

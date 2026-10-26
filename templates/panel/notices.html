@@ -1,0 +1,73 @@
+{% extends "panel/base.html" %}
+{% load static panel_tags %}
+
+{% block title %}Xabar yuborish{% endblock %}
+
+{% block content %}
+<header class="panel-head">
+  <h1>Xabar yuborish</h1>
+  <p>Xabar foydalanuvchi ilovasida qo'ng'iroq (Xabarlar) ichida "Admin" belgisi bilan chiqadi</p>
+</header>
+
+<section class="card-surface panel-card notice-compose">
+  {% if sent %}<p class="notice-sent" role="status">Xabar yuborildi</p>{% endif %}
+  <form method="post" id="noticeForm" data-active-users="{{ active_users }}">
+    {% csrf_token %}
+    <fieldset class="notice-target">
+      <legend>Kimga</legend>
+      <label class="panel-chip notice-target-opt"><input type="radio" name="target" value="all"{% if target == "all" %} checked{% endif %}> Hammaga ({{ active_users }} ta faol)</label>
+      <label class="panel-chip notice-target-opt"><input type="radio" name="target" value="user"{% if target == "user" %} checked{% endif %}> Bitta foydalanuvchiga</label>
+    </fieldset>
+    <div class="form-group notice-to" id="noticeToGroup"{% if target != "user" %} hidden{% endif %}>
+      <label for="noticeTo">Login</label>
+      <input type="text" name="to" id="noticeTo" class="form-control" value="{{ to }}" placeholder="masalan: ali" maxlength="150" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="form-group">
+      <label for="noticeText">Xabar</label>
+      <textarea name="text" id="noticeText" class="form-control" rows="4" maxlength="{{ max_length }}" placeholder="Xabar matni…" required>{{ draft }}</textarea>
+    </div>
+    {% if error %}<p class="chat-error">{{ error }}</p>{% endif %}
+    <div class="chat-form-actions">
+      <button type="submit" class="btn btn-primary">Yuborish</button>
+    </div>
+  </form>
+</section>
+
+<section class="card-surface panel-card">
+  <h2>Yuborilganlar</h2>
+  {% if page.object_list %}
+  <div class="notice-sent-list">
+    {% for n in page %}
+    <article class="notice-row">
+      <div class="notice-row-head">
+        {% if n.recipient %}
+        <a href="{% url 'panel-account' n.recipient.pk %}" class="panel-badge staff">@{{ n.recipient.username }}</a>
+        {% else %}
+        <span class="panel-badge active">Hammaga</span>
+        {% endif %}
+        <span class="notice-row-meta">{{ n.created_at|uz_date }}{% if n.author %} · {{ n.author.username }}{% endif %} ·
+          {% if n.recipient %}{% if n.read_count %}o'qildi{% else %}o'qilmagan{% endif %}{% else %}{{ n.read_count }} / {{ n.audience }} o'qidi{% endif %}</span>
+        <form method="post" action="{% url 'panel-notice-delete' n.pk %}" class="notice-delete" data-confirm="Xabar o'chirilsinmi? Foydalanuvchilarda ham yo'qoladi.">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-subtle btn-xs">O'chirish</button>
+        </form>
+      </div>
+      <p class="notice-row-text">{{ n.text }}</p>
+    </article>
+    {% endfor %}
+  </div>
+
+  {% if page.has_other_pages %}
+  <nav class="panel-pages" aria-label="Sahifalar">
+    {% if page.has_previous %}<a href="{% query_url page=page.previous_page_number sent=None %}" class="btn btn-subtle">‹ Oldingi</a>{% endif %}
+    <span>{{ page.number }} / {{ page.paginator.num_pages }} sahifa · {{ page.paginator.count }} ta xabar</span>
+    {% if page.has_next %}<a href="{% query_url page=page.next_page_number sent=None %}" class="btn btn-subtle">Keyingi ›</a>{% endif %}
+  </nav>
+  {% endif %}
+  {% else %}
+  <p class="panel-empty">Hali xabar yuborilmagan</p>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/panel-notices.js' %}?v=1"></script>{% endblock %}

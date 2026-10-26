@@ -1,0 +1,41 @@
+{% load static panel_tags %}<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% block title %}Admin panel{% endblock %} — Moliya</title>
+  <script src="{% static 'js/theme-init.js' %}?v=4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..800&display=swap">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=10.73">
+  <link rel="stylesheet" href="{% static 'css/panel.css' %}?v=9">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container nav-wrapper">
+      <a href="{% url 'dashboard' %}" class="brand">
+        <div class="brand-badge-box"></div>
+        <span class="brand-title">Moliya</span>
+      </a>
+      <a href="{% url 'panel-accounts' %}" class="panel-nav-title">Admin panel</a>
+      <div class="nav-actions">
+        {% support_unread_total as support_unread %}
+        <a href="{% url 'panel-support' %}" class="btn btn-subtle panel-support-link" title="Foydalanuvchilar xabarlari">
+          Yordam{% if support_unread %} <span class="panel-unread">{{ support_unread }}</span>{% endif %}
+        </a>
+        <a href="{% url 'panel-notices' %}" class="btn btn-subtle panel-support-link" title="Foydalanuvchilarga xabar yuborish">Xabar<span class="panel-nav-long"> yuborish</span></a>
+        <a href="{% url 'dashboard' %}" class="btn btn-subtle panel-back-app">Ilovaga qaytish</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container panel-main">
+    {% block content %}{% endblock %}
+  </main>
+  {% block scripts %}{% endblock %}
+
+</body>
+</html>

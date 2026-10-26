@@ -1,0 +1,119 @@
+{% extends "panel/base.html" %}
+{% load panel_tags %}
+
+{% block title %}Akkauntlar{% endblock %}
+
+{% block content %}
+<header class="panel-head">
+  <h1>Akkauntlar</h1>
+  <p>Holat: {{ generated_at|uz_date }}</p>
+</header>
+
+<section class="panel-stats" aria-label="Umumiy ko'rsatkichlar">
+  <div class="panel-stat">
+    <span class="panel-stat-label">Jami akkauntlar</span>
+    <span class="panel-stat-value">{{ summary.total }}</span>
+  </div>
+  <div class="panel-stat">
+    <span class="panel-stat-label">Faol</span>
+    <span class="panel-stat-value">{{ summary.active }}</span>
+  </div>
+  <div class="panel-stat">
+    <span class="panel-stat-label">Oxirgi 7 kunda kirgan</span>
+    <span class="panel-stat-value">{{ summary.seen_7d }}</span>
+  </div>
+  <div class="panel-stat">
+    <span class="panel-stat-label">Yangi (30 kun)</span>
+    <span class="panel-stat-value">{{ summary.new_30d }}</span>
+  </div>
+  <div class="panel-stat">
+    <span class="panel-stat-label">Nofaol</span>
+    <span class="panel-stat-value">{{ summary.closed }}</span>
+  </div>
+  <div class="panel-stat">
+    <span class="panel-stat-label">Jami operatsiyalar</span>
+    <span class="panel-stat-value">{{ summary.operations }}</span>
+  </div>
+</section>
+
+<section class="card-surface panel-card">
+  <div class="panel-toolbar">
+    <form method="get" class="panel-search" role="search">
+      <input type="search" name="q" value="{{ query }}" class="form-control" placeholder="Login, ism, email yoki telefon" aria-label="Akkaunt qidirish">
+      {% if status_key != "all" %}<input type="hidden" name="status" value="{{ status_key }}">{% endif %}
+      {% if sort_key != "new" %}<input type="hidden" name="sort" value="{{ sort_key }}">{% endif %}
+      <button type="submit" class="btn btn-primary">Qidirish</button>
+    </form>
+
+    <div class="panel-chips" aria-label="Holat bo'yicha">
+      {% for key, label in filters %}
+        <a href="{% query_url status=key page=None %}" class="panel-chip{% if key == status_key %} active{% endif %}">{{ label }}</a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="panel-sort">
+    <span>Saralash:</span>
+    {% for key, label in sorts %}
+      <a href="{% query_url sort=key page=None %}" class="{% if key == sort_key %}active{% endif %}">{{ label }}</a>
+    {% endfor %}
+  </div>
+
+  {% if page.object_list %}
+  <div class="panel-table-wrap">
+    <table class="panel-table">
+      <thead>
+        <tr>
+          <th>Foydalanuvchi</th>
+          <th>Email</th>
+          <th>Telefon</th>
+          <th>Ro'yxatdan o'tgan</th>
+          <th>Oxirgi kirish</th>
+          <th class="num">Hamyon</th>
+          <th class="num">Operatsiya</th>
+          <th>Holati</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in page %}
+        <tr>
+          <td>
+            <a href="{% url 'panel-account' u.pk %}" class="panel-user">
+              <span class="avatar">{{ u|initial }}</span>
+              <span class="panel-user-text">
+                <span class="panel-user-name">{{ u }}</span>
+                <span class="panel-user-login">@{{ u.username }}</span>
+              </span>
+            </a>
+          </td>
+          <td>{{ u.email|default:"—" }}</td>
+          <td class="nowrap">{{ u.phone|default:"—" }}</td>
+          <td class="nowrap">{{ u.date_joined|uz_date:False }}</td>
+          <td class="nowrap">{{ u.last_login|uz_ago }}</td>
+          <td class="num">{{ u.wallets_count }}</td>
+          <td class="num">{{ u.ops_count }}</td>
+          <td class="nowrap">
+            <span class="panel-badge {{ u.state }}">{{ u.state_label }}</span>
+            {% if u.is_superuser %}<span class="panel-badge staff">Superadmin</span>{% elif u.is_staff %}<span class="panel-badge staff">Admin</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page.has_other_pages %}
+  <nav class="panel-pages" aria-label="Sahifalar">
+    {% if page.has_previous %}<a href="{% query_url page=page.previous_page_number %}" class="btn btn-subtle">‹ Oldingi</a>{% endif %}
+    <span>{{ page.number }} / {{ page.paginator.num_pages }} sahifa · {{ page.paginator.count }} ta akkaunt</span>
+    {% if page.has_next %}<a href="{% query_url page=page.next_page_number %}" class="btn btn-subtle">Keyingi ›</a>{% endif %}
+  </nav>
+  {% else %}
+  <p class="panel-count">{{ page.paginator.count }} ta akkaunt</p>
+  {% endif %}
+
+  {% else %}
+  <p class="panel-empty">{% if query %}"{{ query }}" bo'yicha akkaunt topilmadi{% else %}Bu bo'limda akkaunt yo'q{% endif %}</p>
+  {% endif %}
+</section>
+{% endblock %}

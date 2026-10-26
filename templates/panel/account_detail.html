@@ -1,0 +1,61 @@
+{% extends "panel/base.html" %}
+{% load panel_tags %}
+
+{% block title %}{{ account.username }}{% endblock %}
+
+{% block content %}
+<a href="{% url 'panel-accounts' %}" class="panel-back">‹ Barcha akkauntlar</a>
+
+<section class="card-surface panel-profile">
+  <span class="avatar panel-avatar-lg">{{ account|initial }}</span>
+  <div class="panel-profile-text">
+    <h1>{{ account }}</h1>
+    <p>@{{ account.username }} · ID {{ account.pk }}</p>
+    <div class="panel-profile-badges">
+      <span class="panel-badge {{ account.state }}">{{ account.state_label }}</span>
+      {% if account.is_superuser %}<span class="panel-badge staff">Superadmin</span>{% elif account.is_staff %}<span class="panel-badge staff">Admin</span>{% endif %}
+    </div>
+  </div>
+  <div class="panel-profile-actions">
+    <a href="{% url 'panel-support-thread' account.pk %}" class="btn btn-subtle">Yordam chati{% if support_count %} ({{ support_count }}){% endif %}</a>
+    <a href="{% url 'panel-notices' %}?to={{ account.username|urlencode }}" class="btn btn-subtle">Xabar yuborish</a>
+    <a href="{{ admin_url }}" class="btn btn-subtle panel-profile-edit">Django admin'da tahrirlash</a>
+  </div>
+</section>
+
+<div class="panel-detail-grid">
+  <section class="card-surface panel-card">
+    <h2>Profil</h2>
+    <dl class="panel-dl">
+      <dt>Ism</dt><dd>{{ account.first_name|default:"—" }}</dd>
+      <dt>Familiya</dt><dd>{{ account.last_name|default:"—" }}</dd>
+      <dt>Login</dt><dd>{{ account.username }}</dd>
+      <dt>Email</dt><dd>{{ account.email|default:"—" }}</dd>
+      <dt>Telefon</dt><dd>{{ account.phone|default:"—" }}</dd>
+    </dl>
+  </section>
+
+  <section class="card-surface panel-card">
+    <h2>Faollik</h2>
+    <dl class="panel-dl">
+      <dt>Ro'yxatdan o'tgan</dt><dd>{{ account.date_joined|uz_date }}</dd>
+      <dt>Oxirgi kirish</dt><dd>{{ account.last_login|uz_date }}{% if account.last_login %} <span class="panel-muted">({{ account.last_login|uz_ago }})</span>{% endif %}</dd>
+      <dt>Oxirgi operatsiya</dt><dd>{{ last_activity|uz_date }}{% if last_activity %} <span class="panel-muted">({{ last_activity|uz_ago }})</span>{% endif %}</dd>
+      <dt>30 kundagi operatsiyalar</dt><dd>{{ ops_30d }}</dd>
+    </dl>
+  </section>
+
+  <section class="card-surface panel-card">
+    <h2>Foydalanish</h2>
+    <dl class="panel-dl">
+      <dt>Hamyonlar</dt><dd>{{ account.wallets_count }}{% if currencies %} <span class="panel-muted">({{ currencies|join:", " }})</span>{% endif %}</dd>
+      <dt>Kirimlar</dt><dd>{{ account.incomes_count }}</dd>
+      <dt>Chiqimlar</dt><dd>{{ account.expenses_count }}</dd>
+      <dt>O'tkazmalar</dt><dd>{{ account.transfers_count }}</dd>
+      <dt>Qarzlar</dt><dd>{{ debts_count }}{% if debts_count %} <span class="panel-muted">({{ open_debts_count }} tasi ochiq)</span>{% endif %}</dd>
+      <dt>A'zolar</dt><dd>{{ members_count }}</dd>
+      <dt>Shaxsiy toifalar</dt><dd>{{ categories_count }}</dd>
+    </dl>
+  </section>
+</div>
+{% endblock %}

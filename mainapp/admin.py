@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, Category, ExpenseCategory, Wallet, Member, Income, Expense, Transfer, Debt
+from .models import User, Category, ExpenseCategory, Wallet, Member, Income, Expense, Transfer, Debt, SupportMessage
 
 
 class SoftDeleteAdminMixin:
@@ -82,3 +82,15 @@ class DebtAdmin(SoftDeleteAdminMixin, admin.ModelAdmin):
     list_display = ("person_name", "debt_type", "user", "summa", "paid_summa", "is_settled", "due_date", "status")
     list_filter = ("debt_type", "is_settled", "status", "due_date")
     search_fields = ("person_name", "description", "user__username")
+
+@admin.register(SupportMessage)
+class SupportMessageAdmin(admin.ModelAdmin):
+    """Javob yozish admin panelida (panel/support/) — bu yerda faqat ko'rish va qidirish"""
+    list_display = ("user", "from_admin", "short_text", "is_read", "created_at")
+    list_filter = ("from_admin", "is_read")
+    search_fields = ("user__username", "text")
+    raw_id_fields = ("user", "author")
+
+    @admin.display(description="Xabar")
+    def short_text(self, obj):
+        return obj.text[:80]

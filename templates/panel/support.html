@@ -1,0 +1,43 @@
+{% extends "panel/base.html" %}
+{% load panel_tags %}
+
+{% block title %}Yordam{% endblock %}
+
+{% block content %}
+<header class="panel-head">
+  <h1>Yordam</h1>
+  <p>{% if unread_total %}{{ unread_total }} ta xabar javob kutmoqda{% else %}Barcha xabarlar o'qilgan{% endif %}</p>
+</header>
+
+<section class="card-surface panel-card">
+  {% if page.object_list %}
+  <div class="support-threads">
+    {% for u in page %}
+    <a href="{% url 'panel-support-thread' u.pk %}" class="support-thread{% if u.unread %} is-unread{% endif %}">
+      <span class="avatar">{{ u|initial }}</span>
+      <span class="support-thread-text">
+        <span class="support-thread-top">
+          <span class="panel-user-name">{{ u }}</span>
+          <span class="panel-user-login">@{{ u.username }}</span>
+          <span class="support-thread-time">{{ u.last_at|uz_ago }}</span>
+        </span>
+        <span class="support-thread-last">{% if u.last_from_admin %}<b>Siz:</b> {% endif %}{{ u.last_text|truncatechars:140 }}</span>
+      </span>
+      {% if u.unread %}<span class="panel-unread">{{ u.unread }}</span>{% endif %}
+    </a>
+    {% endfor %}
+  </div>
+
+  {% if page.has_other_pages %}
+  <nav class="panel-pages" aria-label="Sahifalar">
+    {% if page.has_previous %}<a href="{% query_url page=page.previous_page_number %}" class="btn btn-subtle">‹ Oldingi</a>{% endif %}
+    <span>{{ page.number }} / {{ page.paginator.num_pages }} sahifa · {{ page.paginator.count }} ta suhbat</span>
+    {% if page.has_next %}<a href="{% query_url page=page.next_page_number %}" class="btn btn-subtle">Keyingi ›</a>{% endif %}
+  </nav>
+  {% endif %}
+
+  {% else %}
+  <p class="panel-empty">Hozircha hech kim yozmagan</p>
+  {% endif %}
+</section>
+{% endblock %}

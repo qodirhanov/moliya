@@ -6,49 +6,88 @@
 const API_BASE = '/api/v1';
 
 // ==========================================
-// IKONKALAR — emoji o'rniga o'zimiz chizgan SVG belgilar
-// (24x24, currentColor, stroke asosida)
+// IKONKALAR — Phosphor Icons (phosphoricons.com, MIT litsenziya; @phosphor-icons/core 2.1.1 dan olingan)
+// Regular vazn, 256x256 koordinatada to'ldirilgan shakllar. Kichik nishonlardagi Kirim/Chiqim strelkalari — Bold:
+// ~11px da regular juda ingichka. Yangi ikonka kerak bo'lsa phosphoricons.com dan shu vaznda oling.
+// Litsenziya matni (MIT, Copyright (c) 2023 Phosphor Icons): static/js/THIRD_PARTY_LICENSES.txt
 // ==========================================
 
 const ICONS = {
-  settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
-  logout:   '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>',
-  receipt:  '<path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/>',
-  chart:    '<path d="M3 3v18h18"/><path d="M7 16v-4M12 16V8M17 16v-7"/>',
-  wallet:   '<rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18M16 14h2"/>',
-  ledger:   '<path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5z"/><path d="M4 17.5h16"/>',
-  members:  '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20v-1a4.5 4.5 0 0 1 4.5-4.5h4a4.5 4.5 0 0 1 4.5 4.5v1"/><circle cx="17" cy="9" r="2.5"/><path d="M17.5 14.6A4 4 0 0 1 21.5 18.5V20"/>',
-  expense:  '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 10v4M18 10v4"/>',
-  income:   '<path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/>',
-  transfer: '<path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/>',
-  card:     '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
-  trash:    '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/>',
-  edit:     '<path d=\"M12 20h9\"/><path d=\"M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z\"/>',
-  check:    '<circle cx="12" cy="12" r="10"/><path d="M8 12.5l2.5 2.5L16 9.5"/>',
-  warning:  '<path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
-  person:   '<circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/>',
-  tag:      '<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z"/><circle cx="7" cy="7" r="1.5"/>',
-  pin:      '<path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>',
-  note:     '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>',
-  calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
-  folder:   '<path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
-  up:       '<path d="M12 19V5M5 12l7-7 7 7"/>',
-  down:     '<path d="M12 5v14M19 12l-7 7-7-7"/>',
-  clock:    '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
-  plus:     '<path d="M12 5v14M5 12h14"/>',
-  incomeArrow:  '<line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>',
-  expenseArrow: '<line x1="7" y1="7" x2="17" y2="17"/><polyline points="17 7 17 17 7 17"/>',
+  settings:       '<path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm88-29.84q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.21,107.21,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.71,107.71,0,0,0-26.25-10.87,8,8,0,0,0-7.06,1.49L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.21,107.21,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06Zm-16.1-6.5a73.93,73.93,0,0,1,0,8.68,8,8,0,0,0,1.74,5.48l14.19,17.73a91.57,91.57,0,0,1-6.23,15L187,173.11a8,8,0,0,0-5.1,2.64,74.11,74.11,0,0,1-6.14,6.14,8,8,0,0,0-2.64,5.1l-2.51,22.58a91.32,91.32,0,0,1-15,6.23l-17.74-14.19a8,8,0,0,0-5-1.75h-.48a73.93,73.93,0,0,1-8.68,0,8,8,0,0,0-5.48,1.74L100.45,215.8a91.57,91.57,0,0,1-15-6.23L82.89,187a8,8,0,0,0-2.64-5.1,74.11,74.11,0,0,1-6.14-6.14,8,8,0,0,0-5.1-2.64L46.43,170.6a91.32,91.32,0,0,1-6.23-15l14.19-17.74a8,8,0,0,0,1.74-5.48,73.93,73.93,0,0,1,0-8.68,8,8,0,0,0-1.74-5.48L40.2,100.45a91.57,91.57,0,0,1,6.23-15L69,82.89a8,8,0,0,0,5.1-2.64,74.11,74.11,0,0,1,6.14-6.14A8,8,0,0,0,82.89,69L85.4,46.43a91.32,91.32,0,0,1,15-6.23l17.74,14.19a8,8,0,0,0,5.48,1.74,73.93,73.93,0,0,1,8.68,0,8,8,0,0,0,5.48-1.74L155.55,40.2a91.57,91.57,0,0,1,15,6.23L173.11,69a8,8,0,0,0,2.64,5.1,74.11,74.11,0,0,1,6.14,6.14,8,8,0,0,0,5.1,2.64l22.58,2.51a91.32,91.32,0,0,1,6.23,15l-14.19,17.74A8,8,0,0,0,199.87,123.66Z"/>',
+  logout:         '<path d="M120,216a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V40a8,8,0,0,1,8-8h64a8,8,0,0,1,0,16H56V208h56A8,8,0,0,1,120,216Zm109.66-93.66-40-40a8,8,0,0,0-11.32,11.32L204.69,120H112a8,8,0,0,0,0,16h92.69l-26.35,26.34a8,8,0,0,0,11.32,11.32l40-40A8,8,0,0,0,229.66,122.34Z"/>',
+  chevronLeft:    '<path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"/>',
+  chevronRight:   '<path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/>',
+  chevronDown:    '<path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/>',
+  receipt:        '<path d="M72,104a8,8,0,0,1,8-8h96a8,8,0,0,1,0,16H80A8,8,0,0,1,72,104Zm8,40h96a8,8,0,0,0,0-16H80a8,8,0,0,0,0,16ZM232,56V208a8,8,0,0,1-11.58,7.15L192,200.94l-28.42,14.21a8,8,0,0,1-7.16,0L128,200.94,99.58,215.15a8,8,0,0,1-7.16,0L64,200.94,35.58,215.15A8,8,0,0,1,24,208V56A16,16,0,0,1,40,40H216A16,16,0,0,1,232,56Zm-16,0H40V195.06l20.42-10.22a8,8,0,0,1,7.16,0L96,199.06l28.42-14.22a8,8,0,0,1,7.16,0L160,199.06l28.42-14.22a8,8,0,0,1,7.16,0L216,195.06Z"/>',
+  chart:          '<path d="M224,200h-8V40a8,8,0,0,0-8-8H152a8,8,0,0,0-8,8V80H96a8,8,0,0,0-8,8v40H48a8,8,0,0,0-8,8v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16ZM160,48h40V200H160ZM104,96h40V200H104ZM56,144H88v56H56Z"/>',
+  wallet:         '<path d="M216,64H56a8,8,0,0,1,0-16H192a8,8,0,0,0,0-16H56A24,24,0,0,0,32,56V184a24,24,0,0,0,24,24H216a16,16,0,0,0,16-16V80A16,16,0,0,0,216,64Zm0,128H56a8,8,0,0,1-8-8V78.63A23.84,23.84,0,0,0,56,80H216Zm-48-60a12,12,0,1,1,12,12A12,12,0,0,1,168,132Z"/>',
+  ledger:         '<path d="M184,112a8,8,0,0,1-8,8H112a8,8,0,0,1,0-16h64A8,8,0,0,1,184,112Zm-8,24H112a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16Zm48-88V208a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V48A16,16,0,0,1,48,32H208A16,16,0,0,1,224,48ZM48,208H72V48H48Zm160,0V48H88V208H208Z"/>',
+  members:        '<path d="M117.25,157.92a60,60,0,1,0-66.5,0A95.83,95.83,0,0,0,3.53,195.63a8,8,0,1,0,13.4,8.74,80,80,0,0,1,134.14,0,8,8,0,0,0,13.4-8.74A95.83,95.83,0,0,0,117.25,157.92ZM40,108a44,44,0,1,1,44,44A44.05,44.05,0,0,1,40,108Zm210.14,98.7a8,8,0,0,1-11.07-2.33A79.83,79.83,0,0,0,172,168a8,8,0,0,1,0-16,44,44,0,1,0-16.34-84.87,8,8,0,1,1-5.94-14.85,60,60,0,0,1,55.53,105.64,95.83,95.83,0,0,1,47.22,37.71A8,8,0,0,1,250.14,206.7Z"/>',
+  expense:        '<path d="M128,88a40,40,0,1,0,40,40A40,40,0,0,0,128,88Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,128,152ZM240,56H16a8,8,0,0,0-8,8V192a8,8,0,0,0,8,8H240a8,8,0,0,0,8-8V64A8,8,0,0,0,240,56ZM193.65,184H62.35A56.78,56.78,0,0,0,24,145.65v-35.3A56.78,56.78,0,0,0,62.35,72h131.3A56.78,56.78,0,0,0,232,110.35v35.3A56.78,56.78,0,0,0,193.65,184ZM232,93.37A40.81,40.81,0,0,1,210.63,72H232ZM45.37,72A40.81,40.81,0,0,1,24,93.37V72ZM24,162.63A40.81,40.81,0,0,1,45.37,184H24ZM210.63,184A40.81,40.81,0,0,1,232,162.63V184Z"/>',
+  income:         '<path d="M240,56v64a8,8,0,0,1-16,0V75.31l-82.34,82.35a8,8,0,0,1-11.32,0L96,123.31,29.66,189.66a8,8,0,0,1-11.32-11.32l72-72a8,8,0,0,1,11.32,0L136,140.69,212.69,64H168a8,8,0,0,1,0-16h64A8,8,0,0,1,240,56Z"/>',
+  transfer:       '<path d="M213.66,181.66l-32,32a8,8,0,0,1-11.32-11.32L188.69,184H48a8,8,0,0,1,0-16H188.69l-18.35-18.34a8,8,0,0,1,11.32-11.32l32,32A8,8,0,0,1,213.66,181.66Zm-139.32-64a8,8,0,0,0,11.32-11.32L67.31,88H208a8,8,0,0,0,0-16H67.31L85.66,53.66A8,8,0,0,0,74.34,42.34l-32,32a8,8,0,0,0,0,11.32Z"/>',
+  card:           '<path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48Zm0,16V88H32V64Zm0,128H32V104H224v88Zm-16-24a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h32A8,8,0,0,1,208,168Zm-64,0a8,8,0,0,1-8,8H120a8,8,0,0,1,0-16h16A8,8,0,0,1,144,168Z"/>',
+  trash:          '<path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"/>',
+  edit:           '<path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z"/>',
+  check:          '<path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/>',
+  warning:        '<path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM222.93,203.8a8.5,8.5,0,0,1-7.48,4.2H40.55a8.5,8.5,0,0,1-7.48-4.2,7.59,7.59,0,0,1,0-7.72L120.52,44.21a8.75,8.75,0,0,1,15,0l87.45,151.87A7.59,7.59,0,0,1,222.93,203.8ZM120,144V104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,180Z"/>',
+  person:         '<path d="M230.92,212c-15.23-26.33-38.7-45.21-66.09-54.16a72,72,0,1,0-73.66,0C63.78,166.78,40.31,185.66,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8ZM72,96a56,56,0,1,1,56,56A56.06,56.06,0,0,1,72,96Z"/>',
+  tag:            '<path d="M243.31,136,144,36.69A15.86,15.86,0,0,0,132.69,32H40a8,8,0,0,0-8,8v92.69A15.86,15.86,0,0,0,36.69,144L136,243.31a16,16,0,0,0,22.63,0l84.68-84.68a16,16,0,0,0,0-22.63Zm-96,96L48,132.69V48h84.69L232,147.31ZM96,84A12,12,0,1,1,84,72,12,12,0,0,1,96,84Z"/>',
+  pin:            '<path d="M128,64a40,40,0,1,0,40,40A40,40,0,0,0,128,64Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,128,128Zm0-112a88.1,88.1,0,0,0-88,88c0,31.4,14.51,64.68,42,96.25a254.19,254.19,0,0,0,41.45,38.3,8,8,0,0,0,9.18,0A254.19,254.19,0,0,0,174,200.25c27.45-31.57,42-64.85,42-96.25A88.1,88.1,0,0,0,128,16Zm0,206c-16.53-13-72-60.75-72-118a72,72,0,0,1,144,0C200,161.23,144.53,209,128,222Z"/>',
+  note:           '<path d="M88,96a8,8,0,0,1,8-8h64a8,8,0,0,1,0,16H96A8,8,0,0,1,88,96Zm8,40h64a8,8,0,0,0,0-16H96a8,8,0,0,0,0,16Zm32,16H96a8,8,0,0,0,0,16h32a8,8,0,0,0,0-16ZM224,48V156.69A15.86,15.86,0,0,1,219.31,168L168,219.31A15.86,15.86,0,0,1,156.69,224H48a16,16,0,0,1-16-16V48A16,16,0,0,1,48,32H208A16,16,0,0,1,224,48ZM48,208H152V160a8,8,0,0,1,8-8h48V48H48Zm120-40v28.7L196.69,168Z"/>',
+  calendar:       '<path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Z"/>',
+  folder:         '<path d="M216,72H131.31L104,44.69A15.86,15.86,0,0,0,92.69,40H40A16,16,0,0,0,24,56V200.62A15.4,15.4,0,0,0,39.38,216H216.89A15.13,15.13,0,0,0,232,200.89V88A16,16,0,0,0,216,72ZM40,56H92.69l16,16H40ZM216,200H40V88H216Z"/>',
+  up:             '<path d="M205.66,117.66a8,8,0,0,1-11.32,0L136,59.31V216a8,8,0,0,1-16,0V59.31L61.66,117.66a8,8,0,0,1-11.32-11.32l72-72a8,8,0,0,1,11.32,0l72,72A8,8,0,0,1,205.66,117.66Z"/>',
+  down:           '<path d="M205.66,149.66l-72,72a8,8,0,0,1-11.32,0l-72-72a8,8,0,0,1,11.32-11.32L120,196.69V40a8,8,0,0,1,16,0V196.69l58.34-58.35a8,8,0,0,1,11.32,11.32Z"/>',
+  clock:          '<path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"/>',
+  plus:           '<path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/>',
+  incomeArrow:    '<path d="M204,64V168a12,12,0,0,1-24,0V93L72.49,200.49a12,12,0,0,1-17-17L163,76H88a12,12,0,0,1,0-24H192A12,12,0,0,1,204,64Z"/>',
+  expenseArrow:   '<path d="M204,88V192a12,12,0,0,1-12,12H88a12,12,0,0,1,0-24h75L55.51,72.48a12,12,0,0,1,17-17L180,163V88a12,12,0,0,1,24,0Z"/>',
+  arrowUpRight:   '<path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/>',
+  arrowDownRight: '<path d="M200,88V192a8,8,0,0,1-8,8H88a8,8,0,0,1,0-16h84.69L58.34,69.66A8,8,0,0,1,69.66,58.34L184,172.69V88a8,8,0,0,1,16,0Z"/>',
+  desktop:        '<path d="M208,40H48A24,24,0,0,0,24,64V176a24,24,0,0,0,24,24h72v16H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V200h72a24,24,0,0,0,24-24V64A24,24,0,0,0,208,40ZM48,56H208a8,8,0,0,1,8,8v80H40V64A8,8,0,0,1,48,56ZM208,184H48a8,8,0,0,1-8-8V160H216v16A8,8,0,0,1,208,184Z"/>',
+  mobile:         '<path d="M176,16H80A24,24,0,0,0,56,40V216a24,24,0,0,0,24,24h96a24,24,0,0,0,24-24V40A24,24,0,0,0,176,16ZM72,64H184V192H72Zm8-32h96a8,8,0,0,1,8,8v8H72V40A8,8,0,0,1,80,32Zm96,192H80a8,8,0,0,1-8-8v-8H184v8A8,8,0,0,1,176,224Z"/>',
+  tablet:         '<path d="M192,24H64A24,24,0,0,0,40,48V208a24,24,0,0,0,24,24H192a24,24,0,0,0,24-24V48A24,24,0,0,0,192,24ZM56,72H200V184H56Zm8-32H192a8,8,0,0,1,8,8v8H56V48A8,8,0,0,1,64,40ZM192,216H64a8,8,0,0,1-8-8v-8H200v8A8,8,0,0,1,192,216Z"/>',
+  repeat:         '<path d="M24,128A72.08,72.08,0,0,1,96,56H204.69L194.34,45.66a8,8,0,0,1,11.32-11.32l24,24a8,8,0,0,1,0,11.32l-24,24a8,8,0,0,1-11.32-11.32L204.69,72H96a56.06,56.06,0,0,0-56,56,8,8,0,0,1-16,0Zm200-8a8,8,0,0,0-8,8,56.06,56.06,0,0,1-56,56H51.31l10.35-10.34a8,8,0,0,0-11.32-11.32l-24,24a8,8,0,0,0,0,11.32l24,24a8,8,0,0,0,11.32-11.32L51.31,200H160a72.08,72.08,0,0,0,72-72A8,8,0,0,0,224,120Z"/>',
+  target:         '<path d="M221.87,83.16A104.1,104.1,0,1,1,195.67,49l22.67-22.68a8,8,0,0,1,11.32,11.32l-96,96a8,8,0,0,1-11.32-11.32l27.72-27.72a40,40,0,1,0,17.87,31.09,8,8,0,1,1,16-.9,56,56,0,1,1-22.38-41.65L184.3,60.39a87.88,87.88,0,1,0,23.13,29.67,8,8,0,0,1,14.44-6.9Z"/>',
+  shield:         '<path d="M208,40H48A16,16,0,0,0,32,56v56c0,52.72,25.52,84.67,46.93,102.19,23.06,18.86,46,25.26,47,25.53a8,8,0,0,0,4.2,0c1-.27,23.91-6.67,47-25.53C198.48,196.67,224,164.72,224,112V56A16,16,0,0,0,208,40Zm0,72c0,37.07-13.66,67.16-40.6,89.42A129.3,129.3,0,0,1,128,223.62a128.25,128.25,0,0,1-38.92-21.81C61.82,179.51,48,149.3,48,112l0-56,160,0ZM82.34,141.66a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32l-56,56a8,8,0,0,1-11.32,0Z"/>',
+  lock:           '<path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208V208Zm-68-56a12,12,0,1,1-12-12A12,12,0,0,1,140,152Z"/>',
+  palette:        '<path d="M200.77,53.89A103.27,103.27,0,0,0,128,24h-1.07A104,104,0,0,0,24,128c0,43,26.58,79.06,69.36,94.17A32,32,0,0,0,136,192a16,16,0,0,1,16-16h46.21a31.81,31.81,0,0,0,31.2-24.88,104.43,104.43,0,0,0,2.59-24A103.28,103.28,0,0,0,200.77,53.89Zm13,93.71A15.89,15.89,0,0,1,198.21,160H152a32,32,0,0,0-32,32,16,16,0,0,1-21.31,15.07C62.49,194.3,40,164,40,128a88,88,0,0,1,87.09-88h.9a88.35,88.35,0,0,1,88,87.25A88.86,88.86,0,0,1,213.81,147.6ZM140,76a12,12,0,1,1-12-12A12,12,0,0,1,140,76ZM96,100A12,12,0,1,1,84,88,12,12,0,0,1,96,100Zm0,56a12,12,0,1,1-12-12A12,12,0,0,1,96,156Zm88-56a12,12,0,1,1-12-12A12,12,0,0,1,184,100Z"/>',
+  globe:          '<path d="M128,24h0A104,104,0,1,0,232,128,104.12,104.12,0,0,0,128,24Zm88,104a87.61,87.61,0,0,1-3.33,24H174.16a157.44,157.44,0,0,0,0-48h38.51A87.61,87.61,0,0,1,216,128ZM102,168H154a115.11,115.11,0,0,1-26,45A115.27,115.27,0,0,1,102,168Zm-3.9-16a140.84,140.84,0,0,1,0-48h59.88a140.84,140.84,0,0,1,0,48ZM40,128a87.61,87.61,0,0,1,3.33-24H81.84a157.44,157.44,0,0,0,0,48H43.33A87.61,87.61,0,0,1,40,128ZM154,88H102a115.11,115.11,0,0,1,26-45A115.27,115.27,0,0,1,154,88Zm52.33,0H170.71a135.28,135.28,0,0,0-22.3-45.6A88.29,88.29,0,0,1,206.37,88ZM107.59,42.4A135.28,135.28,0,0,0,85.29,88H49.63A88.29,88.29,0,0,1,107.59,42.4ZM49.63,168H85.29a135.28,135.28,0,0,0,22.3,45.6A88.29,88.29,0,0,1,49.63,168Zm98.78,45.6a135.28,135.28,0,0,0,22.3-45.6h35.66A88.29,88.29,0,0,1,148.41,213.6Z"/>',
+  help:           '<path d="M140,180a12,12,0,1,1-12-12A12,12,0,0,1,140,180ZM128,72c-22.06,0-40,16.15-40,36v4a8,8,0,0,0,16,0v-4c0-11,10.77-20,24-20s24,9,24,20-10.77,20-24,20a8,8,0,0,0-8,8v8a8,8,0,0,0,16,0v-.72c18.24-3.35,32-17.9,32-35.28C168,88.15,150.06,72,128,72Zm104,56A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/>',
+  sparkle:        '<path d="M197.58,129.06,146,110l-19-51.62a15.92,15.92,0,0,0-29.88,0L78,110l-51.62,19a15.92,15.92,0,0,0,0,29.88L78,178l19,51.62a15.92,15.92,0,0,0,29.88,0L146,178l51.62-19a15.92,15.92,0,0,0,0-29.88ZM137,164.22a8,8,0,0,0-4.74,4.74L112,223.85,91.78,169A8,8,0,0,0,87,164.22L32.15,144,87,123.78A8,8,0,0,0,91.78,119L112,64.15,132.22,119a8,8,0,0,0,4.74,4.74L191.85,144ZM144,40a8,8,0,0,1,8-8h16V16a8,8,0,0,1,16,0V32h16a8,8,0,0,1,0,16H184V64a8,8,0,0,1-16,0V48H152A8,8,0,0,1,144,40ZM248,88a8,8,0,0,1-8,8h-8v8a8,8,0,0,1-16,0V96h-8a8,8,0,0,1,0-16h8V72a8,8,0,0,1,16,0v8h8A8,8,0,0,1,248,88Z"/>',
+  chat:           '<path d="M140,128a12,12,0,1,1-12-12A12,12,0,0,1,140,128ZM84,116a12,12,0,1,0,12,12A12,12,0,0,0,84,116Zm88,0a12,12,0,1,0,12,12A12,12,0,0,0,172,116Zm60,12A104,104,0,0,1,79.12,219.82L45.07,231.17a16,16,0,0,1-20.24-20.24l11.35-34.05A104,104,0,1,1,232,128Zm-16,0A88,88,0,1,0,51.81,172.06a8,8,0,0,1,.66,6.54L40,216,77.4,203.53a7.85,7.85,0,0,1,2.53-.42,8,8,0,0,1,4,1.08A88,88,0,0,0,216,128Z"/>',
+  info:           '<path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"/>',
+  send:           '<path d="M231.87,114l-168-95.89A16,16,0,0,0,40.92,37.34L71.55,128,40.92,218.67A16,16,0,0,0,56,240a16.15,16.15,0,0,0,7.93-2.1l167.92-96.05a16,16,0,0,0,.05-27.89ZM56,224a.56.56,0,0,0,0-.12L85.74,136H144a8,8,0,0,0,0-16H85.74L56.06,32.16A.46.46,0,0,0,56,32l168,95.83Z"/>',
+  exchange:       '<path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm40-68a28,28,0,0,1-28,28h-4v8a8,8,0,0,1-16,0v-8H104a8,8,0,0,1,0-16h36a12,12,0,0,0,0-24H116a28,28,0,0,1,0-56h4V72a8,8,0,0,1,16,0v8h16a8,8,0,0,1,0,16H116a12,12,0,0,0,0,24h24A28,28,0,0,1,168,148Z"/>',
+  sun:            '<path d="M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm72,88a64,64,0,1,1-64-64A64.07,64.07,0,0,1,192,128Zm-16,0a48,48,0,1,0-48,48A48.05,48.05,0,0,0,176,128ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z"/>',
+  moon:           '<path d="M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-10,104.84,104.84,0,0,0-52.91,37A104,104,0,0,0,136,224a103.09,103.09,0,0,0,62.52-20.88,104.84,104.84,0,0,0,37-52.91A8,8,0,0,0,233.54,142.23ZM188.9,190.34A88,88,0,0,1,65.66,67.11a89,89,0,0,1,31.4-26A106,106,0,0,0,96,56,104.11,104.11,0,0,0,200,160a106,106,0,0,0,14.92-1.06A89,89,0,0,1,188.9,190.34Z"/>',
+  bell:           '<path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216ZM48,184c7.7-13.24,16-43.92,16-80a64,64,0,1,1,128,0c0,36.05,8.28,66.73,16,80Z"/>',
+  eye:            '<path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.46,133.46,0,0,1,231.05,128C223.84,141.46,192.43,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z"/>',
+  megaphone:      '<path d="M248,120a48.05,48.05,0,0,0-48-48H160.2c-2.91-.17-53.62-3.74-101.91-44.24A16,16,0,0,0,32,40V200a16,16,0,0,0,26.29,12.25c37.77-31.68,77-40.76,93.71-43.3v31.72A16,16,0,0,0,159.12,214l11,7.33A16,16,0,0,0,194.5,212l11.77-44.36A48.07,48.07,0,0,0,248,120ZM48,199.93V40h0c42.81,35.91,86.63,45,104,47.24v65.48C134.65,155,90.84,164.07,48,199.93Zm131,8,0,.11-11-7.33V168h21.6ZM200,152H168V88h32a32,32,0,1,1,0,64Z"/>',
+  eyeSlash:       '<path d="M53.92,34.62A8,8,0,1,0,42.08,45.38L61.32,66.55C25,88.84,9.38,123.2,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208a127.11,127.11,0,0,0,52.07-10.83l22,24.21a8,8,0,1,0,11.84-10.76Zm47.33,75.84,41.67,45.85a32,32,0,0,1-41.67-45.85ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.16,133.16,0,0,1,25,128c4.69-8.79,19.66-33.39,47.35-49.38l18,19.75a48,48,0,0,0,63.66,70l14.73,16.2A112,112,0,0,1,128,192Zm6-95.43a8,8,0,0,1,3-15.72,48.16,48.16,0,0,1,38.77,42.64,8,8,0,0,1-7.22,8.71,6.39,6.39,0,0,1-.75,0,8,8,0,0,1-8-7.26A32.09,32.09,0,0,0,134,96.57Zm113.28,34.69c-.42.94-10.55,23.37-33.36,43.8a8,8,0,1,1-10.67-11.92A132.77,132.77,0,0,0,231.05,128a133.15,133.15,0,0,0-23.12-30.77C185.67,75.19,158.78,64,128,64a118.37,118.37,0,0,0-19.36,1.57A8,8,0,1,1,106,49.79,134,134,0,0,1,128,48c34.88,0,66.57,13.26,91.66,38.35,18.83,18.83,27.3,37.62,27.65,38.41A8,8,0,0,1,247.31,131.26Z"/>',
 };
 
+// Shakllar <g fill stroke=none> ichida: eski CSS qoidalaridagi stroke (chiziqli ikonkalar davridan) ularga ta'sir qilmaydi
 function icon(name) {
   const body = ICONS[name];
-  return body ? `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>` : '';
+  return body
+    ? `<svg class="ico" viewBox="0 0 256 256" aria-hidden="true"><g fill="currentColor" stroke="none">${body}</g></svg>`
+    : '';
 }
 
-// HTML ichidagi <span data-icon="..."></span> belgilarini SVG bilan to'ldiradi
+// HTML ichidagi belgilarni to'ldiradi:
+// <span data-icon="..."></span> — ichiga SVG qo'yiladi;
+// <svg data-icon="..." width height class></svg> — elementning o'zi qoladi (o'lchami, klassi, display holati), faqat
+// shakli to'ldiriladi. Ko'z (eye-show/eye-hide) va mavzu tugmalarida JS shu elementlarni yashirib-ko'rsatadi
 function hydrateIcons(root = document) {
   root.querySelectorAll('[data-icon]').forEach(el => {
-    el.innerHTML = icon(el.dataset.icon);
+    if (el instanceof SVGSVGElement) {
+      el.setAttribute('viewBox', '0 0 256 256');
+      el.innerHTML = `<g fill="currentColor" stroke="none">${ICONS[el.dataset.icon] || ''}</g>`;
+    } else {
+      el.innerHTML = icon(el.dataset.icon);
+    }
   });
 }
 hydrateIcons();
@@ -93,6 +132,112 @@ window.fetch = async function(url, options = {}) {
   return response;
 };
 
+// ==========================================
+// TUGMALAR: data-action (Content-Security-Policy inline onclick="..." ni bajarmaydi)
+// ==========================================
+// <button data-action="openModal" data-args='["modalIncome"]'> bosilganda openModal("modalIncome") chaqiriladi.
+// data-stop — bosish ota elementlarga o'tmaydi (oldingi event.stopPropagation() o'rniga).
+// Capture bosqichida ushlanadi: ota elementlarning o'z click listenerlaridan oldin ishlaydi
+const CLICK_ACTIONS = {
+  openTxPage, openDebtsPage, openRatesPage, openWalletsPage, openHomeListPage, loadRatesPage, closeTxPage, openTxDetail, closeTxDetail,
+  openModal, closeModal, openCategoryManager, openWeekdayTxFilter,
+  openRepayModal, deleteDebt, deleteWallet, deleteMember, openEditWallet, loadWalletPageData,
+  openRecurringModal, deleteRecurring, openGoalModal, deleteGoal, fundGoal,
+  loadMonthlyStats: _loadMonthlyStats, goToListPage,
+};
+
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-action]');
+  const action = el && CLICK_ACTIONS[el.dataset.action];
+  if (!action) return;
+  if (el.hasAttribute('data-stop')) e.stopPropagation();
+  let args = [];
+  try {
+    args = el.dataset.args ? JSON.parse(el.dataset.args) : [];
+  } catch (err) {
+    console.error('data-args noto\'g\'ri:', el.dataset.args);
+    return;
+  }
+  action(...args);
+}, true);
+
+// data-args qiymatini HTML atributiga xavfsiz yozish (matnli argumentlar uchun)
+function actionArgs(...args) {
+  return escapeHtml(JSON.stringify(args));
+}
+
+// ==========================================
+// BO'LIM RO'YXATLARINI SAHIFALASH
+// ==========================================
+// Ro'yxatlar to'liq yuklanadi (bir nechta API dan birlashtirilib, sana bo'yicha saralanadi), shuning uchun
+// sahifalarga brauzerda bo'linadi — server sahifalashi turli manbalar orasidagi tartibni buzardi.
+// Har bir sahifada 10 tadan yozuv
+const LIST_PAGE_SIZE = 10;
+const LIST_PAGERS = {
+  tx:     { size: LIST_PAGE_SIZE, page: 1, pagerId: 'txPagePager',     listId: 'txPageList',     render: () => renderTxPageList() },
+  debts:  { size: LIST_PAGE_SIZE, page: 1, pagerId: 'debtPagePager',   listId: 'debtPageList',   render: () => renderDebtPageList() },
+  wallet: { size: LIST_PAGE_SIZE, page: 1, pagerId: 'walletPagePager', listId: 'walletPageList', render: () => renderWalletPage() },
+  rates:  { size: LIST_PAGE_SIZE, page: 1, pagerId: 'ratesPagePager',  listId: 'ratesTable',     render: () => renderRatesTable() },
+};
+
+// Bo'lim ochilganda, filtr yoki oy almashganda ro'yxat birinchi sahifadan boshlanadi
+function resetListPage(key) {
+  LIST_PAGERS[key].page = 1;
+}
+
+function clearListPager(key) {
+  const el = document.getElementById(LIST_PAGERS[key].pagerId);
+  if (el) el.innerHTML = '';
+}
+
+// Joriy sahifadagi qism. Yozuv o'chirilib sahifa kamaysa — oxirgi mavjud sahifaga tushadi
+function pageSlice(key, items) {
+  const p = LIST_PAGERS[key];
+  const pages = Math.max(1, Math.ceil(items.length / p.size));
+  p.page = Math.min(Math.max(1, p.page), pages);
+  _renderListPager(key, items.length, pages);
+  const start = (p.page - 1) * p.size;
+  return items.slice(start, start + p.size);
+}
+
+// Paginator "‹ 2 ›": oldingi sahifa, joriy sahifa raqami, keyingi sahifa
+function _renderListPager(key, total, pages) {
+  const p = LIST_PAGERS[key];
+  const el = document.getElementById(p.pagerId);
+  if (!el) return;
+  if (pages <= 1) { el.innerHTML = ''; return; }
+
+  const pageBtn = (page, content, attrs = '') =>
+    `<button type="button" class="list-pager-btn" data-action="goToListPage" data-args="${actionArgs(key, page)}" ${attrs}>${content}</button>`;
+  el.innerHTML = `
+    <div class="list-pager-controls">
+      ${pageBtn(p.page - 1, icon('chevronLeft'), `aria-label="Oldingi sahifa"${p.page === 1 ? ' disabled' : ''}`)}
+      <span class="list-pager-btn is-current" aria-current="page" aria-label="${p.page}-sahifa, jami ${pages}" tabindex="-1">${p.page}</span>
+      ${pageBtn(p.page + 1, icon('chevronRight'), `aria-label="Keyingi sahifa"${p.page === pages ? ' disabled' : ''}`)}
+    </div>`;
+}
+
+function goToListPage(key, page) {
+  const p = LIST_PAGERS[key];
+  if (!p) return;
+  const pager = document.getElementById(p.pagerId);
+  const focusWasInPager = !!pager?.contains(document.activeElement);
+  p.page = page;
+  p.render();
+  // Klaviatura bilan ishlaganda fokus yo'qolmaydi: qayta chizilgan paginatordagi joriy sahifaga o'tadi
+  if (focusWasInPager) pager.querySelector('.is-current')?.focus();
+
+  // Yangi sahifa ro'yxat boshidan ko'rinadi — pastdagi paginator bosilganda sahifa tepaga qaytadi
+  const body = document.getElementById('txPageScrollBody');
+  const header = document.getElementById(p.listId)?.previousElementSibling;
+  if (!body || !header) return;
+  const top = header.getBoundingClientRect().top - body.getBoundingClientRect().top + body.scrollTop - 12;
+  if (top < body.scrollTop) {
+    const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    body.scrollTo({ top, behavior: smooth ? 'smooth' : 'auto' });
+  }
+}
+
 // Global state
 let state = {
   summary: {},
@@ -104,29 +249,117 @@ let state = {
   incomes: [],
   transfers: [],
   debts: [],
-  activeTab: 'all',
+  recurring: [],
+  goals: [],
   currentUser: null,
   currentUserId: null,
-  txOffset: 0,
   txLimit: 15,
-  hasMoreTx: false,
 };
 
 // Utilities
 function formatMoney(amount, currency = 'UZS') {
-  if (amount === undefined || amount === null) return '0 ' + currency;
-  return new Intl.NumberFormat('uz-UZ').format(amount) + ' ' + currency;
+  return formatNumber(amount) + ' ' + currency;
 }
 
+// Summa maydonini o'qiydi: 2 xonagacha kasr (sent/tiyin). Server ham 2 xonadan ortig'ini rad etadi —
+// bu yerda yaxlitlash faqat JS kasr xatosini (0.1 + 0.2) olib tashlaydi. Bo'sh yoki noto'g'ri bo'lsa NaN
+function readAmount(id) {
+  const raw = String(document.getElementById(id)?.value ?? '').trim().replace(',', '.');
+  if (!raw) return NaN;
+  const n = Number(raw);
+  return Number.isFinite(n) ? Math.round(n * 100) / 100 : NaN;
+}
+
+// Har xil valyutadagi summalarni qo'shib bo'lmaydi: { UZS: 1000, USD: 5 } -> "1 000 UZS + 5 USD"
+function sumByCurrency(items, amountOf, currencyOf) {
+  const totals = {};
+  items.forEach(x => {
+    const cur = currencyOf(x) || 'UZS';
+    totals[cur] = (totals[cur] || 0) + Number(amountOf(x) || 0);
+  });
+  return totals;
+}
+
+function formatCurrencyTotals(totals) {
+  const entries = Object.entries(totals).sort(([a], [b]) => (a !== 'UZS') - (b !== 'UZS') || a.localeCompare(b));
+  if (!entries.length) return '0 UZS';
+  return entries.map(([cur, total]) => `${formatNumber(total)} ${escapeHtml(cur)}`).join(' + ');
+}
+
+// "1 USD = 11 809,19 UZS" (kurs 1 dan kichik bo'lsa teskarisi ko'rsatiladi: 1 USD = ... UZS)
+function formatRateText(fromCur, toCur, rate) {
+  if (!rate) return '';
+  const fmt = n => new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(n).replace(/,/g, ' ');
+  return rate >= 1 ? `1 ${fromCur} = ${fmt(rate)} ${toCur}` : `1 ${toCur} = ${fmt(1 / rate)} ${fromCur}`;
+}
+
+// Valyutalari har xil hamyonlar o'rtasidagi o'tkazma: "100 USD → 1 180 919 UZS"
+function transferAmountText(t) {
+  if (!t.from_currency || !t.to_currency || t.from_currency === t.to_currency) return null;
+  return `${formatNumber(t.summa)} ${t.from_currency} → ${formatNumber(t.to_summa)} ${t.to_currency}`;
+}
+
+// Summa valyutasi bilan: "20 000 UZS", "100 USD" (valyuta noma'lum bo'lsa faqat son)
+function amountWithCurrency(amount, currency) {
+  return currency ? `${formatNumber(amount)} ${currency}` : formatNumber(amount);
+}
+
+// Statistikadagi toifa asl valyutada bo'lsa: "100 USD ≈ " (keyin so'mdagi qiymat keladi)
+function statsOriginalAmountHtml(parts, statsCur) {
+  if (!parts || !parts.length || parts.every(p => p.currency === statsCur)) return '';
+  const text = parts.map(p => `${formatNumber(p.total)} ${escapeHtml(p.currency)}`).join(' + ');
+  return `<span class="stats-cat-orig">${text} ≈</span> `;
+}
+
+// Kursi topilmagan valyuta statistikaga qo'shilmaydi — foydalanuvchini bir marta ogohlantiramiz
+const _warnedMissingRates = new Set();
+function warnMissingRates(codes) {
+  const fresh = (codes || []).filter(c => !_warnedMissingRates.has(c));
+  if (!fresh.length) return;
+  fresh.forEach(c => _warnedMissingRates.add(c));
+  showToast(`${fresh.join(', ')} kursini aniqlab bo'lmadi — bu valyutadagi summalar statistikaga qo'shilmadi`, 'error');
+}
+
+function debtCurrency(d) {
+  return escapeHtml(d.currency || 'UZS');
+}
+
+// Brauzerlarda o'zbekcha oy nomlari yo'q: toLocaleDateString('uz-UZ') "2026 M10 11" qaytaradi, shuning uchun sanani o'zimiz yozamiz.
+// Oy nomlari va sana tartibi tanlangan interfeys tilidan olinadi (i18n.js)
+const UZ_MONTHS = window.i18n?.months || [
+  'Yanvar','Fevral','Mart','Aprel','May','Iyun',
+  'Iyul','Avgust','Sentabr','Oktabr','Noyabr','Dekabr'
+];
+const UZ_MONTHS_SHORT = ['yan','fev','mar','apr','may','iyn','iyl','avg','sen','okt','noy','dek'];
+
+// "11-oktabr", { year: true } -> "11-oktabr, 2026", { year: true, time: true } -> "11-oktabr, 2026, 21:47"
+function formatUzDate(value, { year = false, time = false } = {}) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (isNaN(d)) return '';
+  let s;
+  if (window.i18n) s = i18n.formatDate(d.getDate(), d.getMonth(), { year: year && d.getFullYear() });
+  else {
+    s = `${d.getDate()}-${UZ_MONTHS[d.getMonth()].toLowerCase()}`;
+    if (year) s += `, ${d.getFullYear()}`;
+  }
+  if (time) s += `, ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return s;
+}
+
+// Qarz muddati ("2026-10-20" — vaqtsiz sana) -> "20-oktabr, 2026". Mahalliy yarim tun deb o'qiladi:
+// aks holda UTC dan orqadagi vaqt zonalarida bir kun oldingi sana chiqardi
+function formatDueDate(debt) {
+  return debt.due_date ? formatUzDate(`${debt.due_date}T00:00:00`, { year: true }) : '';
+}
+
+// Ro'yxatlar uchun qisqa sana: "11-okt"
 function formatDate(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
-  return d.toLocaleDateString('uz-UZ', {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  if (isNaN(d)) return '';
+  if (window.i18n) return i18n.formatDate(d.getDate(), d.getMonth(), { short: true });
+  return `${d.getDate()}-${UZ_MONTHS_SHORT[d.getMonth()]}`;
 }
 
 // Ilovaning o'z tasdiqlash oynasi (brauzerning standart oynasi o'rniga). true / false bilan hal bo'ladigan Promise qaytaradi
@@ -164,27 +397,48 @@ document.getElementById('modalConfirm')?.addEventListener('click', (e) => {
   if (e.target.id === 'modalConfirm') _resolveConfirm(false);
 });
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && document.getElementById('modalConfirm')?.classList.contains('active')) _resolveConfirm(false);
+  if (e.key === 'Escape' && document.getElementById('modalConfirm')?.classList.contains('active')) {
+    e.preventDefault(); // Esc faqat tasdiq oynasini yopadi, ostidagi oynani emas
+    _resolveConfirm(false);
+  }
 });
 
-// O'chirishdan oldin ikki marta so'raydi: avval amalga xos tasdiq, keyin "rostan ham?" tasdig'i
-async function confirmDelete(firstMessage) {
-  const first = await showConfirm({
+// Har qanday o'chirishdan oldin bitta tasdiq oynasi chiqadi: "Ha" bosilsa o'chiriladi
+function confirmDelete(message) {
+  return showConfirm({
     title: "O'chirilsinmi?",
-    message: firstMessage,
+    message,
     confirmText: "Ha, o'chirish",
     cancelText: "Yo'q",
   });
-  if (!first) return false;
-  return showConfirm({
-    title: "Rostan ham o'chirmoqchimisiz?",
-    message: "Bu amalni ortga qaytarib bo'lmaydi.",
-    confirmText: "Ha, o'chirilsin",
-    cancelText: "Yo'q, qoldirish",
+}
+
+// Forma yuborilayotganda saqlash tugmasi o'chib turadi va qayta yuborish e'tiborsiz qoladi:
+// tugma tez ikki bosilsa (yoki Enter) harajat/kirim ikki marta yozilib, balans ikki marta o'zgarmasin
+function onSubmitOnce(formId, handler) {
+  const form = document.getElementById(formId);
+  if (!form) return;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (form.dataset.busy) return;
+    form.dataset.busy = '1';
+    const buttons = form.querySelectorAll('button[type="submit"]');
+    buttons.forEach(b => { b.disabled = true; });
+    try {
+      await handler(e);
+    } finally {
+      delete form.dataset.busy;
+      buttons.forEach(b => { b.disabled = false; });
+    }
   });
 }
 
-function showToast(message, type = 'success') {
+// So'rov serverga umuman yetib bormaganda (server o'chiq, internet yo'q) chiqadigan xabar
+const NETWORK_ERROR_MESSAGE = "Serverga ulanib bo'lmadi. Internet aloqasini yoki server ishlayotganini tekshiring.";
+
+// action — xabar yonidagi tugma ({ label, onClick }), masalan o'chirilgan operatsiyani qaytarish.
+// Tugmali xabar uzoqroq turadi: foydalanuvchi o'qib, bosishga ulgursin
+function showToast(message, type = 'success', { action, duration } = {}) {
   const container = document.getElementById('toastContainer');
   if (!container) return;
 
@@ -195,12 +449,26 @@ function showToast(message, type = 'success') {
   const textEl = document.createElement('div');
   textEl.textContent = message;
   toast.append(iconEl, textEl);
-  container.appendChild(toast);
 
-  setTimeout(() => {
+  const hide = () => {
     toast.style.opacity = '0';
     setTimeout(() => toast.remove(), 300);
-  }, 3500);
+  };
+  if (action) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'toast-action';
+    btn.textContent = action.label;
+    btn.addEventListener('click', () => {
+      btn.disabled = true;
+      hide();
+      action.onClick();
+    }, { once: true });
+    toast.appendChild(btn);
+  }
+  container.appendChild(toast);
+
+  setTimeout(hide, duration || (action ? 7000 : 3500));
 }
 
 // Hamyon sahifasi holati
@@ -208,20 +476,41 @@ let _walletPageId = null;
 let _walletPageFilter = 'all';
 let _walletPageData = null;
 
-function getCurrentDateTimeLocal() {
+function getCurrentDateLocal() {
   const now = new Date();
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-  return now.toISOString().slice(0, 16);
+  return now.toISOString().slice(0, 10);
+}
+
+// Formada faqat sana tanlanadi; bir kundagi yozuvlar tartibi buzilmasligi uchun hozirgi vaqt qo'shib yuboriladi
+function dateInputToISO(dateVal) {
+  const [y, m, d] = dateVal.split('-').map(Number);
+  const dt = new Date();
+  dt.setFullYear(y, m - 1, d);
+  return dt.toISOString();
+}
+
+// Xotira (localStorage) yopiq bo'lishi mumkin (maxfiy rejim, bloklangan sayt ma'lumotlari) —
+// u holda sozlama faqat shu safarga qo'llanadi, skript yiqilmaydi
+function storageGet(key) {
+  try { return localStorage.getItem(key); } catch (e) { return null; }
+}
+function storageSet(key, value) {
+  try { localStorage.setItem(key, value); } catch (e) { /* faqat shu safarga qo'llanadi */ }
 }
 
 // Balance hide/show toggle (fintech-style privacy)
 const BALANCE_HIDDEN_KEY = 'moliyaBalanceHidden';
+// Holat xotirada ham saqlanadi — localStorage yozilmasa ham tugma ishlayveradi
+let balanceHidden = storageGet(BALANCE_HIDDEN_KEY) === '1';
 function applyBalanceVisibility() {
-  const hidden = localStorage.getItem(BALANCE_HIDDEN_KEY) === '1';
+  const hidden = balanceHidden;
   const sumEl = document.getElementById('heroBalanceSum');
   const btn = document.getElementById('btnToggleBalance');
   if (!sumEl || !btn) return;
   sumEl.classList.toggle('balance-hidden', hidden);
+  document.getElementById('heroWalletList')?.classList.toggle('balance-hidden', hidden);
+  document.getElementById('heroBalanceExtra')?.classList.toggle('balance-hidden', hidden);
   const eyeShow = btn.querySelector('.eye-show');
   const eyeHide = btn.querySelector('.eye-hide');
   if (eyeShow && eyeHide) {
@@ -231,8 +520,8 @@ function applyBalanceVisibility() {
   btn.title = hidden ? "Balansni ko'rsatish" : 'Balansni yashirish';
 }
 document.getElementById('btnToggleBalance')?.addEventListener('click', () => {
-  const hidden = localStorage.getItem(BALANCE_HIDDEN_KEY) === '1';
-  localStorage.setItem(BALANCE_HIDDEN_KEY, hidden ? '0' : '1');
+  balanceHidden = !balanceHidden;
+  storageSet(BALANCE_HIDDEN_KEY, balanceHidden ? '1' : '0');
   applyBalanceVisibility();
 });
 applyBalanceVisibility();
@@ -256,7 +545,7 @@ function applyThemeIcon(theme) {
 
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem(THEME_KEY, theme);
+  storageSet(THEME_KEY, theme);
   applyThemeIcon(theme);
 }
 
@@ -267,33 +556,156 @@ document.getElementById('btnThemeToggle')?.addEventListener('click', () => {
 
 applyThemeIcon(document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
 
+// ==========================================
+// RANG MAVZUSI (Sozlamalar → Ranglar) — faqat ranglar almashadi, shrift o'zgarmaydi.
+// Standart — "oltin". "moy" — klassik moy-yashil: atributsiz (style.css :root ranglari), lekin tanlov saqlanadi,
+// aks holda keyingi safar standart oltin qaytib qolardi. Ro'yxat theme-init.js dagi bilan bir xil
+// ==========================================
+const PALETTE_KEY = 'moliyaPalette';
+const DEFAULT_PALETTE = 'oltin';
+const CLASSIC_PALETTE = 'moy';
+const PALETTES = ['oltin', 'zumrad', 'firuza', 'lojuvard', 'zaytun', 'olcha'];
+
+function setPalette(palette) {
+  const value = palette === CLASSIC_PALETTE || PALETTES.includes(palette) ? palette : DEFAULT_PALETTE;
+  if (value === CLASSIC_PALETTE) document.documentElement.removeAttribute('data-palette');
+  else document.documentElement.setAttribute('data-palette', value);
+  try { localStorage.setItem(PALETTE_KEY, value); } catch (e) { /* faqat shu safarga qo'llanadi */ }
+}
+
+document.querySelectorAll('input[name="palette"]').forEach(radio => {
+  radio.checked = radio.value === (document.documentElement.getAttribute('data-palette') || CLASSIC_PALETTE);
+  radio.addEventListener('change', () => setPalette(radio.value));
+});
+
+// INTERFEYS TILI (Sozlamalar → Til) — tanlov i18n.js ga beriladi, u sahifani yangi tilda qayta yuklaydi
+document.querySelectorAll('input[name="language"]').forEach(radio => {
+  radio.checked = radio.value === (window.i18n?.lang || 'uz');
+  radio.addEventListener('change', () => window.i18n?.setLang(radio.value));
+});
+
 // Modal open/close helpers
 function openModal(id) {
   const el = document.getElementById(id);
   if (el) {
+    // Yopilganda fokus shu oynani ochgan tugmaga qaytadi (klaviatura bilan ishlaganda joy yo'qolmasin)
+    if (!el.classList.contains('active')) el._returnFocus = document.activeElement;
     el.classList.add('active');
     if (id === 'modalExpense') {
       const expDate = document.getElementById('expenseDate');
-      if (expDate && !expDate.value) expDate.value = getCurrentDateTimeLocal();
+      if (expDate && !expDate.value) expDate.value = getCurrentDateLocal();
     }
     if (id === 'modalIncome') {
       const incDate = document.getElementById('incomeDate');
-      if (incDate && !incDate.value) incDate.value = getCurrentDateTimeLocal();
+      if (incDate && !incDate.value) incDate.value = getCurrentDateLocal();
     }
+    if (id === 'modalTransfer') updateTransferCurrencyPreview();
+    if (id === 'modalDebt') updateDebtCurrencyField();
+    if (id === 'modalExpense' || id === 'modalIncome') updateAmountLabels();
+    focusFirstField(el);
   }
 }
 
 function closeModal(id) {
   const el = document.getElementById(id);
-  if (el) el.classList.remove('active');
+  if (!el) return;
+  const hadFocus = el.contains(document.activeElement);
+  el.classList.remove('active');
+  if (el._onClose) el._onClose();
+  if (hadFocus && el._returnFocus && document.contains(el._returnFocus)) el._returnFocus.focus();
+  el._returnFocus = null;
 }
 
 // Close modal when clicking outside
 window.addEventListener('click', (e) => {
-  if (e.target.classList.contains('modal-backdrop')) {
-    e.target.classList.remove('active');
+  if (e.target.classList.contains('modal-backdrop')) closeModal(e.target.id);
+});
+
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function _visibleFocusables(root) {
+  return [...root.querySelectorAll(FOCUSABLE)].filter(el => el.offsetParent !== null || el === document.activeElement);
+}
+
+// Kompyuterda oyna ochilganda birinchi maydonga fokus o'tadi. Telefonda emas — klaviatura o'z-o'zidan ochilib ketmasin
+function focusFirstField(el) {
+  if (!window.matchMedia('(pointer: fine)').matches) return;
+  setTimeout(() => {
+    if (!el.classList.contains('active') || el.contains(document.activeElement)) return; // chaqiruvchi o'zi fokuslagan (masalan tasdiq oynasi)
+    const fields = _visibleFocusables(el).filter(f => !f.classList.contains('modal-close'));
+    (fields.find(f => f.matches('input, textarea, .custom-select-trigger')) || fields[0])?.focus();
+  }, 0);
+}
+
+// Oynalar ekran o'quvchilar uchun "dialog" deb belgilanadi, sarlavhasi uning nomi bo'ladi
+document.querySelectorAll('.modal-backdrop').forEach(bd => {
+  const win = bd.querySelector('.modal-window');
+  if (!win || bd.getAttribute('role') || win.getAttribute('role')) return;
+  win.setAttribute('role', 'dialog');
+  win.setAttribute('aria-modal', 'true');
+  const title = win.querySelector('.modal-header h3');
+  if (title) {
+    if (!title.id) title.id = `${bd.id}Title`;
+    win.setAttribute('aria-labelledby', title.id);
   }
 });
+
+// Eng ustdagi ochiq oyna (bir nechtasi ochiq bo'lsa — z-index kattasi)
+function _topModal() {
+  const open = [...document.querySelectorAll('.modal-backdrop.active')];
+  const z = el => parseInt(getComputedStyle(el).zIndex, 10) || 0;
+  return open.sort((a, b) => z(b) - z(a))[0] || null;
+}
+
+// Sahifa ustidagi qatlam (oyna yoki tafsilot): fokus uning ichida aylanadi, "orqaga" avval uni yopadi
+function _activeDialogLayer() {
+  const detail = document.getElementById('txDetailBackdrop');
+  return _topModal() || (detail?.classList.contains('active') ? detail : null);
+}
+
+// Tab — fokus ochiq oyna ichida qoladi, orqadagi sahifaga o'tib ketmaydi.
+// Esc — eng ustdagi qatlamni yopadi: ochiq tanlov ro'yxati -> oyna -> tafsilot -> bo'lim sahifasi.
+// Tasdiq oynasi, xabarlar va davr panellari o'z ishlovchilarida yopiladi (ular preventDefault qiladi)
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Tab') {
+    const layer = _activeDialogLayer();
+    if (!layer) return;
+    const items = _visibleFocusables(layer);
+    if (!items.length) return;
+    const first = items[0], last = items[items.length - 1];
+    if (!layer.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+    else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    return;
+  }
+  if (e.key !== 'Escape' || e.defaultPrevented) return;
+  // Bu ishlovchi ulardan oldin ro'yxatdan o'tgan — shuning uchun holatini o'zi tekshiradi
+  if (document.getElementById('modalConfirm')?.classList.contains('active')
+      || document.getElementById('notifPanel')?.hidden === false
+      || document.getElementById('periodPanel')?.hidden === false) return;
+  if (document.querySelector('.custom-select-panel.open')) {
+    document.querySelectorAll('.custom-select-panel.open, .custom-select-wrapper.open').forEach(x => x.classList.remove('open'));
+    return;
+  }
+  const modal = _topModal();
+  if (modal) { closeModal(modal.id); return; }
+  if (document.getElementById('txDetailBackdrop')?.classList.contains('active')) { closeTxDetail(); return; }
+  if (document.getElementById('txPageOverlay')?.classList.contains('open')) closeTxPage();
+});
+
+// Oyna, bo'lim sahifasi yoki tafsilot ochiq tursa orqadagi asosiy sahifa aylanmaydi.
+// Ular ko'p joyda ochilib-yopiladi — har birida qo'lda qulflamaslik uchun class o'zgarishini kuzatamiz
+const SCROLL_LOCK_LAYERS = '.modal-backdrop, #txPageOverlay, #txDetailBackdrop';
+
+function syncScrollLock() {
+  const anyOpen = !!document.querySelector('.modal-backdrop.active, #txPageOverlay.open, #txDetailBackdrop.active');
+  document.documentElement.classList.toggle('scroll-locked', anyOpen);
+}
+
+const _scrollLockObserver = new MutationObserver(syncScrollLock);
+document.querySelectorAll(SCROLL_LOCK_LAYERS).forEach(el =>
+  _scrollLockObserver.observe(el, { attributes: true, attributeFilter: ['class'] })
+);
 
 // ==========================================
 // CUSTOM SELECT — native <select> ni to'liq stillangan
@@ -484,47 +896,27 @@ async function fetchCategories() {
   }
 }
 
-async function fetchTransactions(isLoadMore = false) {
+// Bosh sahifadagi "So'nggi operatsiyalar" uchun har turdan oxirgilari (to'liq ro'yxat — bo'lim sahifasida, oy bo'yicha)
+async function fetchTransactions() {
   try {
-    if (!isLoadMore) {
-      state.txOffset = 0;
-    }
     const limit = state.txLimit;
-    const offset = state.txOffset;
-
     const [expRes, incRes, trRes] = await Promise.all([
-      fetch(`${API_BASE}/expenses/?limit=${limit}&offset=${offset}`),
-      fetch(`${API_BASE}/incomes/?limit=${limit}&offset=${offset}`),
-      fetch(`${API_BASE}/transfers/?limit=${limit}&offset=${offset}`)
+      fetch(`${API_BASE}/expenses/?limit=${limit}`),
+      fetch(`${API_BASE}/incomes/?limit=${limit}`),
+      fetch(`${API_BASE}/transfers/?limit=${limit}`)
     ]);
-
-    let expNext = false, incNext = false, trNext = false;
 
     if (expRes.ok) {
       const d = await expRes.json();
-      const items = d.results || d;
-      expNext = !!d.next;
-      state.expenses = isLoadMore ? [...state.expenses, ...items] : items;
+      state.expenses = d.results || d;
     }
     if (incRes.ok) {
       const d = await incRes.json();
-      const items = d.results || d;
-      incNext = !!d.next;
-      state.incomes = isLoadMore ? [...state.incomes, ...items] : items;
+      state.incomes = d.results || d;
     }
     if (trRes.ok) {
       const d = await trRes.json();
-      const items = d.results || d;
-      trNext = !!d.next;
-      state.transfers = isLoadMore ? [...state.transfers, ...items] : items;
-    }
-
-    state.hasMoreTx = expNext || incNext || trNext;
-    state.txOffset += limit;
-
-    const loadMoreBtn = document.getElementById('btnLoadMoreTx');
-    if (loadMoreBtn) {
-      loadMoreBtn.style.display = state.hasMoreTx ? 'block' : 'none';
+      state.transfers = d.results || d;
     }
 
     renderTransactions();
@@ -535,14 +927,11 @@ async function fetchTransactions(isLoadMore = false) {
 
 async function fetchDebts() {
   try {
-    const res = await fetch(`${API_BASE}/debts/`);
-    if (res.ok) {
-      const d = await res.json();
-      state.debts = d.results || d;
-      renderDebts();
-      // Qarzlar tarixi sahifasi ochiq bo'lsa, u ham yangilansin
-      if (document.getElementById('statsDebtsSection')?.style.display === '') renderDebtsPage();
-    }
+    // Hammasi kerak: qarzlar tarixi va statistikasi barcha qarzlardan hisoblanadi (API 10 tadan sahifalaydi)
+    state.debts = await _fetchAllPages(`${API_BASE}/debts/`);
+    renderDebts();
+    // Qarzlar tarixi sahifasi ochiq bo'lsa, u ham yangilansin
+    if (document.getElementById('statsDebtsSection')?.style.display === '') renderDebtsPage();
   } catch (err) {
     console.error('Error fetching debts:', err);
   }
@@ -555,10 +944,16 @@ async function refreshAll() {
     fetchMembers(),
     fetchCategories(),
     fetchTransactions(),
-    fetchDebts()
+    fetchDebts(),
+    fetchRecurring(),
+    fetchGoals()
   ]);
-  if (_walletPageId && document.getElementById('txPageOverlay').classList.contains('open')) {
+  const pageOpen = document.getElementById('txPageOverlay').classList.contains('open');
+  if (pageOpen && _walletPageId) {
     await loadWalletPageData();
+  } else if (pageOpen && (_txPageMode === 'transactions' || _txPageMode === 'stats')) {
+    // Operatsiya qo'shilgan yoki o'chirilgan bo'lsa ochiq oy ro'yxati / statistikasi ham yangilansin
+    await _loadMonthlyStats({ silent: true });
   }
 }
 
@@ -566,15 +961,46 @@ async function refreshAll() {
 // RENDERING FUNCTIONS
 // ==========================================
 
+// "1 234 567" yoki sent bo'lsa "1 234 567.50". 'uz-UZ' brauzerga qarab "1,234.5" yoki "1 234,5" beradi —
+// vergulni bo'sh joyga almashtirish ikkinchisida kasrni buzardi, shuning uchun en-US asosida yasaymiz
+const _moneyFormat = {
+  whole: new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }),
+  cents: new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+};
 function formatNumber(amount) {
-  if (amount === undefined || amount === null) return '0';
-  return new Intl.NumberFormat('uz-UZ').format(amount).replace(/,/g, ' ');
+  const n = Number(amount);
+  if (!Number.isFinite(n)) return '0';
+  const hasCents = Math.round(Math.abs(n) * 100) % 100 !== 0;
+  return (hasCents ? _moneyFormat.cents : _moneyFormat.whole).format(n).replace(/,/g, ' ');
 }
+
+// Katta balans soni kartochkaga sig'masa shrift kichrayadi — telefonda "124 645 / 688" bo'lib ikki qatorga bo'linmasin.
+// CSS sonning uzunligini bilmaydi, shuning uchun o'lchab moslaymiz (valyuta yozuvi rem'da — 2-3 marta yaqinlashtiriladi)
+function fitHeroBalance() {
+  const el = document.getElementById('heroBalanceSum');
+  if (!el) return;
+  el.style.fontSize = '';
+  for (let i = 0; i < 3 && el.clientWidth && el.scrollWidth > el.clientWidth; i++) {
+    const size = parseFloat(getComputedStyle(el).fontSize);
+    el.style.fontSize = Math.max(18, Math.floor(size * el.clientWidth / el.scrollWidth)) + 'px';
+  }
+}
+// Eni o'zgarganda (ekran burilishi, oyna kattalashishi) qaytadan moslanadi; shrift eni o'zgartirmaydi — sikl bo'lmaydi
+const _heroSumEl = document.getElementById('heroBalanceSum');
+if (_heroSumEl && 'ResizeObserver' in window) new ResizeObserver(fitHeroBalance).observe(_heroSumEl);
+else window.addEventListener('resize', fitHeroBalance);
 
 function renderSummary() {
   const s = state.summary || {};
+  // Balans valyuta bo'yicha: birinchisi katta, qolganlari uning tagida
+  const balances = s.balances_by_currency || [];
+  const main = balances[0] || { currency: 'UZS', total: 0 };
   const totalBalanceEl = document.getElementById('statTotalBalance');
-  if (totalBalanceEl) totalBalanceEl.textContent = formatNumber(s.total_wallets_balance || 0);
+  if (totalBalanceEl) totalBalanceEl.textContent = formatNumber(main.total);
+  const totalCurrencyEl = document.getElementById('statTotalCurrency');
+  if (totalCurrencyEl) totalCurrencyEl.textContent = main.currency;
+  fitHeroBalance();
+  renderBalanceExtra();
 
   const incEl = document.getElementById('statMonthlyIncome');
   if (incEl) incEl.textContent = formatNumber(s.monthly_income || 0);
@@ -583,13 +1009,14 @@ function renderSummary() {
   if (expEl) expEl.textContent = formatNumber(s.monthly_expense || 0);
 
   renderWeeklyExpenseChart(s.weekly_expenses || []);
+  warnMissingRates(s.missing_rates);
 }
 
 // ==========================================
 // XABARLAR (navbar qo'ng'irog'i)
 // ==========================================
-// Faqat muhim ogohlantirishlar: muddati o'tgan yoki yaqinlashgan qarzlar.
-// Ular qarzlar ro'yxatidan jonli hisoblanadi, qarz to'langach o'zi yo'qoladi.
+// Muhim ogohlantirishlar: muddati o'tgan yoki yaqinlashgan qarzlar va takroriy to'lovlar — ular ro'yxatlardan
+// jonli hisoblanadi, qarz to'langach o'zi yo'qoladi. Eng tepada admin yuborgan xabarlar (state.notices, serverdan).
 
 function _debtDaysLeft(d) {
   const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -610,26 +1037,70 @@ function renderNotifications() {
   if (!badge || !list) return;
 
   const alerts = getDebtAlerts();
+  const recurringAlerts = getRecurringAlerts();
+  const supportUnread = state.supportUnread || 0;
+  const notices = state.notices || [];
+  const noticesUnread = state.noticesUnread || 0;
+  const total = alerts.length + recurringAlerts.length + (supportUnread ? 1 : 0) + noticesUnread;
 
-  if (alerts.length === 0) {
+  if (total === 0) {
     badge.style.display = 'none';
   } else {
-    badge.textContent = alerts.length > 99 ? '99+' : alerts.length;
+    badge.textContent = total > 99 ? '99+' : total;
     badge.style.display = '';
-    badge.style.background = alerts.some(a => a.urgency === 'overdue') ? 'var(--rose)' : 'var(--amber)';
+    const urgent = alerts.some(a => a.urgency === 'overdue') || recurringAlerts.some(a => a.r.last_error);
+    badge.style.background = urgent ? 'var(--rose)' : 'var(--amber)';
   }
 
-  list.innerHTML = alerts.length ? alerts.map(({ d, urgency, days }) => {
+  // Takroriy to'lovlar: yozilmay qolgani (sababi bilan) va yaqinlashgani
+  const recurringHtml = recurringAlerts.map(({ r, days }) => {
+    const amount = `${formatNumber(r.summa)} ${escapeHtml(r.wallet_currency)}`;
+    const text = r.last_error
+      ? `<b>${escapeHtml(r.name)}</b> - avtomatik yozilmadi`
+      : `<b>${escapeHtml(r.name)}</b> - ${days === 0 ? 'bugun' : days === 1 ? 'ertaga' : `${days} kundan keyin`} ${r.kind === 'income' ? 'tushadi' : "to'lanadi"}`;
+    return `
+      <button type="button" class="notif-item clickable" data-notif-recurring="${r.id}">
+        <span class="notif-dot ${r.last_error ? 'overdue' : 'soon'}"></span>
+        <span class="notif-body">
+          <div class="notif-text">${text}</div>
+          <div class="notif-time">${r.last_error ? escapeHtml(r.last_error) : `${amount} · ${escapeHtml(r.wallet_name)}`}</div>
+        </span>
+      </button>`;
+  }).join('');
+
+  // Yordam: admin javob yozgan (bosilsa Sozlamalar → Yordam ochiladi)
+  const supportHtml = supportUnread ? `
+      <button type="button" class="notif-item clickable" data-notif-support="1">
+        <span class="notif-dot soon"></span>
+        <span class="notif-body">
+          <div class="notif-text"><b>Admin javob berdi</b></div>
+          <div class="notif-time">${supportUnread} ta yangi xabar · Yordam</div>
+        </span>
+      </button>` : '';
+
+  // Admin xabarlari: alohida ko'rinishda (yashil fon, "Admin" belgisi), o'qilmagani nuqta bilan.
+  // Matn admin yozgani — tarjima qilinmaydi (data-no-i18n)
+  const noticesHtml = notices.map(n => `
+      <div class="notif-item notif-admin${n.is_read ? '' : ' is-unread'}">
+        <span class="notif-admin-icon">${icon('megaphone')}</span>
+        <span class="notif-body">
+          <div class="notif-admin-head"><span class="notif-admin-badge">Admin</span>${n.broadcast ? '<span class="notif-admin-scope">Hammaga</span>' : ''}${n.is_read ? '' : '<span class="notif-admin-new" aria-label="Yangi"></span>'}</div>
+          <div class="notif-text notif-admin-text" data-no-i18n>${escapeHtml(n.text)}</div>
+          <div class="notif-time">${escapeHtml(formatUzDate(n.created_at, { year: true, time: true }))}</div>
+        </span>
+      </div>`).join('');
+
+  list.innerHTML = (total || notices.length) ? noticesHtml + supportHtml + recurringHtml + alerts.map(({ d, urgency, days }) => {
     const when = urgency === 'overdue'
-      ? `muddati ${Math.abs(days)} kun oldin o'tgan (${d.due_date})`
-      : (days === 0 ? 'muddati bugun tugaydi' : `muddatiga ${days} kun qoldi (${d.due_date})`);
+      ? `muddati ${Math.abs(days)} kun oldin o'tgan (${formatDueDate(d)})`
+      : (days === 0 ? 'muddati bugun tugaydi' : `muddatiga ${days} kun qoldi (${formatDueDate(d)})`);
     const kind = d.debt_type === 'give' ? 'Sizga qaytarishi kerak' : 'Siz qaytarishingiz kerak';
     return `
       <button type="button" class="notif-item clickable" data-notif-debt="1">
         <span class="notif-dot ${urgency}"></span>
         <span class="notif-body">
           <div class="notif-text"><b>${escapeHtml(d.person_name)}</b> - qarz ${when}</div>
-          <div class="notif-time">${kind} · qoldiq ${formatNumber(d.remaining_summa)} UZS</div>
+          <div class="notif-time">${kind} · qoldiq ${formatNumber(d.remaining_summa)} ${debtCurrency(d)}</div>
         </span>
       </button>`;
   }).join('') : `<div class="notif-empty">Hozircha xabarlar yo'q</div>`;
@@ -639,9 +1110,43 @@ function _setNotifPanel(open) {
   const panel = document.getElementById('notifPanel');
   const btn = document.getElementById('btnNotif');
   if (!panel || !btn) return;
+  const wasOpen = !panel.hidden;
   panel.hidden = !open;
   btn.setAttribute('aria-expanded', String(open));
-  if (open) renderNotifications();
+  if (open) {
+    renderNotifications();
+    markNoticesRead();
+  } else if (wasOpen && (state.notices || []).some(n => !n.is_read && n.seen)) {
+    // Ochiq turganda ko'rilganlar yopilgandan keyin oddiy (o'qilgan) ko'rinishga o'tadi
+    state.notices.forEach(n => { if (n.seen) n.is_read = true; });
+    renderNotifications();
+  }
+}
+
+// ADMIN XABARLARI: admin panelidan yuboriladi (panel/notices/). Yangisi borligi Yordam bilan bir xil
+// so'rovda bilinadi (support/unread/ → notices_unread), shunda ro'yxat qayta olinadi
+async function fetchNotices() {
+  try {
+    const res = await fetch(`${API_BASE}/notices/`);
+    if (!res.ok) return;
+    const data = await res.json();
+    state.notices = data.notices;
+    state.noticesUnread = data.unread;
+    renderNotifications();
+    if (document.getElementById('notifPanel')?.hidden === false) markNoticesRead();
+  } catch (e) { /* tarmoq uzilgan — keyingi so'rovda */ }
+}
+
+// Qo'ng'iroq ochilganda: badge darhol kamayadi, xabarlar esa panel yopilguncha "yangi" ko'rinishida qoladi
+async function markNoticesRead() {
+  const fresh = (state.notices || []).filter(n => !n.is_read && !n.seen);
+  if (!fresh.length) return;
+  fresh.forEach(n => { n.seen = true; });
+  state.noticesUnread = 0;
+  renderNotifications();
+  try {
+    await fetch(`${API_BASE}/notices/read/`, { method: 'POST' });
+  } catch (e) { /* keyingi ochilishda qayta belgilanadi */ }
 }
 
 document.getElementById('btnNotif')?.addEventListener('click', (e) => {
@@ -649,6 +1154,18 @@ document.getElementById('btnNotif')?.addEventListener('click', (e) => {
   _setNotifPanel(document.getElementById('notifPanel').hidden);
 });
 document.getElementById('notifList')?.addEventListener('click', (e) => {
+  const recurringItem = e.target.closest('[data-notif-recurring]');
+  if (recurringItem) {
+    _setNotifPanel(false);
+    openRecurringModal(Number(recurringItem.dataset.notifRecurring));
+    return;
+  }
+  if (e.target.closest('[data-notif-support]')) {
+    _setNotifPanel(false);
+    openSettings();
+    switchSettingsTab('support');
+    return;
+  }
   if (e.target.closest('[data-notif-debt]')) {
     _setNotifPanel(false);
     openDebtsPage();
@@ -658,7 +1175,9 @@ document.addEventListener('click', (e) => {
   if (!e.target.closest('#notifWrap')) _setNotifPanel(false);
 });
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') _setNotifPanel(false);
+  if (e.key !== 'Escape' || document.getElementById('notifPanel')?.hidden !== false) return;
+  e.preventDefault(); // Esc faqat xabarlar panelini yopadi
+  _setNotifPanel(false);
 });
 
 const WEEKDAY_FULL_NAMES = { Du: 'Dushanba', Se: 'Seshanba', Ch: 'Chorshanba', Pa: 'Payshanba', Ju: 'Juma', Sh: 'Shanba', Ya: 'Yakshanba' };
@@ -677,25 +1196,61 @@ function renderWeeklyExpenseChart(weeklyData = []) {
   const sorted = [...weeklyData].sort((a, b) => b.expense - a.expense);
 
   container.innerHTML = sorted.map(d => {
+    // Ustun uzunligi so'mga o'girilgan qiymat bo'yicha, yozuv esa asl valyutada: "100 USD", "50 000 UZS"
     const pct = d.expense > 0 ? Math.max((d.expense / maxVal) * 100, 4) : 0;
-    const valueLabel = d.expense >= 1000000
-      ? (d.expense / 1000000).toFixed(1).replace(/\.0$/, '') + ' mln'
-      : d.expense >= 1000
-      ? Math.round(d.expense / 1000) + ' ming'
-      : formatNumber(d.expense);
+    const valueLabel = d.parts && d.parts.length
+      ? d.parts.map(p => amountWithCurrency(p.total, p.currency)).join(' + ')
+      : (d.expense > 0 ? amountWithCurrency(d.expense, 'UZS') : '0');
     const fullName = WEEKDAY_FULL_NAMES[d.label] || d.label;
     const clickable = d.expense > 0;
     return `
-      <div class="weekly-rank-row${d.is_max ? ' is-max' : ''}${clickable ? ' is-clickable' : ''}"${clickable ? ` onclick="event.stopPropagation(); openWeekdayTxFilter('${d.label}','${fullName}')"` : ''}>
+      <div class="weekly-rank-row${d.is_max ? ' is-max' : ''}${clickable ? ' is-clickable' : ''}"${clickable ? ` data-action="openWeekdayTxFilter" data-stop data-args="${actionArgs(d.label, fullName)}"` : ''}>
         <span class="weekly-rank-day">${fullName}</span>
         <div class="weekly-rank-track"><div class="weekly-rank-fill" style="width: ${pct}%;"></div></div>
-        <span class="weekly-rank-value">${valueLabel}</span>
+        <span class="weekly-rank-value" title="${escapeHtml(valueLabel)}">${escapeHtml(valueLabel)}</span>
       </div>
     `;
   }).join('');
 }
 
+// Umumiy balans tagida boshqa valyutalar: "va 200 USD Dollar hamyonida".
+// Matn bo'laklari alohida tugunlarda — i18n.js ularni "va" va "{0} hamyonida" kalitlari bo'yicha tarjima qiladi
+function renderBalanceExtra() {
+  const extraEl = document.getElementById('heroBalanceExtra');
+  if (!extraEl) return;
+  const extra = (state.summary?.balances_by_currency || []).slice(1);
+  if (!extra.length) { extraEl.innerHTML = ''; return; }
+  const parts = extra.map(b => {
+    const owners = state.wallets.filter(w => w.currency === b.currency);
+    const where = owners.length === 1 ? `${escapeHtml(owners[0].name)} hamyonida`
+      : owners.length > 1 ? `${owners.length} ta hamyonda` : '';
+    return `<span class="hero-extra-item"><b class="hero-extra-amount">${formatNumber(b.total)} ${escapeHtml(b.currency)}</b>${where ? ` <span>${where}</span>` : ''}</span>`;
+  });
+  extraEl.innerHTML = `<span>va</span> ${parts.join('<span class="hero-extra-sep">·</span>')}`;
+}
+
+// "Umumiy balans" kartochkasi ichida har bir hamyonning balansi
+function renderHeroWallets() {
+  const box = document.getElementById('heroWalletList');
+  if (!box) return;
+  // Hamyon bitta bo'lsa umumiy balans bilan bir xil bo'ladi: ko'rsatilmaydi
+  if (state.wallets.length < 2) { box.innerHTML = ''; return; }
+  box.innerHTML = state.wallets.map(w => `
+    <button type="button" class="hero-wallet-cell" data-wallet-id="${w.id}" title="${escapeHtml(w.name)}: operatsiyalarni ko'rish">
+      <span class="hero-wallet-name">${icon('card')}<span>${escapeHtml(w.name)}</span></span>
+      <span class="hero-wallet-amount">${formatNumber(w.summa)} <small>${escapeHtml(w.currency)}</small></span>
+    </button>`).join('');
+  // Boshqa valyutadagi balans tagidagi "... hamyonida" yozuvi hamyonlar ro'yxatiga bog'liq
+  renderBalanceExtra();
+}
+
+// Bosh sahifadagi "Hamyonlarim" kartochkasida nechta hamyon ko'rinadi; qolganlari "Barcha hamyonlar" sahifasida
+const HOME_WALLETS_LIMIT = 2;
+
 function renderWallets() {
+  renderHeroWallets();
+  renderDebts(); // ko'rinadigan qarzlar soni = kartochkadagi hamyonlar soni
+  renderAllWalletsPage();
   const container = document.getElementById('walletsList');
   if (!container) return;
 
@@ -704,25 +1259,39 @@ function renderWallets() {
     return;
   }
 
-  container.innerHTML = state.wallets.map(w => `
+  // Qolgan hamyonlar — sarlavha ("Hamyonlarim ›") bosilganda ochiladigan sahifada
+  container.innerHTML = state.wallets.slice(0, HOME_WALLETS_LIMIT).map(walletCardHtml).join('');
+}
+
+// "Barcha hamyonlar" sahifasi ochiq bo'lsa, hamyon qo'shilganda/o'chirilganda ro'yxat ham yangilanadi
+function renderAllWalletsPage() {
+  const list = document.getElementById('allWalletsList');
+  if (!list || _txPageMode !== 'wallets') return;
+  list.innerHTML = state.wallets.length ? state.wallets.map(walletCardHtml).join('')
+    : `<p style="color: var(--text-subtle); font-size: 0.85rem; padding: 6px 0;">Hamyon mavjud emas</p>`;
+  document.getElementById('txPageMonth').textContent = `${state.wallets.length} ta hamyon`;
+}
+
+function walletCardHtml(w) {
+  return `
     <div class="wallet-compact-card is-clickable" data-wallet-id="${w.id}" role="button" tabindex="0" title="${escapeHtml(w.name)}: operatsiyalarni ko'rish va tahrirlash">
-      <div>
-        <div style="font-weight: 500; font-size: 0.95rem; color: var(--text-main);">${icon('card')} ${escapeHtml(w.name)}</div>
+      <div class="wallet-compact-info">
+        <div class="wallet-compact-name" style="font-weight: 500; font-size: 0.95rem; color: var(--text-main);">${icon('card')} ${escapeHtml(w.name)}</div>
         <div style="font-size: 0.75rem; color: var(--text-subtle);">${escapeHtml(w.currency)}</div>
       </div>
-      <div style="display: flex; align-items: center; gap: 10px;">
+      <div class="wallet-compact-side" style="display: flex; align-items: center; gap: 10px;">
         <div style="font-weight: 600; font-size: 1.05rem; color: var(--text-main);">
           ${formatNumber(w.summa)} <span style="font-size: 0.8rem; color: var(--text-muted);">${escapeHtml(w.currency)}</span>
         </div>
         ${state.wallets.length > 1 ? `
-          <button class="btn-icon" style="width: 24px; height: 24px; font-size: 0.72rem; opacity: 0.6;" title="Hamyonni o'chirish" onclick="event.stopPropagation(); deleteWallet(${w.id})">${icon('trash')}</button>
+          <button class="btn-icon" style="width: 24px; height: 24px; font-size: 0.72rem; opacity: 0.6;" title="Hamyonni o'chirish" data-action="deleteWallet" data-stop data-args="${actionArgs(w.id)}">${icon('trash')}</button>
         ` : ''}
       </div>
-    </div>
-  `).join('');
+    </div>`;
 }
 
 function renderMembers() {
+  updateHomeListCount();
   const container = document.getElementById('membersList');
   if (!container) return;
 
@@ -734,7 +1303,7 @@ function renderMembers() {
   container.innerHTML = state.members.map(m => `
     <div class="member-compact-card is-clickable" data-member-id="${m.id}" data-member-name="${escapeHtml(m.name)}" title="${escapeHtml(m.name)}ga sarflangan harajatlarni ko'rish">
       <div style="font-weight: 500; font-size: 0.95rem; color: var(--text-main);">${memberIcon(m.kind)} ${escapeHtml(m.name)}</div>
-      <button class="btn-icon" style="width: 24px; height: 24px; font-size: 0.72rem; opacity: 0.6;" title="A'zoni o'chirish" onclick="event.stopPropagation(); deleteMember(${m.id})">${icon('trash')}</button>
+      <button class="btn-icon" style="width: 24px; height: 24px; font-size: 0.72rem; opacity: 0.6;" title="A'zoni o'chirish" data-action="deleteMember" data-stop data-args="${actionArgs(m.id)}">${icon('trash')}</button>
     </div>
   `).join('');
 }
@@ -770,29 +1339,29 @@ function populateExpenseMemberDropdown() {
 // Raw item lookup for detail drawer
 const _txDetailMap = {};
 
-// Build sorted list from state
-function _buildTxList(filter = 'all') {
+// Build sorted list from state (yoki "Barcha operatsiyalar" sahifasida — tanlangan oy operatsiyalaridan)
+function _buildTxList(filter = 'all', source = state) {
   let list = [];
 
   if (filter === 'all' || filter === 'expenses') {
-    state.expenses.forEach(e => {
+    source.expenses.forEach(e => {
       const key = `expense_${e.id}`;
       _txDetailMap[key] = e;
-      list.push({ type: 'expense', key, id: e.id, title: e.category_name || 'Harajat', amount: e.summa, wallet: e.wallet_name || 'Hamyon', date: e.date, icon: 'expenseArrow' });
+      list.push({ type: 'expense', key, id: e.id, title: e.category_name || 'Harajat', amount: e.summa, currency: e.wallet_currency, wallet: e.wallet_name || 'Hamyon', date: e.date, icon: 'expenseArrow' });
     });
   }
   if (filter === 'all' || filter === 'incomes') {
-    state.incomes.forEach(i => {
+    source.incomes.forEach(i => {
       const key = `income_${i.id}`;
       _txDetailMap[key] = i;
-      list.push({ type: 'income', key, id: i.id, title: i.category_name || 'Daromad', amount: i.summa, wallet: i.wallet_name || 'Hamyon', date: i.date, icon: 'incomeArrow' });
+      list.push({ type: 'income', key, id: i.id, title: i.category_name || 'Daromad', amount: i.summa, currency: i.wallet_currency, wallet: i.wallet_name || 'Hamyon', date: i.date, icon: 'incomeArrow' });
     });
   }
   if (filter === 'all' || filter === 'transfers') {
-    state.transfers.forEach(t => {
+    source.transfers.forEach(t => {
       const key = `transfer_${t.id}`;
       _txDetailMap[key] = t;
-      list.push({ type: 'transfer', key, id: t.id, title: `O'tkazma`, amount: t.summa, wallet: `${t.from_wallet_name} → ${t.to_wallet_name}`, date: t.date, icon: 'transfer' });
+      list.push({ type: 'transfer', key, id: t.id, title: `O'tkazma`, amount: t.summa, currency: t.from_currency, amountText: transferAmountText(t), wallet: `${t.from_wallet_name} → ${t.to_wallet_name}`, date: t.date, icon: 'transfer' });
     });
   }
   list.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -801,7 +1370,7 @@ function _buildTxList(filter = 'all') {
 
 function _txItemHtml(item) {
   const sign = item.sign !== undefined ? item.sign : (item.type === 'income' ? '+' : item.type === 'transfer' ? '' : '-');
-  const click = item.noDetail ? ' style="cursor:default;"' : ` onclick="openTxDetail('${item.key}','${item.type}',${item.id})"`;
+  const click = item.noDetail ? ' style="cursor:default;"' : ` data-action="openTxDetail" data-args="${actionArgs(item.key, item.type, item.id)}"`;
   return `
     <div class="tx-compact-item"${click}>
       <div class="tx-icon-badge ${item.type}">${icon(item.icon)}</div>
@@ -809,7 +1378,7 @@ function _txItemHtml(item) {
         <div class="tx-compact-name">${escapeHtml(item.title)}</div>
         <div class="tx-compact-sub">${formatDate(item.date)} · ${escapeHtml(item.wallet)}</div>
       </div>
-      <div class="tx-compact-amount ${item.type}">${sign}${formatNumber(item.amount)}</div>
+      <div class="tx-compact-amount ${item.type}">${sign}${escapeHtml(item.amountText || amountWithCurrency(item.amount, item.currency))}</div>
     </div>`;
 }
 
@@ -817,7 +1386,7 @@ function _txItemHtml(item) {
 function openWeekdayTxFilter(weekdayCode, weekdayFullName) {
   _loadTxFilterModal({
     title: `${weekdayFullName} kuni`,
-    url: `${API_BASE}/expenses/?weekday=${weekdayCode}&limit=200`,
+    url: `${API_BASE}/expenses/?weekday=${weekdayCode}`,
     emptyText: `${weekdayFullName} kuni harajat topilmadi`
   });
 }
@@ -825,7 +1394,7 @@ function openWeekdayTxFilter(weekdayCode, weekdayFullName) {
 function openMemberTxFilter(memberId, memberName) {
   _loadTxFilterModal({
     title: memberName,
-    url: `${API_BASE}/expenses/?member=${memberId}&limit=200`,
+    url: `${API_BASE}/expenses/?member=${memberId}`,
     emptyText: `${memberName} uchun harajat topilmadi`
   });
 }
@@ -842,11 +1411,8 @@ async function _loadTxFilterModal({ title, url, emptyText }) {
 
   let items = [];
   try {
-    const res = await fetch(url);
-    if (res.ok) {
-      const d = await res.json();
-      items = d.results || d;
-    }
+    // Hamma sahifalar yig'iladi — faqat birinchi 200 tasi olinsa "Jami sarflangan" kam chiqardi
+    items = await _fetchAllPages(url);
   } catch (e) {
     console.error('Tx filter fetch error:', e);
   }
@@ -856,11 +1422,12 @@ async function _loadTxFilterModal({ title, url, emptyText }) {
     return;
   }
 
-  const total = items.reduce((sum, e) => sum + Number(e.summa || 0), 0);
+  // Har xil valyutadagi harajatlar alohida ko'rsatiladi: "250 000 UZS + 30 USD"
+  const totals = sumByCurrency(items, e => e.summa, e => e.wallet_currency);
   if (summaryEl) {
     summaryEl.innerHTML = `
       <div class="tx-filter-total-label">Jami sarflangan</div>
-      <div class="tx-filter-total-value">${formatNumber(total)} UZS</div>
+      <div class="tx-filter-total-value">${formatCurrencyTotals(totals)}</div>
     `;
   }
 
@@ -868,7 +1435,7 @@ async function _loadTxFilterModal({ title, url, emptyText }) {
     .map(e => {
       const key = `expense_${e.id}`;
       _txDetailMap[key] = e;
-      return { type: 'expense', key, id: e.id, title: e.category_name || 'Harajat', amount: e.summa, wallet: e.wallet_name || 'Hamyon', date: e.date, icon: 'expenseArrow' };
+      return { type: 'expense', key, id: e.id, title: e.category_name || 'Harajat', amount: e.summa, currency: e.wallet_currency, wallet: e.wallet_name || 'Hamyon', date: e.date, icon: 'expenseArrow' };
     })
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
@@ -903,16 +1470,17 @@ function renderTransactions() {
 // OYLIK STATISTIKA SAHIFASI
 // ==========================================
 
-// Joriy ko'rinayotgan oy/yil
+// Joriy ko'rinayotgan davr: oy/yil yoki ixtiyoriy oraliq (_statsRange bo'lsa oy/yil e'tiborsiz qoladi)
 let _statsYear  = new Date().getFullYear();
 let _statsMonth = new Date().getMonth() + 1;  // 1-indexed
+let _statsRange = null;  // { from: 'YYYY-MM-DD', to: 'YYYY-MM-DD' } — ikkala kun ham kiradi
 let _txPageFilter = 'all';
 let _statsData = null;  // oxirgi kelgan stats
-
-const UZ_MONTHS = [
-  'Yanvar','Fevral','Mart','Aprel','May','Iyun',
-  'Iyul','Avgust','Sentabr','Oktabr','Noyabr','Dekabr'
-];
+// Ochiq bo'lim sahifasi: 'stats' | 'transactions' | 'debts' | 'wallet'
+let _txPageMode = 'transactions';
+// "Barcha operatsiyalar" sahifasi: tanlangan oyning hamma operatsiyalari ({ expenses, incomes, transfers } yoki { error })
+let _monthOps = null;
+let _monthLoadSeq = 0;
 
 // Navbar bo'limlari uchun sarlavhalar
 const TX_FILTER_TITLES = {
@@ -922,10 +1490,30 @@ const TX_FILTER_TITLES = {
   transfers: "Barcha O'tkazmalar",
 };
 
+// Navbarda ochiq bo'lim (Moliya / Kirim / Chiqim / Qarz / Kurs) belgilanadi. null — bosh sahifa va undan ochiladigan
+// sahifalar (statistika, hamyon) "Moliya" ostida; mos bo'limi yo'q filtrda ("Barchasi") hech biri belgilanmaydi
+function setNavActive(section) {
+  const current = section || 'home';
+  document.querySelectorAll('#navSections .nav-section-link').forEach(link => {
+    const on = link.dataset.navSection === current;
+    link.classList.toggle('is-active', on);
+    if (on) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current');
+  });
+}
+
+// Bo'lim sahifasida (txPageOverlay) bir vaqtda faqat bitta bo'lim ko'rinadi
+const TX_PAGE_SECTIONS = ['statsOverviewSection', 'statsOperationsSection', 'statsDebtsSection', 'statsWalletSection',
+  'statsRatesSection', 'statsWalletsSection', 'statsHomeListSection'];
+function _showTxPageSection(id) {
+  TX_PAGE_SECTIONS.forEach(s => { document.getElementById(s).style.display = s === id ? '' : 'none'; });
+}
+
 function openTxPage(mode = 'transactions', filter = 'all') {
   _txPageFilter = filter;
+  resetListPage('tx');
   _statsYear  = new Date().getFullYear();
   _statsMonth = new Date().getMonth() + 1;
+  _statsRange = null;
 
   // Tab holati tanlangan filtrga moslanadi
   document.querySelectorAll('#txPageTabs .tx-page-tab').forEach(btn =>
@@ -933,17 +1521,16 @@ function openTxPage(mode = 'transactions', filter = 'all') {
   );
 
   const isStats = mode === 'stats';
-  document.getElementById('statsOverviewSection').style.display = isStats ? '' : 'none';
-  document.getElementById('statsOperationsSection').style.display = isStats ? 'none' : '';
-  document.getElementById('statsDebtsSection').style.display = 'none';
-  document.getElementById('statsWalletSection').style.display = 'none';
+  _txPageMode = isStats ? 'stats' : 'transactions';
+  setNavActive(isStats ? null : filter);
+  _showTxPageSection(isStats ? 'statsOverviewSection' : 'statsOperationsSection');
   _walletPageId = null;
   _setTxPageMonthNav(true);
   document.getElementById('txPageTitleText').textContent = isStats ? 'Oylik Statistika' : (TX_FILTER_TITLES[filter] || TX_FILTER_TITLES.all);
   document.getElementById('txPageTitleIcon').innerHTML = icon(isStats ? 'chart' : 'receipt');
 
   document.getElementById('txPageOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  _rememberPageInHistory();
   _loadMonthlyStats();
 }
 
@@ -952,14 +1539,14 @@ let _debtPageFilter = 'all';
 
 function openDebtsPage() {
   _debtPageFilter = 'all';
+  resetListPage('debts');
+  _txPageMode = 'debts';
+  setNavActive('debts');
   document.querySelectorAll('#debtPageTabs .tx-page-tab').forEach(btn =>
     btn.classList.toggle('active', btn.dataset.debtFilter === 'all')
   );
 
-  document.getElementById('statsOverviewSection').style.display = 'none';
-  document.getElementById('statsOperationsSection').style.display = 'none';
-  document.getElementById('statsDebtsSection').style.display = '';
-  document.getElementById('statsWalletSection').style.display = 'none';
+  _showTxPageSection('statsDebtsSection');
   _walletPageId = null;
   _setTxPageMonthNav(false);
   document.getElementById('txPageTitleText').textContent = 'Qarzlar Tarixi';
@@ -967,9 +1554,254 @@ function openDebtsPage() {
   document.getElementById('txPageMonth').textContent = 'Barcha davr';
 
   document.getElementById('txPageOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  _rememberPageInHistory();
   renderDebtsPage();
 }
+
+// ── Takroriy to'lovlar / Maqsadlarim / A'zolarim sahifasi ──────────
+// Bosh sahifada bu bo'limlar faqat sarlavha (kartochka bosilsa shu sahifa ochiladi). Ro'yxat konteynerlari
+// (#recurringList, #goalsList, #membersList) sahifa ichida turadi — render va bosish logikasi o'zgarmagan
+const HOME_LIST_PAGES = {
+  recurring: { title: "Takroriy to'lovlar", icon: 'repeat', items: () => state.recurring },
+  goals:     { title: 'Maqsadlarim',        icon: 'target', items: () => state.goals },
+  members:   { title: "A'zolarim",          icon: 'members', items: () => state.members },
+};
+let _homeListKind = null;
+
+function openHomeListPage(kind) {
+  const page = HOME_LIST_PAGES[kind];
+  if (!page) return;
+  _homeListKind = kind;
+  _txPageMode = 'homeList';
+  setNavActive(null);
+  _showTxPageSection('statsHomeListSection');
+  document.querySelectorAll('#statsHomeListSection [data-home-list]').forEach(el => {
+    el.style.display = el.dataset.homeList === kind ? '' : 'none';
+  });
+  _walletPageId = null;
+  _setTxPageMonthNav(false);
+  document.getElementById('txPageTitleText').textContent = page.title;
+  document.getElementById('txPageTitleIcon').innerHTML = icon(page.icon);
+  updateHomeListCount();
+
+  document.getElementById('txPageOverlay').classList.add('open');
+  _rememberPageInHistory();
+}
+
+// Sarlavha ostidagi "3 ta" — yozuv qo'shilganda/o'chirilganda ham yangilanadi
+function updateHomeListCount() {
+  if (_txPageMode !== 'homeList' || !_homeListKind) return;
+  document.getElementById('txPageMonth').textContent = `${(HOME_LIST_PAGES[_homeListKind].items() || []).length} ta`;
+}
+
+// Faqat sarlavhali kartochkalar (Takroriy to'lovlar, Maqsadlarim, A'zolarim) klaviaturada ham ochiladi
+document.addEventListener('keydown', (e) => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches?.('.card-header-only, .card-title-link')) {
+    e.preventDefault();
+    e.target.click();
+  }
+});
+
+// ── Barcha hamyonlar sahifasi: bosh sahifadagi kartochkada faqat HOME_WALLETS_LIMIT tasi ko'rinadi ──────────
+function openWalletsPage() {
+  _txPageMode = 'wallets';
+  setNavActive(null);
+  _showTxPageSection('statsWalletsSection');
+  _walletPageId = null;
+  _setTxPageMonthNav(false);
+  document.getElementById('txPageTitleText').textContent = 'Hamyonlarim';
+  document.getElementById('txPageTitleIcon').innerHTML = icon('wallet');
+
+  document.getElementById('txPageOverlay').classList.add('open');
+  _rememberPageInHistory();
+  renderAllWalletsPage();
+}
+
+// ── Kurs sahifasi: Markaziy bankning bugungi kurslari (server keshlaydi: /rates/) ──────────
+// Asosiy juftliklar kartochkada; kesishgan kurs (EUR → USD) ikki so'm kursidan hisoblanadi
+const RATES_MAIN_PAIRS = [['USD', 'UZS'], ['EUR', 'UZS'], ['RUB', 'UZS'], ['GBP', 'UZS'], ['EUR', 'USD'], ['USD', 'RUB']];
+// Ro'yxatda birinchi turadigan valyutalar (qolganlari alifbo tartibida keyingi sahifalarda)
+const RATES_FEATURED = ['USD', 'EUR', 'RUB', 'KZT', 'GBP', 'CNY', 'TRY', 'AED', 'KRW', 'JPY', 'CHF'];
+let _ratesData = null;      // { date, updatedAt, map: { USD: { rate, diff } } }
+let _ratesSeq = 0;
+
+function openRatesPage() {
+  _txPageMode = 'rates';
+  resetListPage('rates');
+  setNavActive('rates');
+  _showTxPageSection('statsRatesSection');
+  _walletPageId = null;
+  _setTxPageMonthNav(false);
+  document.getElementById('txPageTitleText').textContent = 'Valyuta kurslari';
+  document.getElementById('txPageTitleIcon').innerHTML = icon('exchange');
+  document.getElementById('txPageMonth').textContent = 'Markaziy bank kursi';
+
+  document.getElementById('txPageOverlay').classList.add('open');
+  _rememberPageInHistory();
+  if (_ratesData) renderRatesPage();
+  loadRatesPage();
+}
+
+async function loadRatesPage() {
+  const seq = ++_ratesSeq;
+  const status = document.getElementById('ratesStatus');
+  if (!_ratesData) {
+    status.className = 'rates-status';
+    status.textContent = 'Kurslar yuklanmoqda...';
+  }
+  try {
+    const res = await fetch(`${API_BASE}/rates/`);
+    const data = await res.json().catch(() => ({}));
+    if (seq !== _ratesSeq) return;
+    if (!res.ok) throw new Error(data.error || "Valyuta kurslarini olib bo'lmadi.");
+    const map = { UZS: { rate: 1, diff: 0 } };
+    (data.rates || []).forEach(r => {
+      map[r.currency] = { rate: Number(r.rate), diff: r.diff === null ? null : Number(r.diff) };
+    });
+    _ratesData = { date: data.date, updatedAt: data.updated_at, map };
+    status.className = 'rates-status';
+    status.textContent = '';
+    renderRatesPage();
+  } catch (err) {
+    if (seq !== _ratesSeq) return;
+    status.className = 'rates-status is-error';
+    status.innerHTML = `<span>${escapeHtml(err.message || "Valyuta kurslarini olib bo'lmadi.")}</span>
+      <button type="button" class="btn btn-subtle" data-action="loadRatesPage">Qayta urinish</button>`;
+  }
+}
+
+// Valyuta nomi: ilovadagi ro'yxatdan (i18n.js tarjima qiladi), bo'lmasa brauzerning Intl nomi
+let _currencyDisplayNames = null;
+function currencyName(code) {
+  const opt = document.querySelector(`#currencyOptions option[value="${code}"]`);
+  if (opt) return opt.textContent.trim();
+  try {
+    _currencyDisplayNames ||= new Intl.DisplayNames([window.i18n?.lang || 'uz', 'en'], { type: 'currency' });
+    const name = _currencyDisplayNames.of(code);
+    if (name && name !== code) return name;
+  } catch (e) { /* eski brauzer — kodning o'zi */ }
+  return code;
+}
+
+// Kurs kattaligiga qarab aniqlik: 12 345.67 / 1.0842 / 0.000083
+function formatRateValue(n) {
+  if (!Number.isFinite(n)) return '—';
+  const abs = Math.abs(n);
+  const digits = abs >= 100 ? 2 : abs >= 0.01 ? 4 : 6;
+  return new Intl.NumberFormat('en-US', { maximumFractionDigits: digits, minimumFractionDigits: abs >= 100 ? 2 : 0 })
+    .format(n).replace(/,/g, ' ');
+}
+
+// 1 from = ? to, va kechagi kursga nisbatan o'zgarish (Markaziy bank Diff bermagan bo'lsa null)
+function ratePair(from, to) {
+  const m = _ratesData?.map || {};
+  const a = m[from], b = m[to];
+  if (!a || !b) return null;
+  const value = a.rate / b.rate;
+  let change = null;
+  if (a.diff !== null && b.diff !== null) {
+    const prev = (a.rate - a.diff) / (b.rate - b.diff);
+    if (prev > 0) change = { abs: value - prev, pct: (value - prev) / prev * 100 };
+  }
+  return { value, change };
+}
+
+function rateChangeHtml(change) {
+  if (!change) return '<span class="rate-change"></span>';
+  if (Math.abs(change.pct) < 0.005) return "<span class=\"rate-change is-flat\">O'zgarmadi</span>";
+  const up = change.abs > 0;
+  const sign = up ? '+' : '−';
+  return `<span class="rate-change ${up ? 'is-up' : 'is-down'}" title="Kechagi kursga nisbatan">${icon(up ? 'up' : 'down')}<span>${sign}${formatRateValue(Math.abs(change.abs))}</span><span class="rate-change-pct">${sign}${Math.abs(change.pct).toFixed(2)}%</span></span>`;
+}
+
+// Markaziy bank sanasi "23.10.2026" ko'rinishida keladi
+function _parseCbuDate(s) {
+  const m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(s || '');
+  return m ? new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1])) : null;
+}
+
+// So'mdan boshqa valyutalar: avval mashhurlari, keyin qolganlari alifbo tartibida
+function _ratesCodes() {
+  const map = _ratesData.map;
+  const featured = RATES_FEATURED.filter(c => map[c]);
+  const rest = Object.keys(map).filter(c => c !== 'UZS' && !featured.includes(c)).sort();
+  return [...featured, ...rest];
+}
+
+// "Boshqa valyutalar" jadvali — 10 tadan sahifalarga bo'linadi (LIST_PAGERS.rates)
+function renderRatesTable() {
+  if (!_ratesData) return;
+  document.getElementById('ratesTable').innerHTML = pageSlice('rates', _ratesCodes()).map(code => {
+    const p = ratePair(code, 'UZS');
+    return `<div class="rates-row">
+      <span class="rates-row-code">${code}</span>
+      <span class="rates-row-name">${escapeHtml(currencyName(code))}</span>
+      <span class="rates-row-value">${formatRateValue(p.value)}</span>
+      ${rateChangeHtml(p.change)}
+    </div>`;
+  }).join('');
+}
+
+function renderRatesPage() {
+  if (!_ratesData) return;
+  const map = _ratesData.map;
+  const rateDate = _parseCbuDate(_ratesData.date);
+  if (rateDate) document.getElementById('txPageMonth').textContent = formatUzDate(rateDate, { year: true });
+
+  document.getElementById('ratesMainGrid').innerHTML = RATES_MAIN_PAIRS.map(([from, to]) => {
+    const p = ratePair(from, to);
+    if (!p) return '';
+    return `<div class="rate-card">
+      <div class="rate-card-pair"><span class="rate-card-code">${from}</span><span class="rate-card-arrow">→</span><span>${to}</span></div>
+      <div class="rate-card-value">${formatRateValue(p.value)}</div>
+      <div class="rate-card-foot"><span class="rate-card-name">${escapeHtml(currencyName(from))}</span>${rateChangeHtml(p.change)}</div>
+    </div>`;
+  }).join('');
+
+  renderRatesTable();
+
+  // Kalkulyator ro'yxati: so'm, mashhur valyutalar, keyin qolganlari; tanlangan valyuta saqlanib qoladi
+  const options = ['UZS', ..._ratesCodes()];
+  ['ratesConvFrom', 'ratesConvTo'].forEach((id, i) => {
+    const sel = document.getElementById(id);
+    const keep = sel.value || (i === 0 ? 'USD' : 'UZS');
+    sel.innerHTML = options.map(c => `<option value="${c}">${c} — ${escapeHtml(currencyName(c))}</option>`).join('');
+    sel.value = map[keep] ? keep : options[i === 0 ? 1 : 0];
+  });
+  updateRatesConverter();
+
+  const updated = _ratesData.updatedAt ? new Date(_ratesData.updatedAt) : null;
+  const stale = updated && Date.now() - updated.getTime() > 24 * 3600 * 1000;
+  document.getElementById('ratesSource').innerHTML =
+    "<span>Manba: O'zbekiston Respublikasi Markaziy banki (cbu.uz)</span>" +
+    (updated ? `<span${stale ? ' class="is-stale"' : ''}>${stale ? "Oxirgi saqlangan kurs" : 'Yangilangan'}: ${formatUzDate(updated, { year: true, time: true })}</span>` : '');
+}
+
+function updateRatesConverter() {
+  const out = document.getElementById('ratesConvResult');
+  if (!out || !_ratesData) return;
+  const from = document.getElementById('ratesConvFrom').value;
+  const to = document.getElementById('ratesConvTo').value;
+  const amount = readAmount('ratesConvAmount');
+  const p = ratePair(from, to);
+  if (!p || !(amount > 0)) {
+    out.innerHTML = '';
+    return;
+  }
+  const result = amount * p.value;
+  const resultText = result >= 1 ? formatNumber(Math.round(result * 100) / 100) : formatRateValue(result);
+  out.innerHTML = `<div class="rates-conv-sum">${formatNumber(amount)} ${from} = <strong>${resultText} ${to}</strong></div>
+    <div class="rates-conv-rate">${formatRateText(from, to, p.value)}</div>`;
+}
+
+document.getElementById('ratesConvAmount')?.addEventListener('input', updateRatesConverter);
+document.getElementById('ratesConvFrom')?.addEventListener('change', updateRatesConverter);
+document.getElementById('ratesConvTo')?.addEventListener('change', updateRatesConverter);
+document.getElementById('ratesConvSwap')?.addEventListener('click', () => {
+  const a = document.getElementById('ratesConvFrom'), b = document.getElementById('ratesConvTo');
+  [a.value, b.value] = [b.value, a.value];
+  updateRatesConverter();
+});
 
 function renderDebtsPage() {
   renderDebtStatRow();
@@ -981,18 +1813,19 @@ function renderDebtStatRow() {
   if (!row) return;
 
   const open = state.debts.filter(d => !d.is_settled);
-  const toReceive = open.filter(d => d.debt_type === 'give').reduce((s, d) => s + (d.remaining_summa || 0), 0);
-  const toPay     = open.filter(d => d.debt_type === 'take').reduce((s, d) => s + (d.remaining_summa || 0), 0);
+  const remainingTotals = list => sumByCurrency(list, d => d.remaining_summa, d => d.currency);
+  const toReceive = remainingTotals(open.filter(d => d.debt_type === 'give'));
+  const toPay     = remainingTotals(open.filter(d => d.debt_type === 'take'));
   const settled   = state.debts.filter(d => d.is_settled).length;
 
   row.innerHTML = `
     <div class="debt-stat-box">
       <span class="debt-stat-label">Menga qaytarishadi</span>
-      <span class="debt-stat-value" style="color:var(--emerald);">${formatNumber(toReceive)} UZS</span>
+      <span class="debt-stat-value" style="color:var(--emerald);">${formatCurrencyTotals(toReceive)}</span>
     </div>
     <div class="debt-stat-box">
       <span class="debt-stat-label">Men qaytaraman</span>
-      <span class="debt-stat-value" style="color:var(--amber);">${formatNumber(toPay)} UZS</span>
+      <span class="debt-stat-value" style="color:var(--amber);">${formatCurrencyTotals(toPay)}</span>
     </div>
     <div class="debt-stat-box">
       <span class="debt-stat-label">Yopilgan qarzlar</span>
@@ -1010,6 +1843,7 @@ function renderDebtPageList() {
   else if (_debtPageFilter === 'settled') list = list.filter(d => d.is_settled);
 
   if (list.length === 0) {
+    clearListPager('debts');
     container.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-subtle);font-size:0.88rem;">Bu filtr bo'yicha qarzlar yo'q</div>`;
     return;
   }
@@ -1020,7 +1854,7 @@ function renderDebtPageList() {
     return DEBT_URGENCY_RANK[_debtUrgency(a)] - DEBT_URGENCY_RANK[_debtUrgency(b)];
   });
 
-  container.innerHTML = sorted.map(d => {
+  container.innerHTML = pageSlice('debts', sorted).map(d => {
     const isGive = d.debt_type === 'give';
     const typeLabel = isGive ? 'Berdim' : 'Oldim';
     const typeColor = isGive ? 'var(--emerald)' : 'var(--amber)';
@@ -1035,7 +1869,7 @@ function renderDebtPageList() {
             ${d.is_settled ? `<span class="debt-history-type" style="color:var(--emerald);">Yopilgan</span>` : ''}
           </div>
           <div class="debt-history-meta">
-            ${formatNumber(d.paid_summa || 0)} / ${formatNumber(d.summa)} UZS ${_debtDueBadge(d)}
+            ${formatNumber(d.paid_summa || 0)} / ${formatNumber(d.summa)} ${debtCurrency(d)} ${_debtDueBadge(d)}
           </div>
           <div class="stats-progress-track" style="margin-top:6px;">
             <div class="stats-progress-fill" style="width:${Math.max(2, paidPercent)}%;background:${d.is_settled ? 'var(--emerald)' : 'linear-gradient(90deg,#3b82f6,#60a5fa)'};"></div>
@@ -1043,8 +1877,8 @@ function renderDebtPageList() {
         </div>
         <div class="debt-history-actions">
           ${!d.is_settled ? `
-            <span class="debt-history-remaining">${formatNumber(d.remaining_summa)} UZS</span>
-            <button class="btn btn-subtle btn-xs" onclick="openRepayModal(${d.id})">To'lash</button>
+            <span class="debt-history-remaining">${formatNumber(d.remaining_summa)} ${debtCurrency(d)}</span>
+            <button class="btn btn-subtle btn-xs" data-action="openRepayModal" data-args="${actionArgs(d.id)}">To'lash</button>
           ` : `<span style="font-size:0.75rem;color:var(--emerald);">${icon('check')}</span>`}
         </div>
       </div>
@@ -1057,6 +1891,7 @@ document.getElementById('debtPageTabs')?.addEventListener('click', (e) => {
   const btn = e.target.closest('.tx-page-tab');
   if (!btn) return;
   _debtPageFilter = btn.dataset.debtFilter;
+  resetListPage('debts');
   document.querySelectorAll('#debtPageTabs .tx-page-tab').forEach(b => b.classList.toggle('active', b === btn));
   renderDebtPageList();
 });
@@ -1065,6 +1900,7 @@ document.getElementById('debtPageTabs')?.addEventListener('click', (e) => {
 function _setTxPageMonthNav(visible) {
   const nav = document.querySelector('#txPageOverlay .month-nav-controls');
   if (nav) nav.style.display = visible ? '' : 'none';
+  _setPeriodPanel(false);
 }
 
 // Sahifalangan API'dan barcha yozuvlarni yuklaydi (har so'rovda 200 tadan)
@@ -1087,20 +1923,20 @@ function openWalletPage(walletId) {
 
   _walletPageId = walletId;
   _walletPageFilter = 'all';
+  resetListPage('wallet');
   _walletPageData = null;
+  _txPageMode = 'wallet';
+  setNavActive(null);
   document.querySelectorAll('#walletPageTabs .tx-page-tab').forEach(btn =>
     btn.classList.toggle('active', btn.dataset.walletFilter === 'all')
   );
 
-  document.getElementById('statsOverviewSection').style.display = 'none';
-  document.getElementById('statsOperationsSection').style.display = 'none';
-  document.getElementById('statsDebtsSection').style.display = 'none';
-  document.getElementById('statsWalletSection').style.display = '';
+  _showTxPageSection('statsWalletSection');
   document.getElementById('txPageTitleIcon').innerHTML = icon('wallet');
   _setTxPageMonthNav(false);
 
   document.getElementById('txPageOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  _rememberPageInHistory();
   renderWalletPage();
   loadWalletPageData();
 }
@@ -1136,14 +1972,14 @@ function _walletPageItems(filter) {
     d.incomes.forEach(i => {
       const key = `income_${i.id}`;
       _txDetailMap[key] = i;
-      list.push({ type: 'income', key, id: i.id, title: i.category_name || 'Daromad', amount: i.summa, wallet: i.wallet_name || 'Hamyon', date: i.date, icon: 'incomeArrow' });
+      list.push({ type: 'income', key, id: i.id, title: i.category_name || 'Daromad', amount: i.summa, currency: i.wallet_currency, wallet: i.wallet_name || 'Hamyon', date: i.date, icon: 'incomeArrow' });
     });
   }
   if (filter === 'all' || filter === 'expenses') {
     d.expenses.forEach(e => {
       const key = `expense_${e.id}`;
       _txDetailMap[key] = e;
-      list.push({ type: 'expense', key, id: e.id, title: e.category_name || 'Harajat', amount: e.summa, wallet: e.wallet_name || 'Hamyon', date: e.date, icon: 'expenseArrow' });
+      list.push({ type: 'expense', key, id: e.id, title: e.category_name || 'Harajat', amount: e.summa, currency: e.wallet_currency, wallet: e.wallet_name || 'Hamyon', date: e.date, icon: 'expenseArrow' });
     });
   }
   if (filter === 'all' || filter === 'transfers') {
@@ -1153,7 +1989,9 @@ function _walletPageItems(filter) {
       list.push({
         type: 'transfer', key, id: t.id,
         title: outgoing ? `O'tkazma → ${t.to_wallet_name}` : `O'tkazma ← ${t.from_wallet_name}`,
-        amount: t.summa, wallet: outgoing ? t.from_wallet_name : t.to_wallet_name,
+        // Kiruvchi o'tkazmada shu hamyonga tushgan summa (kurs bo'yicha) ko'rsatiladi
+        amount: outgoing ? t.summa : (t.to_summa ?? t.summa), currency: outgoing ? t.from_currency : t.to_currency,
+        wallet: outgoing ? t.from_wallet_name : t.to_wallet_name,
         date: t.date, icon: 'transfer', sign: outgoing ? '-' : '+'
       });
     };
@@ -1166,7 +2004,7 @@ function _walletPageItems(filter) {
       list.push({
         type: 'debt', key: `debt_${x.id}`, id: x.id, noDetail: true,
         title: `${give ? 'Qarz berdim' : 'Qarz oldim'}: ${x.person_name}`,
-        amount: x.summa, wallet: x.wallet_name || 'Hamyon', date: x.created_at,
+        amount: x.summa, currency: x.currency, wallet: x.wallet_name || 'Hamyon', date: x.created_at,
         icon: 'ledger', sign: give ? '-' : '+'
       });
     });
@@ -1183,9 +2021,7 @@ function renderWalletPage() {
   document.getElementById('txPageTitleText').textContent = wallet.name;
   document.getElementById('txPageMonth').textContent = `Hamyon · ${wallet.currency}`;
 
-  const created = wallet.created_at
-    ? new Date(wallet.created_at).toLocaleDateString('uz-UZ', { day: '2-digit', month: 'long', year: 'numeric' })
-    : '';
+  const created = formatUzDate(wallet.created_at, { year: true });
   document.getElementById('walletInfoCard').innerHTML = `
     <div class="wallet-info-main">
       <div class="wallet-info-icon">${icon('wallet')}</div>
@@ -1199,7 +2035,7 @@ function renderWalletPage() {
         <span class="debt-stat-label">Joriy balans</span>
         <b>${formatNumber(wallet.summa)} ${cur}</b>
       </div>
-      <button type="button" class="btn btn-subtle" onclick="openEditWallet()">${icon('edit')} Tahrirlash</button>
+      <button type="button" class="btn btn-subtle" data-action="openEditWallet">${icon('edit')} Tahrirlash</button>
     </div>`;
 
   const statRow = document.getElementById('walletStatRow');
@@ -1208,13 +2044,15 @@ function renderWalletPage() {
 
   if (!d) {
     statRow.innerHTML = '';
+    clearListPager('wallet');
     listEl.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-subtle);font-size:0.88rem;">Yuklanmoqda...</div>`;
     return;
   }
   if (d.error) {
     statRow.innerHTML = '';
+    clearListPager('wallet');
     listEl.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-subtle);font-size:0.88rem;">
-      Operatsiyalarni yuklab bo'lmadi. <button type="button" class="btn btn-subtle btn-xs" onclick="loadWalletPageData()">Qayta urinish</button></div>`;
+      Operatsiyalarni yuklab bo'lmadi. <button type="button" class="btn btn-subtle btn-xs" data-action="loadWalletPageData">Qayta urinish</button></div>`;
     return;
   }
 
@@ -1236,11 +2074,12 @@ function renderWalletPage() {
 
   const items = _walletPageItems(_walletPageFilter);
   if (!items.length) {
+    clearListPager('wallet');
     const text = _walletPageFilter === 'all' ? "Bu hamyon bilan hali operatsiyalar yo'q" : "Bu bo'limda operatsiyalar yo'q";
     listEl.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-subtle);font-size:0.88rem;">${text}</div>`;
     return;
   }
-  listEl.innerHTML = items.map(_txItemHtml).join('');
+  listEl.innerHTML = pageSlice('wallet', items).map(_txItemHtml).join('');
 }
 
 function openEditWallet() {
@@ -1252,7 +2091,7 @@ function openEditWallet() {
   document.getElementById('editWalletName').focus();
 }
 
-document.getElementById('formEditWallet')?.addEventListener('submit', async (e) => {
+onSubmitOnce('formEditWallet', async (e) => {
   e.preventDefault();
   const id = _walletPageId;
   if (!id) return;
@@ -1276,7 +2115,7 @@ document.getElementById('formEditWallet')?.addEventListener('submit', async (e) 
       showToast(extractErrorMessage(data, 'Hamyonni saqlashda xatolik'), 'error');
     }
   } catch (err) {
-    showToast('Tarmoq xatosi', 'error');
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
   }
 });
 
@@ -1284,13 +2123,14 @@ document.getElementById('walletPageTabs')?.addEventListener('click', (e) => {
   const btn = e.target.closest('.tx-page-tab');
   if (!btn) return;
   _walletPageFilter = btn.dataset.walletFilter;
+  resetListPage('wallet');
   document.querySelectorAll('#walletPageTabs .tx-page-tab').forEach(b => b.classList.toggle('active', b === btn));
   renderWalletPage();
 });
 
 // Hamyon kartochkasini bosish (yoki Enter/Space) hamyon sahifasini ochadi
 document.addEventListener('click', (e) => {
-  const card = e.target.closest('.wallet-compact-card.is-clickable');
+  const card = e.target.closest('.wallet-compact-card.is-clickable, .hero-wallet-cell');
   if (card) openWalletPage(Number(card.dataset.walletId));
 });
 document.addEventListener('keydown', (e) => {
@@ -1300,35 +2140,254 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+// Telefondagi (va brauzerdagi) "orqaga" tugmasi bo'lim sahifasini yopadi: sahifa ochilganda tarixga bitta qadam
+// qo'shiladi, yopilganda o'sha qadam qaytariladi. Ustida oyna yoki tafsilot ochiq bo'lsa, avval o'sha yopiladi
+let _pageInHistory = false;
+
+function _rememberPageInHistory() {
+  if (_pageInHistory) return;
+  history.pushState({ moliyaPage: true }, '');
+  _pageInHistory = true;
+}
+
+window.addEventListener('popstate', () => {
+  if (!_pageInHistory) return;
+  if (document.getElementById('modalConfirm')?.classList.contains('active')) {
+    _resolveConfirm(false);
+  } else if (_activeDialogLayer()) {
+    const modal = _topModal();
+    if (modal) closeModal(modal.id); else closeTxDetail();
+  } else {
+    _pageInHistory = false;
+    _hideTxPage();
+    return;
+  }
+  history.pushState({ moliyaPage: true }, ''); // sahifa ochiq qoldi — uning qadami tarixga qaytariladi
+});
+
 function closeTxPage() {
+  if (_pageInHistory) {
+    history.back(); // popstate sahifani yopadi
+    return;
+  }
+  _hideTxPage();
+}
+
+function _hideTxPage() {
   _walletPageId = null;
+  setNavActive(null);
+  _setPeriodPanel(false);
   document.getElementById('txPageOverlay').classList.remove('open');
-  document.body.style.overflow = '';
 }
 
-function _updateMonthNavLabel() {
+// ── Davr: oy yoki "dan — gacha" oralig'i ──────────────────────────
+const _pad2 = n => String(n).padStart(2, '0');
+// Mahalliy sana -> "YYYY-MM-DD" (toISOString UTC ga o'girib, Toshkentda yarim tundan keyin bir kun orqaga surardi)
+function _isoDay(d) { return `${d.getFullYear()}-${_pad2(d.getMonth() + 1)}-${_pad2(d.getDate())}`; }
+function _parseIsoDay(s) { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); }
+function _addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+// Ikkala chekka kun ham kiradi; round — yozgi/qishki vaqt almashgan kunlarda sutka 23/25 soat bo'lishi uchun
+function _daysInRange(from, to) { return Math.round((_parseIsoDay(to) - _parseIsoDay(from)) / 86400000) + 1; }
+function _todayIso() { return _isoDay(new Date()); }
+const PERIOD_MAX_DAYS = 366;  // server ham shundan uzun oraliqni rad etadi
+
+// Tezkor tanlovlar: oy ({ year, month }) yoki oraliq ({ from, to }) qaytaradi
+const PERIOD_PRESETS = {
+  thisMonth: t => ({ year: t.getFullYear(), month: t.getMonth() + 1 }),
+  lastMonth: t => { const d = new Date(t.getFullYear(), t.getMonth() - 1, 1); return { year: d.getFullYear(), month: d.getMonth() + 1 }; },
+  last7:     t => ({ from: _isoDay(_addDays(t, -6)),  to: _isoDay(t) }),
+  last30:    t => ({ from: _isoDay(_addDays(t, -29)), to: _isoDay(t) }),
+  last90:    t => ({ from: _isoDay(_addDays(t, -89)), to: _isoDay(t) }),
+  thisYear:  t => ({ from: `${t.getFullYear()}-01-01`, to: _isoDay(t) }),
+};
+
+function _setPeriod(p) {
+  if (p.from) {
+    _statsRange = { from: p.from, to: p.to };
+  } else {
+    _statsRange = null;
+    _statsYear = p.year;
+    _statsMonth = p.month;
+  }
+}
+
+function _isCurrentPeriod(p) {
+  return p.from
+    ? !!_statsRange && _statsRange.from === p.from && _statsRange.to === p.to
+    : !_statsRange && _statsYear === p.year && _statsMonth === p.month;
+}
+
+// Tanlangan davrning birinchi va oxirgi kuni (oy rejimida — oyning chegaralari)
+function _periodBounds() {
+  if (_statsRange) return _statsRange;
+  const last = new Date(_statsYear, _statsMonth, 0).getDate();
+  return { from: `${_statsYear}-${_pad2(_statsMonth)}-01`, to: `${_statsYear}-${_pad2(_statsMonth)}-${_pad2(last)}` };
+}
+
+function _periodQuery() {
+  return _statsRange
+    ? `date_from=${_statsRange.from}&date_to=${_statsRange.to}`
+    : `year=${_statsYear}&month=${_statsMonth}`;
+}
+
+// "Oktabr 2026" | "5–20-okt, 2026" | "28-sen – 4-okt, 2026" | "15-dek, 2025 – 10-yan, 2026"
+function _periodLabel() {
+  if (!_statsRange) return `${UZ_MONTHS[_statsMonth - 1]} ${_statsYear}`;
+  const a = _parseIsoDay(_statsRange.from), b = _parseIsoDay(_statsRange.to);
+  if (_statsRange.from === _statsRange.to) return `${formatDate(a)}, ${a.getFullYear()}`;
+  if (a.getFullYear() !== b.getFullYear()) return `${formatDate(a)}, ${a.getFullYear()} – ${formatDate(b)}, ${b.getFullYear()}`;
+  if (a.getMonth() === b.getMonth()) return `${a.getDate()}–${formatDate(b)}, ${b.getFullYear()}`;
+  return `${formatDate(a)} – ${formatDate(b)}, ${b.getFullYear()}`;
+}
+
+// Kelajakka o'tilmaydi: davr bugungi kunni (yoki joriy oyni) o'z ichiga olsa "keyingi" o'chiq
+function _isPeriodAtPresent() {
+  return _periodBounds().to >= _todayIso();
+}
+
+function _updatePeriodLabel() {
+  const label = _periodLabel();
   const el = document.getElementById('monthNavLabel');
-  if (el) el.textContent = `${UZ_MONTHS[_statsMonth - 1]} ${_statsYear}`;
+  if (el) el.textContent = label;
   const sub = document.getElementById('txPageMonth');
-  if (sub) sub.textContent = `${UZ_MONTHS[_statsMonth - 1]} ${_statsYear}`;
+  if (sub) sub.textContent = label;
+  const next = document.getElementById('btnNextMonth');
+  if (next) next.disabled = _isPeriodAtPresent();
+  if (_txPageMode === 'stats') {
+    document.getElementById('txPageTitleText').textContent = _statsRange ? 'Statistika' : 'Oylik Statistika';
+  }
 }
 
-async function _loadMonthlyStats() {
-  _updateMonthNavLabel();
+// ‹ › — oy rejimida bir oyga, oraliqda esa shu oraliq uzunligiga suradi ("Oxirgi 7 kun" -> undan oldingi 7 kun)
+function _shiftPeriod(dir) {
+  if (dir > 0 && _isPeriodAtPresent()) return;
+  if (_statsRange) {
+    const len = _daysInRange(_statsRange.from, _statsRange.to);
+    _statsRange = {
+      from: _isoDay(_addDays(_parseIsoDay(_statsRange.from), dir * len)),
+      to:   _isoDay(_addDays(_parseIsoDay(_statsRange.to), dir * len)),
+    };
+  } else {
+    const d = new Date(_statsYear, _statsMonth - 1 + dir, 1);
+    _statsYear = d.getFullYear();
+    _statsMonth = d.getMonth() + 1;
+  }
+  _onPeriodChanged();
+}
 
+function _onPeriodChanged() {
+  _setPeriodPanel(false);
+  resetListPage('tx');
+  _loadMonthlyStats();
+}
+
+// Davr paneli: ochilganda maydonlar joriy davr bilan to'ldiriladi va mos tezkor tanlov belgilanadi
+function _setPeriodPanel(open, { returnFocus = false } = {}) {
+  const panel = document.getElementById('periodPanel');
+  const btn = document.getElementById('btnPeriod');
+  if (!panel || !btn || panel.hidden === !open) return;
+  panel.hidden = !open;
+  btn.setAttribute('aria-expanded', String(open));
+  if (!open) {
+    if (returnFocus) btn.focus();
+    return;
+  }
+  const today = new Date();
+  const todayIso = _isoDay(today);
+  const { from, to } = _periodBounds();
+  const fromEl = document.getElementById('periodFrom');
+  const toEl = document.getElementById('periodTo');
+  fromEl.max = toEl.max = todayIso;
+  fromEl.value = from;
+  toEl.value = to > todayIso ? todayIso : to;
+  document.getElementById('periodRangeError').textContent = '';
+  panel.querySelectorAll('[data-period-preset]').forEach(b => {
+    b.setAttribute('aria-pressed', String(_isCurrentPeriod(PERIOD_PRESETS[b.dataset.periodPreset](today))));
+  });
+  (panel.querySelector('[aria-pressed="true"]') || panel.querySelector('[data-period-preset]')).focus();
+}
+
+document.getElementById('btnPeriod')?.addEventListener('click', () => {
+  _setPeriodPanel(document.getElementById('periodPanel').hidden);
+});
+document.getElementById('periodPanel')?.addEventListener('click', (e) => {
+  const preset = e.target.closest('[data-period-preset]');
+  if (!preset) return;
+  _setPeriod(PERIOD_PRESETS[preset.dataset.periodPreset](new Date()));
+  _onPeriodChanged();
+});
+document.getElementById('formPeriodRange')?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const err = document.getElementById('periodRangeError');
+  let from = document.getElementById('periodFrom').value;
+  let to = document.getElementById('periodTo').value;
+  if (!from || !to) { err.textContent = 'Ikkala sanani ham tanlang'; return; }
+  if (from > to) [from, to] = [to, from]; // "YYYY-MM-DD" satrlari sana tartibida solishtiriladi
+  if (to > _todayIso()) { err.textContent = "Kelajakdagi sanani tanlab bo'lmaydi"; return; }
+  if (_daysInRange(from, to) > PERIOD_MAX_DAYS) { err.textContent = 'Oraliq 1 yildan oshmasligi kerak'; return; }
+  _setPeriod({ from, to });
+  _onPeriodChanged();
+});
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#periodNav')) _setPeriodPanel(false);
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape' || document.getElementById('periodPanel')?.hidden !== false) return;
+  e.preventDefault(); // Esc faqat davr panelini yopadi, bo'lim sahifasini emas
+  _setPeriodPanel(false, { returnFocus: true });
+});
+
+async function _fetchPeriodStats(query) {
   try {
-    const res = await fetch(`${API_BASE}/stats/monthly/?year=${_statsYear}&month=${_statsMonth}`);
-    if (!res.ok) { throw new Error('stats fetch failed'); }
-    _statsData = await res.json();
+    const res = await fetch(`${API_BASE}/stats/monthly/?${query}`);
+    if (!res.ok) throw new Error(`status ${res.status}`);
+    return await res.json();
   } catch (e) {
     console.error('Monthly stats error:', e);
-    _statsData = null;
+    return null;
+  }
+}
+
+// Tanlangan davrning hamma operatsiyalari (bosh sahifadagi oxirgi 15 tasi emas)
+async function _fetchPeriodOps(q) {
+  try {
+    const [expenses, incomes, transfers] = await Promise.all([
+      _fetchAllPages(`${API_BASE}/expenses/?${q}`),
+      _fetchAllPages(`${API_BASE}/incomes/?${q}`),
+      _fetchAllPages(`${API_BASE}/transfers/?${q}`),
+    ]);
+    return { expenses, incomes, transfers };
+  } catch (e) {
+    console.error('Month operations error:', e);
+    return { error: true };
+  }
+}
+
+// silent: ro'yxat yangilanayotganda eskisi ko'rinib turadi ("Yuklanmoqda..." chiqib, sahifa sakramasligi uchun)
+async function _loadMonthlyStats({ silent = false } = {}) {
+  _updatePeriodLabel();
+  const seq = ++_monthLoadSeq;
+  const query = _periodQuery();
+
+  if (_txPageMode === 'transactions') {
+    if (!silent || !_monthOps) {
+      _monthOps = null;
+      renderTxPageList(); // "Yuklanmoqda..."
+    }
+    const ops = await _fetchPeriodOps(query);
+    if (seq !== _monthLoadSeq) return; // shu orada boshqa davr tanlangan
+    _monthOps = ops;
+    renderTxPageList();
+    return;
   }
 
+  const stats = await _fetchPeriodStats(query);
+  if (seq !== _monthLoadSeq) return;
+  _statsData = stats;
   renderMonthlyTrendChart((_statsData && _statsData.daily_trend) || []);
   _renderStatsCategoryList('expense');
   _renderStatsCategoryList('income');
-  renderTxPageList();
+  warnMissingRates(_statsData && _statsData.missing_rates);
 }
 
 // ── Oylik chiziqli diagramma (Kirim/Chiqim trendi) ────────────
@@ -1358,7 +2417,7 @@ function renderMonthlyTrendChart(dailyTrend) {
 
   const total = dailyTrend.reduce((sum, d) => sum + (d.income || 0) + (d.expense || 0), 0);
   if (!dailyTrend.length || total === 0) {
-    wrapper.innerHTML = `<div class="weekly-rank-empty">Bu oy uchun ma'lumot yo'q</div>`;
+    wrapper.innerHTML = `<div class="weekly-rank-empty">${_statsRange ? 'Bu davr' : 'Bu oy'} uchun ma'lumot yo'q</div>`;
     return;
   }
 
@@ -1376,11 +2435,14 @@ function renderMonthlyTrendChart(dailyTrend) {
   const yFor = (val) => pT + chartH - (val / maxVal) * chartH;
   const baseY = yFor(0);
 
+  // Oraliq bir necha oyni qamrasa faqat kun raqami chalkashtiradi (1, 15, 1 ...) — "5-okt" ko'rinishida yoziladi
+  const multiMonth = !!dailyTrend[0].date && dailyTrend[0].date.slice(0, 7) !== dailyTrend[n - 1].date.slice(0, 7);
   const labelStep = Math.ceil(n / 6);
   let xLabelsSvg = '';
   dailyTrend.forEach((d, i) => {
     if (i % labelStep === 0 || i === n - 1) {
-      xLabelsSvg += `<text x="${xFor(i)}" y="${height - 6}" class="trend-axis-label" text-anchor="middle">${d.day}</text>`;
+      const text = multiMonth ? formatDate(_parseIsoDay(d.date)) : d.day;
+      xLabelsSvg += `<text x="${xFor(i)}" y="${height - 6}" class="trend-axis-label" text-anchor="middle">${text}</text>`;
     }
   });
 
@@ -1417,7 +2479,9 @@ function _renderStatsCategoryList(type) {
   const cats  = (_statsData && (isExp ? _statsData.category_expenses : _statsData.category_incomes)) || [];
   const total = (_statsData && (isExp ? _statsData.total_expense : _statsData.total_income)) || 0;
 
-  if (totalEl) totalEl.textContent = formatNumber(total) + ' UZS';
+  // Server barcha valyutalarni Markaziy bank kursi bo'yicha shu valyutaga (so'm) o'girib, saralab beradi
+  const cur = (_statsData && _statsData.stats_currency) || 'UZS';
+  if (totalEl) totalEl.textContent = `${formatNumber(total)} ${cur}`;
 
   if (cats.length === 0) {
     container.innerHTML = `<div style="color:var(--text-subtle);font-size:0.82rem;padding:8px 0;">Ma'lumot yo'q</div>`;
@@ -1434,7 +2498,7 @@ function _renderStatsCategoryList(type) {
     <div class="stats-cat-row">
       <div class="stats-cat-header">
         <span class="stats-cat-name">${escapeHtml(c.name)}</span>
-        <span class="stats-cat-meta">${formatNumber(c.total)} UZS <span class="stats-cat-percent">(${c.percent}%)</span></span>
+        <span class="stats-cat-meta">${statsOriginalAmountHtml(c.parts, cur)}${formatNumber(c.total)} ${escapeHtml(cur)} <span class="stats-cat-percent">(${c.percent}%)</span></span>
       </div>
       <div class="stats-progress-track">
         <div class="stats-progress-fill" style="width:${Math.max(2, c.percent)}%;background:${GRAD[i % GRAD.length]};"></div>
@@ -1448,23 +2512,37 @@ function renderTxPageList() {
   const container = document.getElementById('txPageList');
   if (!container) return;
 
-  const list = _buildTxList(_txPageFilter);
+  if (!_monthOps) {
+    clearListPager('tx');
+    container.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-subtle);font-size:0.88rem;">Yuklanmoqda...</div>`;
+    return;
+  }
+  if (_monthOps.error) {
+    clearListPager('tx');
+    container.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-subtle);font-size:0.88rem;">
+      Operatsiyalarni yuklab bo'lmadi. <button type="button" class="btn btn-subtle btn-xs" data-action="loadMonthlyStats">Qayta urinish</button></div>`;
+    return;
+  }
+
+  const list = _buildTxList(_txPageFilter, _monthOps);
 
   if (list.length === 0) {
+    clearListPager('tx');
     container.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-subtle);font-size:0.88rem;">Bu filtr bo'yicha operatsiyalar yo'q</div>`;
     return;
   }
 
-  // Group by date
+  // Sana bo'yicha guruhlar faqat joriy sahifadagi yozuvlardan tuziladi; kun ikki sahifaga bo'linsa,
+  // sarlavhasi keyingi sahifada ham chiqadi
   const groups = {};
-  list.forEach(item => {
+  pageSlice('tx', list).forEach(item => {
     const d = new Date(item.date);
     const today     = new Date();
     const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
     let label;
     if (d.toDateString() === today.toDateString())     label = 'Bugun';
     else if (d.toDateString() === yesterday.toDateString()) label = 'Kecha';
-    else label = d.toLocaleDateString('uz-UZ', { day: 'numeric', month: 'long' });
+    else label = formatUzDate(d);
     if (!groups[label]) groups[label] = [];
     groups[label].push(item);
   });
@@ -1477,26 +2555,17 @@ function renderTxPageList() {
   container.innerHTML = html;
 }
 
-// Oy navigatsiyasi
-document.getElementById('btnPrevMonth')?.addEventListener('click', () => {
-  _statsMonth--;
-  if (_statsMonth < 1) { _statsMonth = 12; _statsYear--; }
-  _loadMonthlyStats();
-});
-
-document.getElementById('btnNextMonth')?.addEventListener('click', () => {
-  const now = new Date();
-  if (_statsYear === now.getFullYear() && _statsMonth >= now.getMonth() + 1) return; // Kelajakka o'tma
-  _statsMonth++;
-  if (_statsMonth > 12) { _statsMonth = 1; _statsYear++; }
-  _loadMonthlyStats();
-});
+// Davr navigatsiyasi (‹ ›)
+document.getElementById('btnPrevMonth')?.addEventListener('click', () => _shiftPeriod(-1));
+document.getElementById('btnNextMonth')?.addEventListener('click', () => _shiftPeriod(1));
 
 // Tab switching inside tx page
 document.addEventListener('click', e => {
   const tab = e.target.closest('#txPageTabs .tx-page-tab');
   if (!tab) return;
   _txPageFilter = tab.dataset.filter;
+  resetListPage('tx');
+  setNavActive(_txPageFilter);
   document.querySelectorAll('#txPageTabs .tx-page-tab').forEach(b => b.classList.remove('active'));
   tab.classList.add('active');
   renderTxPageList();
@@ -1526,7 +2595,8 @@ function openTxDetail(key, type, id) {
 
   // Amount
   const amtEl = document.getElementById('detailAmountBig');
-  amtEl.textContent = sign + formatNumber(raw.summa);
+  amtEl.textContent = sign + ((type === 'transfer' && transferAmountText(raw))
+    || amountWithCurrency(raw.summa, type === 'transfer' ? raw.from_currency : raw.wallet_currency));
   amtEl.className = `detail-amount-big ${type}`;
 
   // Rows
@@ -1543,10 +2613,7 @@ function openTxDetail(key, type, id) {
     `);
   };
 
-  const fullDate = raw.date ? new Date(raw.date).toLocaleString('uz-UZ', {
-    year: 'numeric', month: 'long', day: 'numeric',
-    hour: '2-digit', minute: '2-digit'
-  }) : '';
+  const fullDate = formatUzDate(raw.date, { year: true });
 
   if (type === 'expense') {
     addRow(icon('tag'), 'Kategoriya', raw.category_name);
@@ -1562,20 +2629,20 @@ function openTxDetail(key, type, id) {
   } else if (type === 'transfer') {
     addRow(icon('up'), 'Chiqdi', raw.from_wallet_name);
     addRow(icon('down'), 'Tushdi', raw.to_wallet_name);
+    if (transferAmountText(raw)) addRow(icon('transfer'), 'Kurs', formatRateText(raw.from_currency, raw.to_currency, Number(raw.rate)));
     addRow(icon('note'), 'Izoh', raw.description);
     addRow(icon('calendar'), 'Sana', fullDate);
   }
 
-  if (raw.created_at) {
-    const created = new Date(raw.created_at).toLocaleString('uz-UZ', {
-      year: 'numeric', month: 'short', day: 'numeric',
-      hour: '2-digit', minute: '2-digit'
-    });
-    addRow(icon('clock'), 'Qo\'shildi', created);
-  }
+  addRow(icon('clock'), 'Qo\'shildi', formatUzDate(raw.created_at, { year: true, time: true }));
 
   document.getElementById('detailRows').innerHTML = rows.join('') ||
     '<p style="color:var(--text-subtle); font-size:0.83rem;">Qo\'shimcha ma\'lumot yo\'q</p>';
+
+  document.getElementById('detailEditBtn').onclick = () => {
+    closeTxDetail();
+    openTxEdit(type, id, raw);
+  };
 
   // Delete button
   const delBtn = document.getElementById('detailDeleteBtn');
@@ -1586,14 +2653,14 @@ function openTxDetail(key, type, id) {
 
   // Show backdrop
   document.getElementById('txDetailBackdrop').classList.add('active');
-  document.body.style.overflow = 'hidden';
 }
 
 function closeTxDetail(event) {
   if (event && event.target !== document.getElementById('txDetailBackdrop')) return;
   document.getElementById('txDetailBackdrop').classList.remove('active');
-  document.body.style.overflow = '';
 }
+// Qorong'i fon bosilsa oyna yopiladi (oyna ichidagi bosishlar e'tiborsiz qoladi)
+document.getElementById('txDetailBackdrop')?.addEventListener('click', closeTxDetail);
 
 
 // Backenddagi DEBT_DUE_SOON_DAYS bilan mos bo'lishi kerak (views.py)
@@ -1613,7 +2680,7 @@ function _debtUrgency(d) {
 function _debtDueBadge(d) {
   if (!d.due_date) return '';
   const urgency = _debtUrgency(d);
-  const label = urgency === 'overdue' ? `Muddati o'tgan: ${d.due_date}` : `Muddat: ${d.due_date}`;
+  const label = urgency === 'overdue' ? `Muddati o'tgan: ${formatDueDate(d)}` : `Muddat: ${formatDueDate(d)}`;
   return `· <span class="debt-due-badge debt-due-${urgency}">${label}</span>`;
 }
 
@@ -1627,34 +2694,49 @@ function renderDebts() {
     return;
   }
 
-  const sorted = [...state.debts].sort((a, b) => DEBT_URGENCY_RANK[_debtUrgency(a)] - DEBT_URGENCY_RANK[_debtUrgency(b)]);
+  // Bosh sahifada nechta hamyon bo'lsa, shuncha qarz (yonidagi "Hamyonlarim" kartochkasi bilan bo'yi teng turadi).
+  // Avval to'lanmaganlar (shoshilinchi tepada, keyin yangi yozilgani), joy qolsa — yopilganlar, oxirgi
+  // harakati (to'lov) bo'yicha yangisi birinchi. Hammasi "Qarzlar tarixi"da
+  const limit = Math.max(1, Math.min(state.wallets.length, HOME_WALLETS_LIMIT));
+  const open = state.debts.filter(d => !d.is_settled).sort((a, b) =>
+    DEBT_URGENCY_RANK[_debtUrgency(a)] - DEBT_URGENCY_RANK[_debtUrgency(b)]
+    || new Date(b.created_at) - new Date(a.created_at));
+  const settled = state.debts.filter(d => d.is_settled)
+    .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+  const latest = [...open, ...settled].slice(0, limit);
 
-  container.innerHTML = sorted.map(d => {
+  container.innerHTML = latest.map(d => {
     const isGive = d.debt_type === 'give';
     const typeLabel = isGive ? 'Berdim' : 'Oldim';
     const typeColor = isGive ? 'var(--emerald)' : 'var(--amber)';
 
     return `
       <div class="debt-compact-card">
-        <div>
+        <div class="debt-compact-info">
           <div style="font-weight: 500; font-size: 0.92rem; color: var(--text-main);">
             ${escapeHtml(d.person_name)}
             <span style="font-size: 0.72rem; padding: 2px 6px; border-radius: 6px; background: var(--bg-sunken); color: ${typeColor}; margin-left: 6px;">${typeLabel}</span>
           </div>
           <div style="font-size: 0.74rem; color: var(--text-subtle); margin-top: 2px;">
-            Qoldiq: <b style="color:var(--text-main);">${formatNumber(d.remaining_summa)} UZS</b> ${_debtDueBadge(d)}
+            Qoldiq: <b style="color:var(--text-main);">${formatNumber(d.remaining_summa)} ${debtCurrency(d)}</b> ${_debtDueBadge(d)}
           </div>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
+        <div class="debt-compact-actions" style="display: flex; align-items: center; gap: 8px;">
           ${!d.is_settled ? `
-            <button class="btn btn-subtle btn-xs" onclick="openRepayModal(${d.id})">To'lash</button>
+            <button class="btn btn-subtle btn-xs" data-action="openRepayModal" data-args="${actionArgs(d.id)}">To'lash</button>
           ` : `<span style="font-size: 0.75rem; color: var(--emerald);">Yopildi ${icon('check')}</span>`}
-          <button class="btn-icon" style="width: 24px; height: 24px; font-size: 0.75rem;" title="O'chirish" onclick="deleteDebt(${d.id})">${icon('trash')}</button>
+          <button class="btn-icon" style="width: 24px; height: 24px; font-size: 0.75rem;" title="O'chirish" data-action="deleteDebt" data-args="${actionArgs(d.id)}">${icon('trash')}</button>
         </div>
       </div>
     `;
   }).join('');
 }
+
+// Qarzlar kartochkasining istalgan joyiga bosilsa daftar ochiladi (ichidagi tugmalar o'z ishini qiladi)
+document.getElementById('debtsCard')?.addEventListener('click', (e) => {
+  if (e.target.closest('button, a, input, select')) return;
+  openDebtsPage();
+});
 
 // ==========================================
 // DROPDOWN POPULATORS
@@ -1675,13 +2757,7 @@ function populateWalletDropdowns() {
     if (!el) return;
 
     const currentVal = el.value;
-    let optionsHtml = '';
-
-    if (id === 'debtWalletSelect') {
-      optionsHtml += '<option value="">-- Hamyonsiz (Qo\'lma-qo\'l / Naqd) --</option>';
-    }
-
-    optionsHtml += state.wallets.map(w => `
+    const optionsHtml = state.wallets.map(w => `
       <option value="${w.id}">${escapeHtml(w.name)} (${formatMoney(w.summa, w.currency)})</option>
     `).join('');
 
@@ -1696,7 +2772,27 @@ function populateWalletDropdowns() {
 
   updateSingleWalletFieldVisibility();
   updateTransferButtonVisibility();
+  updateDebtCurrencyField();
+  updateAmountLabels();
 }
+
+// Summa yorlig'iga tanlangan hamyon valyutasi qo'shiladi: "Summa (USD) *"
+const AMOUNT_LABELS = [
+  { selectId: 'expenseWalletSelect', labelId: 'expenseSummaLabel', text: 'Summa' },
+  { selectId: 'incomeWalletSelect', labelId: 'incomeSummaLabel', text: 'Kirim Summasi' },
+];
+function updateAmountLabels() {
+  AMOUNT_LABELS.forEach(({ selectId, labelId, text }) => {
+    const label = document.getElementById(labelId);
+    const select = document.getElementById(selectId);
+    if (!label || !select) return;
+    const wallet = state.wallets.find(w => String(w.id) === select.value);
+    label.textContent = wallet ? `${text} (${wallet.currency}) *` : `${text} *`;
+  });
+}
+AMOUNT_LABELS.forEach(({ selectId }) => {
+  document.getElementById(selectId)?.addEventListener('change', updateAmountLabels);
+});
 
 // Hamyon bitta bo'lsa, "Qaysi hamyondan/ga?" savolini yashiramiz — tanlov qilib
 // o'tirishning hojati yo'q, yagona hamyon avtomatik tanlanadi.
@@ -1728,26 +2824,220 @@ function updateTransferButtonVisibility() {
   grid.classList.toggle('cols-3', !hasEnoughWallets);
 }
 
+// ── Toifalarni sozlash: qo'shish / o'chirish / qaytarish ──────────
+const CATEGORY_API = { expense: 'expense-categories', income: 'categories' };
+let _catKind = 'expense';
+let _catItems = [];
+
+function openCategoryManager(kind) {
+  _catKind = kind;
+  document.querySelectorAll('#catKindTabs .cat-tab').forEach(b => b.classList.toggle('active', b.dataset.kind === kind));
+  document.getElementById('formAddCategory').reset();
+  openModal('modalCategories');
+  loadCategoryManager();
+}
+
+async function loadCategoryManager() {
+  const kind = _catKind;
+  let items = [];
+  try {
+    const res = await fetch(`${API_BASE}/${CATEGORY_API[kind]}/?include_hidden=1`);
+    if (!res.ok) throw new Error(`status ${res.status}`);
+    const data = await res.json();
+    items = data.results || data;
+  } catch (err) {
+    console.error('Category manager fetch error:', err);
+    showToast("Toifalarni yuklab bo'lmadi", 'error');
+  }
+  if (kind !== _catKind) return; // foydalanuvchi boshqa tabga o'tib ketgan
+  _catItems = items;
+  renderCategoryManager();
+}
+
+function renderCategoryManager() {
+  const visible = _catItems.filter(c => !c.hidden);
+  const hidden = _catItems.filter(c => c.hidden);
+
+  // Nomning o'zi tahrirlanadi: bosib yoziladi, Enter yoki tashqariga bosish — saqlash, Esc — bekor qilish
+  document.getElementById('categoryManagerList').innerHTML = visible.length
+    ? visible.map(c => `
+      <div class="cat-row">
+        <input type="text" class="cat-name-input" data-cat-name="${c.id}" value="${escapeHtml(c.name)}"
+               maxlength="255" spellcheck="false" autocomplete="off" aria-label="Toifa nomi" title="Nomini o'zgartirish uchun bosing">
+        ${c.is_custom ? '<span class="cat-badge">Mening toifam</span>' : ''}
+        <button type="button" class="btn-icon" title="O'chirish" data-cat-delete="${c.id}">${icon('trash')}</button>
+      </div>`).join('')
+    : `<div class="cat-empty">Toifalar yo'q. Yuqoridan yangisini qo'shing.</div>`;
+
+  document.getElementById('hiddenCategoriesBox').hidden = hidden.length === 0;
+  document.getElementById('hiddenCatCount').textContent = hidden.length;
+  document.getElementById('hiddenCategoryList').innerHTML = hidden.map(c => `
+    <div class="cat-row">
+      <span class="cat-name">${escapeHtml(c.name)}</span>
+      <button type="button" class="btn btn-subtle btn-xs" data-cat-restore="${c.id}">Qaytarish</button>
+    </div>`).join('');
+}
+
+// Sozlash oynasi va Kirim/Harajat formalaridagi tanlagich birga yangilanadi
+function refreshCategoryViews() {
+  return Promise.all([loadCategoryManager(), fetchCategories()]);
+}
+
+document.getElementById('catKindTabs')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('.cat-tab');
+  if (!btn || btn.dataset.kind === _catKind) return;
+  _catKind = btn.dataset.kind;
+  document.querySelectorAll('#catKindTabs .cat-tab').forEach(b => b.classList.toggle('active', b === btn));
+  loadCategoryManager();
+});
+
+onSubmitOnce('formAddCategory', async (e) => {
+  e.preventDefault();
+  const input = document.getElementById('newCategoryName');
+  const name = input.value.trim();
+  if (!name) return;
+  try {
+    const res = await fetch(`${API_BASE}/${CATEGORY_API[_catKind]}/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      input.value = '';
+      showToast(`«${name}» toifasi qo'shildi`);
+      await refreshCategoryViews();
+    } else {
+      showToast(extractErrorMessage(data, "Toifa qo'shishda xatolik"), 'error');
+    }
+  } catch (err) {
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
+  }
+});
+
+document.getElementById('modalCategories')?.addEventListener('click', async (e) => {
+  const delBtn = e.target.closest('[data-cat-delete]');
+  const restoreBtn = e.target.closest('[data-cat-restore]');
+
+  if (delBtn) {
+    const cat = _catItems.find(c => c.id === Number(delBtn.dataset.catDelete));
+    if (!cat) return;
+    const message = cat.is_custom
+      ? `«${cat.name}» toifasi o'chiriladi. Oldingi operatsiyalaringizda nomi saqlanib qoladi.`
+      : `«${cat.name}» umumiy toifa faqat sizning ro'yxatingizdan olib tashlanadi. Boshqa foydalanuvchilarga ta'sir qilmaydi, keyin qaytarishingiz mumkin.`;
+    if (!(await confirmDelete(message))) return;
+    try {
+      const res = await fetch(`${API_BASE}/${CATEGORY_API[_catKind]}/${cat.id}/`, { method: 'DELETE' });
+      if (res.ok) {
+        showToast("Toifa o'chirildi");
+        await refreshCategoryViews();
+      } else {
+        showToast(extractErrorMessage(await res.json().catch(() => ({})), "Toifani o'chirishda xatolik"), 'error');
+      }
+    } catch (err) {
+      showToast(NETWORK_ERROR_MESSAGE, 'error');
+    }
+  }
+
+  if (restoreBtn) {
+    try {
+      const res = await fetch(`${API_BASE}/${CATEGORY_API[_catKind]}/${Number(restoreBtn.dataset.catRestore)}/restore/`, { method: 'POST' });
+      if (res.ok) {
+        showToast('Toifa qaytarildi');
+        await refreshCategoryViews();
+      } else {
+        showToast(extractErrorMessage(await res.json().catch(() => ({})), 'Toifani qaytarishda xatolik'), 'error');
+      }
+    } catch (err) {
+      showToast(NETWORK_ERROR_MESSAGE, 'error');
+    }
+  }
+});
+
+// ── Toifa nomini joyida o'zgartirish (tugmasiz) ──────────────────
+// Umumiy toifa nomini oddiy foydalanuvchi o'zgartirsa, server unga shaxsiy nusxa yaratadi —
+// boshqa foydalanuvchilarda nom o'zgarmaydi (views.py: PersonalCategoryMixin._personalize_global)
+async function saveCategoryName(input) {
+  const id = Number(input.dataset.catName);
+  const cat = _catItems.find(c => c.id === id);
+  if (!cat || input.dataset.saving) return;
+  const name = input.value.trim();
+  if (!name || name === cat.name) {
+    input.value = cat.name; // bo'sh yoki o'zgarmagan nom — eski holiga qaytadi
+    return;
+  }
+
+  input.dataset.saving = '1';
+  input.classList.add('saving');
+  try {
+    const res = await fetch(`${API_BASE}/${CATEGORY_API[_catKind]}/${id}/`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      showToast(`Toifa nomi «${name}» ga o'zgartirildi`);
+      // Eski operatsiyalar va formalardagi tanlagichlarda ham yangi nom ko'rinishi uchun hammasi yangilanadi
+      await Promise.all([loadCategoryManager(), refreshAll()]);
+    } else {
+      showToast(extractErrorMessage(data, "Toifa nomini o'zgartirishda xatolik"), 'error');
+      input.value = cat.name;
+    }
+  } catch (err) {
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
+    input.value = cat.name;
+  } finally {
+    delete input.dataset.saving;
+    input.classList.remove('saving');
+  }
+}
+
+const categoryList = document.getElementById('categoryManagerList');
+// "change" maydondan chiqilganda (Enter yoki tashqariga bosish) va qiymat o'zgargan bo'lsagina ishlaydi
+categoryList?.addEventListener('change', (e) => {
+  if (e.target.matches('[data-cat-name]')) saveCategoryName(e.target);
+});
+categoryList?.addEventListener('keydown', (e) => {
+  if (!e.target.matches('[data-cat-name]')) return;
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    e.target.blur();
+  } else if (e.key === 'Escape') {
+    // Oyna yopilmasin — faqat tahrir bekor qilinadi
+    e.stopPropagation();
+    const cat = _catItems.find(c => c.id === Number(e.target.dataset.catName));
+    if (cat) e.target.value = cat.name;
+    e.target.blur();
+  }
+});
+
 function populateExpenseCategoryDropdown() {
   const el = document.getElementById('expenseCategorySelect');
   if (!el) return;
+  const previous = el.value;
   const options = [
     '<option value="" disabled selected>-- Harajat toifasini tanlang --</option>',
     ...state.expenseCategories.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`),
     '<option value="__custom__">Boshqa (o\'zingiz yozing...)</option>'
   ];
   el.innerHTML = options.join('');
+  if (previous && [...el.options].some(o => o.value === previous)) el.value = previous;
+  if (el._csSync) el._csSync();
 }
 
 function populateIncomeCategoryDropdown() {
   const el = document.getElementById('incomeCategorySelect');
   if (!el) return;
+  const previous = el.value;
   const options = [
     '<option value="" disabled selected>-- Daromad manbayini tanlang --</option>',
     ...state.incomeCategories.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`),
     '<option value="__custom__">Boshqa (o\'zingiz yozing...)</option>'
   ];
   el.innerHTML = options.join('');
+  if (previous && [...el.options].some(o => o.value === previous)) el.value = previous;
+  if (el._csSync) el._csSync();
 }
 
 // Custom category change listeners
@@ -1802,8 +3092,125 @@ function extractErrorMessage(err, fallback = 'Xatolik yuz berdi') {
   return fallback;
 }
 
+// Yangi toifa yaratildi, lekin operatsiya hali saqlanmagan (masalan balans yetmasligi mumkin) —
+// tanlagich yangi toifaga o'tkaziladi, qayta yuborishda toifa ikkinchi marta yaratilmaydi
+function selectCreatedCategory(selectId, categoryId) {
+  const select = document.getElementById(selectId);
+  select.value = String(categoryId);
+  // "change" "Boshqa" maydonini yashiradi va tozalaydi; _csSync ko'rinadigan tanlagichni yangilaydi
+  select.dispatchEvent(new Event('change', { bubbles: true }));
+  if (select._csSync) select._csSync();
+}
+
+// ── Kirim / harajat / o'tkazma: qo'shish va tahrirlash bitta oynada ──────────
+// Tahrirlashda oyna eski qiymatlar bilan ochiladi, form.dataset.editId bo'ladi va saqlash PATCH yuboradi.
+// Balans server tomonida sof farq bilan to'g'rilanadi (models.py: apply_wallet_changes)
+const TX_FORMS = {
+  expense:  { modal: 'modalExpense',  form: 'formAddExpense',  api: 'expenses',
+              addTitle: 'Harajat Kiritish', editTitle: 'Harajatni tahrirlash', addSubmit: 'Saqlash' },
+  income:   { modal: 'modalIncome',   form: 'formAddIncome',   api: 'incomes',
+              addTitle: 'Daromad Kiritish', editTitle: 'Daromadni tahrirlash', addSubmit: 'Kirimni Saqlash' },
+  transfer: { modal: 'modalTransfer', form: 'formAddTransfer', api: 'transfers',
+              addTitle: "Hamyonlararo O'tkazma", editTitle: "O'tkazmani tahrirlash", addSubmit: "O'tkazish" },
+};
+// Tahrirlanayotgan yozuv: { type, id, raw } yoki null (yangi qo'shish)
+let _txEdit = null;
+
+// Saqlangan vaqt (ISO) -> <input type="date"> qiymati, foydalanuvchining mahalliy kunida
+function isoToDateInput(iso) {
+  const d = new Date(iso);
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 10);
+}
+
+function setTxFormMode(type, editing) {
+  const cfg = TX_FORMS[type];
+  const modal = document.getElementById(cfg.modal);
+  modal.querySelector('[data-tx-title]').textContent = editing ? cfg.editTitle : cfg.addTitle;
+  modal.querySelector('[data-tx-submit]').textContent = editing ? "O'zgarishlarni saqlash" : cfg.addSubmit;
+}
+
+// Tanlagichda yo'q qiymat (o'chirilgan toifa yoki a'zo) — eski nomi bilan vaqtincha qo'shiladi, aks holda
+// tahrir oynasida bo'sh ko'rinib, foydalanuvchi bilmasdan boshqasiga almashtirib yuborardi
+function selectValueOrKeep(selectId, value, label) {
+  const el = document.getElementById(selectId);
+  if (!el) return;
+  const v = value == null ? '' : String(value);
+  if (v && ![...el.options].some(o => o.value === v)) {
+    el.add(new Option(label || '—', v), el.options[1] || null);
+  }
+  el.value = v;
+  el.dispatchEvent(new Event('change', { bubbles: true }));
+  if (el._csSync) el._csSync();
+}
+
+function openTxEdit(type, id, raw) {
+  const cfg = TX_FORMS[type];
+  const form = document.getElementById(cfg.form);
+  form.reset();
+  _txEdit = { type, id, raw };
+  form.dataset.editId = id;
+
+  if (type === 'expense') {
+    document.getElementById('expenseSumma').value = raw.summa;
+    selectValueOrKeep('expenseWalletSelect', raw.wallet, raw.wallet_name);
+    selectValueOrKeep('expenseCategorySelect', raw.category, raw.category_name);
+    selectValueOrKeep('expenseMemberSelect', raw.member, raw.member_name);
+    document.getElementById('expenseDate').value = isoToDateInput(raw.date);
+    document.getElementById('expenseDescription').value = raw.description || '';
+  } else if (type === 'income') {
+    document.getElementById('incomeSumma').value = raw.summa;
+    selectValueOrKeep('incomeWalletSelect', raw.wallet, raw.wallet_name);
+    selectValueOrKeep('incomeCategorySelect', raw.category, raw.category_name);
+    document.getElementById('incomeDate').value = isoToDateInput(raw.date);
+    document.getElementById('incomeDescription').value = raw.description || '';
+  } else {
+    selectValueOrKeep('transferFromWallet', raw.from_wallet, raw.from_wallet_name);
+    selectValueOrKeep('transferToWallet', raw.to_wallet, raw.to_wallet_name);
+    document.getElementById('transferSumma').value = raw.summa;
+    document.getElementById('transferDescription').value = raw.description || '';
+  }
+  setTxFormMode(type, true);
+  openModal(cfg.modal);
+}
+
+// Oyna yopilganda tahrir rejimi tugaydi: keyingi "Kirim"/"Harajat" bosilishi bo'sh forma bilan ochilsin
+Object.entries(TX_FORMS).forEach(([type, cfg]) => {
+  const modal = document.getElementById(cfg.modal);
+  if (!modal) return;
+  modal._onClose = () => {
+    const form = document.getElementById(cfg.form);
+    if (!form.dataset.editId) return;
+    delete form.dataset.editId;
+    if (_txEdit?.type === type) _txEdit = null;
+    form.reset();
+    setTxFormMode(type, false);
+    // Tahrir uchun vaqtincha qo'shilgan (o'chirilgan) toifa/a'zo/hamyon variantlari olib tashlansin
+    populateWalletDropdowns();
+    populateExpenseCategoryDropdown();
+    populateIncomeCategoryDropdown();
+    populateExpenseMemberDropdown();
+  };
+});
+
+// Yangi yozuv — POST, tahrir — PATCH. Tahrirda sana o'zgarmagan bo'lsa yuborilmaydi: aks holda asl vaqt
+// (bir kundagi yozuvlar tartibi) hozirgi vaqtga almashib qolardi
+async function sendTx(type, payload, dateVal) {
+  const cfg = TX_FORMS[type];
+  const editing = _txEdit?.type === type ? _txEdit : null;
+  if (dateVal && !(editing && dateVal === isoToDateInput(editing.raw.date))) {
+    payload.date = dateInputToISO(dateVal);
+  }
+  const url = editing ? `${API_BASE}/${cfg.api}/${editing.id}/` : `${API_BASE}/${cfg.api}/`;
+  return fetch(url, {
+    method: editing ? 'PATCH' : 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+}
+
 // 1. Add Expense
-document.getElementById('formAddExpense')?.addEventListener('submit', async (e) => {
+onSubmitOnce('formAddExpense', async (e) => {
   e.preventDefault();
   let categoryId = document.getElementById('expenseCategorySelect').value;
 
@@ -1830,43 +3237,35 @@ document.getElementById('formAddExpense')?.addEventListener('submit', async (e) 
         const catData = await catRes.json();
         categoryId = catData.id;
         await fetchCategories();
+        selectCreatedCategory('expenseCategorySelect', categoryId);
       } else {
         const errData = await catRes.json().catch(() => ({}));
         showToast(extractErrorMessage(errData, 'Kategoriya yaratishda xatolik'), 'error');
         return;
       }
     } catch (err) {
-      showToast('Tarmoq xatosi', 'error');
+      showToast(NETWORK_ERROR_MESSAGE, 'error');
       return;
     }
   }
 
   const payload = {
-    summa: parseInt(document.getElementById('expenseSumma').value),
+    summa: readAmount('expenseSumma'),
     wallet: parseInt(document.getElementById('expenseWalletSelect').value),
     category: parseInt(categoryId),
     description: document.getElementById('expenseDescription').value.trim(),
   };
 
+  // Tahrirda "O'zim uchun" tanlansa a'zo olib tashlanishi kerak — shuning uchun bo'sh qiymat ham null bo'lib yuboriladi
   const memberVal = document.getElementById('expenseMemberSelect')?.value;
-  if (memberVal) {
-    payload.member = parseInt(memberVal);
-  }
+  payload.member = memberVal ? parseInt(memberVal) : null;
 
-  const expDateVal = document.getElementById('expenseDate')?.value;
-  if (expDateVal) {
-    payload.date = new Date(expDateVal).toISOString();
-  }
-
+  const editing = !!_txEdit;
   try {
-    const res = await fetch(`${API_BASE}/expenses/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    const res = await sendTx('expense', payload, document.getElementById('expenseDate')?.value);
 
     if (res.ok) {
-      showToast('Harajat muvaffaqiyatli saqlandi!');
+      showToast(editing ? "Harajat o'zgartirildi" : 'Harajat muvaffaqiyatli saqlandi!');
       closeModal('modalExpense');
       e.target.reset();
       document.getElementById('expenseCustomCategoryGroup').style.display = 'none';
@@ -1876,12 +3275,12 @@ document.getElementById('formAddExpense')?.addEventListener('submit', async (e) 
       showToast(extractErrorMessage(err, 'Harajat saqlashda xatolik'), 'error');
     }
   } catch (error) {
-    showToast('Tarmoq xatosi', 'error');
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
   }
 });
 
 // 2. Add Income
-document.getElementById('formAddIncome')?.addEventListener('submit', async (e) => {
+onSubmitOnce('formAddIncome', async (e) => {
   e.preventDefault();
   let categoryId = document.getElementById('incomeCategorySelect').value;
 
@@ -1908,38 +3307,31 @@ document.getElementById('formAddIncome')?.addEventListener('submit', async (e) =
         const catData = await catRes.json();
         categoryId = catData.id;
         await fetchCategories();
+        selectCreatedCategory('incomeCategorySelect', categoryId);
       } else {
-        const errData = await catRes.json();
-        showToast(errData.name || 'Manba yaratishda xatolik', 'error');
+        const errData = await catRes.json().catch(() => ({}));
+        showToast(extractErrorMessage(errData, 'Manba yaratishda xatolik'), 'error');
         return;
       }
     } catch (err) {
-      showToast('Tarmoq xatosi', 'error');
+      showToast(NETWORK_ERROR_MESSAGE, 'error');
       return;
     }
   }
 
   const payload = {
-    summa: parseInt(document.getElementById('incomeSumma').value),
+    summa: readAmount('incomeSumma'),
     wallet: parseInt(document.getElementById('incomeWalletSelect').value),
     category: parseInt(categoryId),
     description: document.getElementById('incomeDescription').value.trim(),
   };
 
-  const incDateVal = document.getElementById('incomeDate')?.value;
-  if (incDateVal) {
-    payload.date = new Date(incDateVal).toISOString();
-  }
-
+  const editing = !!_txEdit;
   try {
-    const res = await fetch(`${API_BASE}/incomes/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    const res = await sendTx('income', payload, document.getElementById('incomeDate')?.value);
 
     if (res.ok) {
-      showToast('Daromad muvaffaqiyatli saqlandi!');
+      showToast(editing ? "Daromad o'zgartirildi" : 'Daromad muvaffaqiyatli saqlandi!');
       closeModal('modalIncome');
       e.target.reset();
       document.getElementById('incomeCustomCategoryGroup').style.display = 'none';
@@ -1949,16 +3341,16 @@ document.getElementById('formAddIncome')?.addEventListener('submit', async (e) =
       showToast(extractErrorMessage(err, 'Daromad saqlashda xatolik'), 'error');
     }
   } catch (error) {
-    showToast('Tarmoq xatosi', 'error');
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
   }
 });
 
 // 3. Add Transfer
-document.getElementById('formAddTransfer')?.addEventListener('submit', async (e) => {
+onSubmitOnce('formAddTransfer', async (e) => {
   e.preventDefault();
   const fromW = parseInt(document.getElementById('transferFromWallet').value);
   const toW = parseInt(document.getElementById('transferToWallet').value);
-  const summa = parseInt(document.getElementById('transferSumma').value);
+  const summa = readAmount('transferSumma');
 
   if (fromW === toW) {
     showToast('Bir xil hamyonlar o\'rtasida o\'tkazma qilib bo\'lmaydi', 'error');
@@ -1972,38 +3364,42 @@ document.getElementById('formAddTransfer')?.addEventListener('submit', async (e)
     description: document.getElementById('transferDescription').value.trim(),
     user: state.currentUserId
   };
+  // Valyutalar har xil bo'lsa: summa kiritilmasa server Markaziy bank kursi bo'yicha o'zi hisoblaydi
+  const toSummaRaw = document.getElementById('transferToSumma').value;
+  if (document.getElementById('transferToSummaGroup').style.display !== 'none' && toSummaRaw) {
+    payload.to_summa = readAmount('transferToSumma');
+  }
 
+  const editing = !!_txEdit;
+  if (editing) delete payload.user;
   try {
-    const res = await fetch(`${API_BASE}/transfers/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    const res = await sendTx('transfer', payload);
 
     if (res.ok) {
-      showToast('O\'tkazma muvaffaqiyatli amalga oshirildi!');
+      showToast(editing ? "O'tkazma o'zgartirildi" : 'O\'tkazma muvaffaqiyatli amalga oshirildi!');
       closeModal('modalTransfer');
       e.target.reset();
+      document.getElementById('transferToSummaGroup').style.display = 'none';
       refreshAll();
     } else {
       const err = await res.json().catch(() => ({}));
       showToast(extractErrorMessage(err, 'O\'tkazmada xatolik yuz berdi'), 'error');
     }
   } catch (error) {
-    showToast('Tarmoq xatosi', 'error');
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
   }
 });
 
 // 4. Add Debt
-document.getElementById('formAddDebt')?.addEventListener('submit', async (e) => {
+onSubmitOnce('formAddDebt', async (e) => {
   e.preventDefault();
   const walletVal = document.getElementById('debtWalletSelect').value;
   const payload = {
     person_name: document.getElementById('debtPersonName').value.trim(),
     debt_type: document.getElementById('debtTypeSelect').value,
-    summa: parseInt(document.getElementById('debtSumma').value),
+    summa: readAmount('debtSumma'),
     due_date: document.getElementById('debtDueDate').value || null,
-    wallet: walletVal ? parseInt(walletVal) : null,
+    wallet: parseInt(walletVal),
     description: document.getElementById('debtDescription').value.trim(),
     user: state.currentUserId
   };
@@ -2025,16 +3421,16 @@ document.getElementById('formAddDebt')?.addEventListener('submit', async (e) => 
       showToast(extractErrorMessage(err, 'Qarz kiritishda xatolik'), 'error');
     }
   } catch (error) {
-    showToast('Tarmoq xatosi', 'error');
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
   }
 });
 
 // 5. Add Wallet
-document.getElementById('formAddWallet')?.addEventListener('submit', async (e) => {
+onSubmitOnce('formAddWallet', async (e) => {
   e.preventDefault();
   const payload = {
     name: document.getElementById('walletName').value.trim(),
-    summa: parseInt(document.getElementById('walletInitialSumma').value) || 0,
+    summa: readAmount('walletInitialSumma') || 0,
     currency: document.getElementById('walletCurrency').value.trim() || 'UZS',
     user: state.currentUserId
   };
@@ -2056,12 +3452,12 @@ document.getElementById('formAddWallet')?.addEventListener('submit', async (e) =
       showToast(extractErrorMessage(err, 'Hamyon yaratishda xatolik'), 'error');
     }
   } catch (error) {
-    showToast('Tarmoq xatosi', 'error');
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
   }
 });
 
 // 6. Add Member
-document.getElementById('formAddMember')?.addEventListener('submit', async (e) => {
+onSubmitOnce('formAddMember', async (e) => {
   e.preventDefault();
   const payload = {
     name: document.getElementById('memberName').value.trim(),
@@ -2085,7 +3481,7 @@ document.getElementById('formAddMember')?.addEventListener('submit', async (e) =
       showToast(extractErrorMessage(err, 'A\'zo qo\'shishda xatolik'), 'error');
     }
   } catch (error) {
-    showToast('Tarmoq xatosi', 'error');
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
   }
 });
 
@@ -2096,18 +3492,133 @@ function openRepayModal(debtId) {
   if (!debt) return;
   activeRepayDebtId = debtId;
   document.getElementById('repayPersonName').textContent = debt.person_name;
-  document.getElementById('repayRemaining').textContent = formatMoney(debt.remaining_summa);
+  document.getElementById('repayRemaining').textContent = formatMoney(debt.remaining_summa, debt.currency || 'UZS');
+  document.querySelector('label[for="repayAmount"]').textContent = `To'lov Summasi (${debt.currency || 'UZS'}) *`;
   document.getElementById('repayAmount').max = debt.remaining_summa;
   document.getElementById('repayAmount').value = debt.remaining_summa;
+  // Qarz valyutasidagi hamyon bo'lsa, shuni oldindan tanlaymiz
+  const repaySelect = document.getElementById('repayWalletSelect');
+  const sameCurrency = state.wallets.find(w => w.currency === (debt.currency || 'UZS'));
+  if (sameCurrency && state.wallets.find(w => String(w.id) === repaySelect.value)?.currency !== sameCurrency.currency) {
+    repaySelect.value = String(sameCurrency.id);
+    repaySelect._csSync?.();
+  }
   openModal('modalRepayDebt');
+  updateRepayConvertHint();
 }
 
-document.getElementById('formRepayDebt')?.addEventListener('submit', async (e) => {
+// Qarz va hamyon valyutasi har xil bo'lsa: hamyonga kurs bo'yicha qancha yozilishini ko'rsatamiz
+let _repayHintSeq = 0;
+async function updateRepayConvertHint() {
+  const hint = document.getElementById('repayConvertHint');
+  if (!hint) return;
+  const debt = state.debts.find(d => d.id === activeRepayDebtId);
+  const wallet = state.wallets.find(w => w.id === parseInt(document.getElementById('repayWalletSelect').value));
+  const amount = readAmount('repayAmount') || 0;
+  const seq = ++_repayHintSeq;
+  if (!debt || !wallet || (debt.currency || 'UZS') === wallet.currency || amount <= 0) {
+    hint.textContent = '';
+    return;
+  }
+  const verb = debt.debt_type === 'give' ? "qo'shiladi" : 'yechiladi';
+  try {
+    const q = `from=${encodeURIComponent(debt.currency)}&to=${encodeURIComponent(wallet.currency)}&amount=${amount}`;
+    const res = await fetch(`${API_BASE}/rates/convert/?${q}`);
+    const data = await res.json().catch(() => ({}));
+    if (seq !== _repayHintSeq) return;
+    hint.textContent = res.ok
+      ? `Hamyonga Markaziy bank kursi bo'yicha ${formatNumber(data.result)} ${wallet.currency} ${verb} (${formatRateText(debt.currency, wallet.currency, Number(data.rate))}).`
+      : `${debt.currency} → ${wallet.currency} kursini aniqlab bo'lmadi.`;
+  } catch (err) {
+    if (seq === _repayHintSeq) hint.textContent = '';
+  }
+}
+document.getElementById('repayWalletSelect')?.addEventListener('change', updateRepayConvertHint);
+document.getElementById('repayAmount')?.addEventListener('input', () => {
+  clearTimeout(updateRepayConvertHint._t);
+  updateRepayConvertHint._t = setTimeout(updateRepayConvertHint, 300);
+});
+
+// ==========================================
+// O'TKAZMA: VALYUTA KURSI
+// ==========================================
+
+// Hamyonlar valyutasi har xil bo'lsa "Tushadigan summa" maydoni chiqadi va kurs bo'yicha hisob ko'rsatiladi.
+// Maydon bo'sh qoldirilsa server Markaziy bank kursi bilan o'zi hisoblaydi
+let _transferPreviewSeq = 0;
+async function updateTransferCurrencyPreview() {
+  const fromW = state.wallets.find(w => w.id === parseInt(document.getElementById('transferFromWallet').value));
+  const toW = state.wallets.find(w => w.id === parseInt(document.getElementById('transferToWallet').value));
+  const group = document.getElementById('transferToSummaGroup');
+  const toInput = document.getElementById('transferToSumma');
+  const hint = document.getElementById('transferRateHint');
+  if (!group || !toInput || !hint) return;
+
+  document.getElementById('transferSummaLabel').textContent = fromW ? `O'tkazma Summasi (${fromW.currency}) *` : "O'tkazma Summasi *";
+  const seq = ++_transferPreviewSeq;
+  const differs = fromW && toW && fromW.currency !== toW.currency;
+  group.style.display = differs ? '' : 'none';
+  if (!differs) {
+    toInput.value = '';
+    hint.textContent = '';
+    return;
+  }
+
+  document.getElementById('transferToSummaLabel').textContent = `Tushadigan summa (${toW.currency})`;
+  const amount = readAmount('transferSumma') || 0;
+  try {
+    const q = `from=${encodeURIComponent(fromW.currency)}&to=${encodeURIComponent(toW.currency)}&amount=${amount > 0 ? amount : 1}`;
+    const res = await fetch(`${API_BASE}/rates/convert/?${q}`);
+    const data = await res.json().catch(() => ({}));
+    if (seq !== _transferPreviewSeq) return; // foydalanuvchi shu orada boshqa narsa tanlagan
+    if (!res.ok) {
+      toInput.placeholder = 'Summani kiriting';
+      hint.textContent = "Kursni aniqlab bo'lmadi — tushadigan summani qo'lda kiriting.";
+      return;
+    }
+    const rateText = formatRateText(fromW.currency, toW.currency, Number(data.rate));
+    if (amount > 0) {
+      toInput.placeholder = `${formatNumber(data.result)} (avtomatik)`;
+      hint.textContent = `Markaziy bank kursi: ${rateText}. Bo'sh qoldirilsa ${formatNumber(data.result)} ${toW.currency} yoziladi. Bank boshqa summa bergan bo'lsa, haqiqiysini kiriting.`;
+    } else {
+      toInput.placeholder = 'Avtomatik hisoblanadi';
+      hint.textContent = `Markaziy bank kursi: ${rateText}`;
+    }
+    // Tahrirda hamyonlar o'zgarmasa server o'tkazma kunidagi kursni saqlaydi (serializers.py: _fill_to_summa)
+    const old = _txEdit?.type === 'transfer' ? _txEdit.raw : null;
+    if (old && old.from_wallet === fromW.id && old.to_wallet === toW.id) {
+      toInput.placeholder = 'Eski kurs bo\'yicha';
+      hint.textContent = `Bo'sh qoldirilsa o'tkazma kunidagi kurs saqlanadi: ${formatRateText(fromW.currency, toW.currency, Number(old.rate))}.`;
+    }
+  } catch (err) {
+    if (seq === _transferPreviewSeq) hint.textContent = "Kursni aniqlab bo'lmadi — tushadigan summani qo'lda kiriting.";
+  }
+}
+['transferFromWallet', 'transferToWallet'].forEach(id => {
+  document.getElementById(id)?.addEventListener('change', updateTransferCurrencyPreview);
+});
+document.getElementById('transferSumma')?.addEventListener('input', () => {
+  clearTimeout(updateTransferCurrencyPreview._t);
+  updateTransferCurrencyPreview._t = setTimeout(updateTransferCurrencyPreview, 300);
+});
+
+// Qarz doim hamyonga bog'lanadi: valyutasi hamyonniki bo'ladi
+function updateDebtCurrencyField() {
+  const select = document.getElementById('debtWalletSelect');
+  const hint = document.getElementById('debtWalletCurrencyHint');
+  if (!select || !hint) return;
+  const wallet = state.wallets.find(w => String(w.id) === select.value);
+  hint.textContent = wallet ? `Qarz hamyon valyutasida yoziladi: ${wallet.currency}` : '';
+  document.getElementById('debtSummaLabel').textContent = wallet ? `Summa (${wallet.currency}) *` : 'Summa *';
+}
+document.getElementById('debtWalletSelect')?.addEventListener('change', updateDebtCurrencyField);
+
+onSubmitOnce('formRepayDebt', async (e) => {
   e.preventDefault();
   if (!activeRepayDebtId) return;
 
   const payload = {
-    amount: parseInt(document.getElementById('repayAmount').value),
+    amount: readAmount('repayAmount'),
     wallet: parseInt(document.getElementById('repayWalletSelect').value)
   };
 
@@ -2127,7 +3638,7 @@ document.getElementById('formRepayDebt')?.addEventListener('submit', async (e) =
       showToast(extractErrorMessage(err, 'Qarzni to\'lashda xatolik'), 'error');
     }
   } catch (error) {
-    showToast('Tarmoq xatosi', 'error');
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
   }
 });
 
@@ -2140,9 +3651,7 @@ async function deleteTransaction(type, id) {
     return;
   }
 
-  let endpoint = 'expenses';
-  if (type === 'income') endpoint = 'incomes';
-  if (type === 'transfer') endpoint = 'transfers';
+  const endpoint = TX_FORMS[type].api;
 
   try {
     const res = await fetch(`${API_BASE}/${endpoint}/${id}/`, {
@@ -2150,14 +3659,32 @@ async function deleteTransaction(type, id) {
     });
 
     if (res.ok || res.status === 204) {
-      showToast('Amaliyot o\'chirildi va balans qaytarildi');
+      showToast('Amaliyot o\'chirildi va balans qaytarildi', 'success', {
+        action: { label: 'Qaytarish', onClick: () => restoreTransaction(type, id) },
+      });
       refreshAll();
     } else {
       const err = await res.json().catch(() => ({}));
       showToast(extractErrorMessage(err, 'O\'chirishda xatolik yuz berdi (hamyonda balans yetarli bo\'lmasligi mumkin)'), 'error');
     }
   } catch (error) {
-    showToast('Tarmoq xatosi', 'error');
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
+  }
+}
+
+// "Qaytarish" — o'chirilgan operatsiya qayta faol bo'ladi va balansga yana ta'sir qiladi (views.py: RestoreMixin)
+async function restoreTransaction(type, id) {
+  try {
+    const res = await fetch(`${API_BASE}/${TX_FORMS[type].api}/${id}/restore/`, { method: 'POST' });
+    if (res.ok) {
+      showToast('Amaliyot qaytarildi');
+      refreshAll();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast(extractErrorMessage(err, 'Amaliyotni qaytarib bo\'lmadi'), 'error');
+    }
+  } catch (error) {
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
   }
 }
 
@@ -2177,7 +3704,7 @@ async function deleteDebt(id) {
       showToast(extractErrorMessage(err, 'Qarzni o\'chirishda xatolik yuz berdi'), 'error');
     }
   } catch (error) {
-    showToast('Tarmoq xatosi', 'error');
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
   }
 }
 
@@ -2197,7 +3724,7 @@ async function deleteWallet(id) {
       showToast(extractErrorMessage(err, 'Hamyonni o\'chirishda xatolik yuz berdi'), 'error');
     }
   } catch (error) {
-    showToast('Tarmoq xatosi', 'error');
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
   }
 }
 
@@ -2211,25 +3738,354 @@ async function deleteMember(id) {
 
     if (res.ok || res.status === 204) {
       showToast('A\'zo o\'chirildi');
-      await fetchMembers();
+      await Promise.all([fetchMembers(), fetchRecurring()]);
     } else {
       const err = await res.json().catch(() => ({}));
       showToast(extractErrorMessage(err, 'A\'zoni o\'chirishda xatolik yuz berdi'), 'error');
     }
   } catch (error) {
-    showToast('Tarmoq xatosi', 'error');
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
   }
 }
 
-// Tab switcher for transactions
-document.querySelectorAll('#txTabs .pill-btn').forEach(btn => {
-  btn.addEventListener('click', (e) => {
-    document.querySelectorAll('#txTabs .pill-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    state.activeTab = btn.dataset.tab;
-    renderTransactions();
+// ==========================================
+// TAKRORIY TO'LOVLAR
+// ==========================================
+// Server muddati kelganini o'zi yozadi (mainapp/recurring.py). Bu yerda — ro'yxat, qo'shish/tahrirlash va eslatmalar
+const RECURRING_FREQ_LABELS = { daily: 'Har kuni', weekly: 'Har hafta', monthly: 'Har oy', yearly: 'Har yil' };
+
+// 'YYYY-MM-DD' gacha necha kun (bugun — 0, o'tgan — manfiy)
+function daysUntil(isoDate) {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  return Math.round((new Date(isoDate + 'T00:00:00') - today) / 86400000);
+}
+
+async function fetchRecurring() {
+  try {
+    const res = await fetch(`${API_BASE}/recurring/`);
+    if (res.ok) {
+      const data = await res.json();
+      state.recurring = data.results || data;
+      renderRecurring();
+      renderNotifications();
+    }
+  } catch (err) {
+    console.error('Error fetching recurring payments:', err);
+  }
+}
+
+function renderRecurring() {
+  updateHomeListCount();
+  const container = document.getElementById('recurringList');
+  if (!container) return;
+  if (!state.recurring.length) {
+    container.innerHTML = `<p style="color: var(--text-subtle); font-size: 0.85rem; padding: 6px 0;">Ijara, kommunal, obuna yoki maosh kabi har oy takrorlanadigan to'lovlarni qo'shing — ular o'zi yoziladi</p>`;
+    return;
+  }
+  container.innerHTML = state.recurring.map(r => {
+    const days = daysUntil(r.next_date);
+    const when = days === 0 ? 'bugun' : days === 1 ? 'ertaga' : formatUzDate(r.next_date + 'T00:00:00');
+    const sign = r.kind === 'income' ? '+' : '-';
+    const status = r.last_error
+      ? `<span class="debt-due-overdue" title="${escapeHtml(r.last_error)}">${icon('warning')} yozilmadi</span>`
+      : `<span class="${days <= r.remind_days ? 'debt-due-soon' : 'debt-due-normal'}"><span>${escapeHtml(RECURRING_FREQ_LABELS[r.frequency])}</span> · <span>${escapeHtml(when)}</span></span>`;
+    return `
+      <div class="member-compact-card is-clickable" data-recurring-id="${r.id}" role="button" tabindex="0" title="Tahrirlash">
+        <div>
+          <div style="font-weight: 500; font-size: 0.95rem; color: var(--text-main);">${icon('repeat')} ${escapeHtml(r.name)}</div>
+          <div style="font-size: 0.75rem;">${status}</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="recurring-amount ${r.kind}">${sign}${formatNumber(r.summa)} <span>${escapeHtml(r.wallet_currency)}</span></div>
+          <button class="btn-icon" style="width: 24px; height: 24px; font-size: 0.72rem; opacity: 0.6;" title="O'chirish" data-action="deleteRecurring" data-stop data-args="${actionArgs(r.id)}">${icon('trash')}</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// Eslatmalar: yozilmay qolgan (masalan pul yetmagan) va muddati yaqinlashganlar
+function getRecurringAlerts() {
+  return (state.recurring || [])
+    .map(r => ({ r, days: daysUntil(r.next_date) }))
+    .filter(({ r, days }) => r.last_error || (days >= 0 && days <= r.remind_days))
+    .sort((a, b) => a.days - b.days);
+}
+
+function fillRecurringCategories(kind, selected) {
+  const select = document.getElementById('recurringCategory');
+  const list = kind === 'income' ? state.incomeCategories : state.expenseCategories;
+  select.innerHTML = '<option value="" disabled selected>-- Tanlang --</option>'
+    + list.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+  document.getElementById('recurringCategoryLabel').textContent = kind === 'income' ? 'Daromad manbayi *' : 'Harajat toifasi *';
+  document.getElementById('recurringMemberGroup').style.display = kind === 'expense' && state.members.length ? '' : 'none';
+  if (selected) selectValueOrKeep('recurringCategory', selected.id, selected.name);
+  if (select._csSync) select._csSync();
+}
+
+function updateRecurringSummaLabel() {
+  const wallet = state.wallets.find(w => String(w.id) === document.getElementById('recurringWallet').value);
+  document.getElementById('recurringSummaLabel').textContent = wallet ? `Summa (${wallet.currency}) *` : 'Summa *';
+}
+
+function openRecurringModal(id) {
+  const form = document.getElementById('formRecurring');
+  const r = id ? state.recurring.find(x => x.id === id) : null;
+  form.reset();
+  if (r) form.dataset.editId = r.id; else delete form.dataset.editId;
+  const modal = document.getElementById('modalRecurring');
+  modal.querySelector('[data-tx-title]').textContent = r ? "Takroriy to'lovni tahrirlash" : "Takroriy to'lov";
+
+  const walletSel = document.getElementById('recurringWallet');
+  walletSel.innerHTML = state.wallets.map(w => `<option value="${w.id}">${escapeHtml(w.name)} (${escapeHtml(w.currency)})</option>`).join('');
+  document.getElementById('recurringMember').innerHTML = '<option value="">-- O\'zim uchun --</option>'
+    + state.members.map(m => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('');
+
+  const kind = r ? r.kind : 'expense';
+  document.getElementById('recurringKind').value = kind;
+  fillRecurringCategories(kind, r && {
+    id: kind === 'income' ? r.income_category : r.expense_category, name: r.category_name,
   });
+  if (r) {
+    document.getElementById('recurringName').value = r.name;
+    document.getElementById('recurringSumma').value = r.summa;
+    selectValueOrKeep('recurringWallet', r.wallet, r.wallet_name);
+    selectValueOrKeep('recurringMember', r.member, r.member_name);
+    document.getElementById('recurringFrequency').value = r.frequency;
+    document.getElementById('recurringStart').value = r.start_date;
+    document.getElementById('recurringEnd').value = r.end_date || '';
+    document.getElementById('recurringRemind').value = r.remind_days;
+  } else {
+    document.getElementById('recurringStart').value = getCurrentDateLocal();
+  }
+  ['recurringKind', 'recurringFrequency', 'recurringWallet', 'recurringMember'].forEach(sid => {
+    document.getElementById(sid)._csSync?.();
+  });
+  updateRecurringSummaLabel();
+  openModal('modalRecurring');
+}
+
+document.getElementById('recurringKind')?.addEventListener('change', e => fillRecurringCategories(e.target.value));
+document.getElementById('recurringWallet')?.addEventListener('change', updateRecurringSummaLabel);
+document.getElementById('recurringList')?.addEventListener('click', e => {
+  const card = e.target.closest('[data-recurring-id]');
+  if (card) openRecurringModal(Number(card.dataset.recurringId));
 });
+document.getElementById('recurringList')?.addEventListener('keydown', e => {
+  const card = e.target.closest('[data-recurring-id]');
+  if (card && (e.key === 'Enter' || e.key === ' ')) {
+    e.preventDefault();
+    openRecurringModal(Number(card.dataset.recurringId));
+  }
+});
+
+onSubmitOnce('formRecurring', async (e) => {
+  const form = e.target;
+  const kind = document.getElementById('recurringKind').value;
+  const category = parseInt(document.getElementById('recurringCategory').value);
+  if (!category) {
+    showToast(kind === 'income' ? 'Daromad manbayini tanlang' : 'Harajat toifasini tanlang', 'error');
+    return;
+  }
+  const memberVal = document.getElementById('recurringMember').value;
+  const payload = {
+    kind,
+    name: document.getElementById('recurringName').value.trim(),
+    summa: readAmount('recurringSumma'),
+    wallet: parseInt(document.getElementById('recurringWallet').value),
+    [kind === 'income' ? 'income_category' : 'expense_category']: category,
+    member: kind === 'expense' && memberVal ? parseInt(memberVal) : null,
+    frequency: document.getElementById('recurringFrequency').value,
+    start_date: document.getElementById('recurringStart').value,
+    end_date: document.getElementById('recurringEnd').value || null,
+    remind_days: parseInt(document.getElementById('recurringRemind').value) || 0,
+  };
+  const editId = form.dataset.editId;
+  try {
+    const res = await fetch(editId ? `${API_BASE}/recurring/${editId}/` : `${API_BASE}/recurring/`, {
+      method: editId ? 'PATCH' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) {
+      showToast(editId ? "Takroriy to'lov o'zgartirildi" : "Takroriy to'lov qo'shildi");
+      closeModal('modalRecurring');
+      // Bugungi to'lov darhol yozilishi mumkin — balans va ro'yxatlar ham yangilansin
+      refreshAll();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast(extractErrorMessage(err, "Takroriy to'lovni saqlashda xatolik"), 'error');
+    }
+  } catch (error) {
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
+  }
+});
+
+async function deleteRecurring(id) {
+  if (!(await confirmDelete("Takroriy to'lov o'chirilsinmi? Avval yozilgan operatsiyalar saqlanib qoladi."))) return;
+  try {
+    const res = await fetch(`${API_BASE}/recurring/${id}/`, { method: 'DELETE' });
+    if (res.ok) {
+      showToast("Takroriy to'lov o'chirildi");
+      await fetchRecurring();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast(extractErrorMessage(err, "O'chirishda xatolik"), 'error');
+    }
+  } catch (error) {
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
+  }
+}
+
+// ==========================================
+// JAMG'ARMA MAQSADLARI
+// ==========================================
+async function fetchGoals() {
+  try {
+    const res = await fetch(`${API_BASE}/goals/`);
+    if (res.ok) {
+      const data = await res.json();
+      state.goals = data.results || data;
+      renderGoals();
+    }
+  } catch (err) {
+    console.error('Error fetching goals:', err);
+  }
+}
+
+function renderGoals() {
+  updateHomeListCount();
+  const container = document.getElementById('goalsList');
+  if (!container) return;
+  if (!state.goals.length) {
+    container.innerHTML = `<p style="color: var(--text-subtle); font-size: 0.85rem; padding: 6px 0;">Mashina, ta'til yoki uy uchun maqsad qo'ying — qancha yig'ilganini ko'rib borasiz</p>`;
+    return;
+  }
+  container.innerHTML = state.goals.map(g => {
+    const saved = Math.max(0, Number(g.saved));
+    const target = Number(g.target);
+    const pct = Math.min(100, Math.floor(saved / target * 100));
+    const done = saved >= target;
+    // Har bo'lak alohida <span>: i18n.js matnni butun bo'lak bo'yicha tarjima qiladi
+    let note = done ? `${icon('check')} <span>Maqsadga yetildi</span>`
+      : `<span>Yana ${formatNumber(target - saved)} ${escapeHtml(g.wallet_currency)}</span>`;
+    if (!done && g.deadline) {
+      const days = daysUntil(g.deadline);
+      note += days < 0 ? ` · <span>muddat o'tgan</span>` : ` · <span>${days} kun qoldi</span>`;
+    }
+    return `
+      <div class="goal-card is-clickable" data-goal-id="${g.id}" role="button" tabindex="0" title="Tahrirlash">
+        <div class="goal-head">
+          <span class="goal-name">${icon('target')} ${escapeHtml(g.name)}</span>
+          <span class="goal-sum">${formatNumber(saved)} / ${formatNumber(target)} <small>${escapeHtml(g.wallet_currency)}</small></span>
+        </div>
+        <div class="goal-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width: ${pct}%"></span></div>
+        <div class="goal-foot">
+          <span class="${done ? 'goal-done' : ''}"><span>${pct}%</span> · ${note}</span>
+          <span class="goal-actions">
+            ${done ? '' : `<button class="btn btn-subtle btn-xs" data-action="fundGoal" data-stop data-args="${actionArgs(g.id)}">+ Pul qo'shish</button>`}
+            <button class="btn-icon" style="width: 24px; height: 24px; font-size: 0.72rem; opacity: 0.6;" title="O'chirish" data-action="deleteGoal" data-stop data-args="${actionArgs(g.id)}">${icon('trash')}</button>
+          </span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function updateGoalTargetLabel() {
+  const wallet = state.wallets.find(w => String(w.id) === document.getElementById('goalWallet').value);
+  document.getElementById('goalTargetLabel').textContent = wallet ? `Maqsad summasi (${wallet.currency}) *` : 'Maqsad summasi *';
+}
+
+function openGoalModal(id) {
+  const form = document.getElementById('formGoal');
+  const g = id ? state.goals.find(x => x.id === id) : null;
+  form.reset();
+  if (g) form.dataset.editId = g.id; else delete form.dataset.editId;
+  document.getElementById('modalGoal').querySelector('[data-tx-title]').textContent = g ? 'Maqsadni tahrirlash' : 'Yangi maqsad';
+  document.getElementById('goalWallet').innerHTML = state.wallets.map(w =>
+    `<option value="${w.id}">${escapeHtml(w.name)} (${formatMoney(w.summa, w.currency)})</option>`).join('');
+  if (g) {
+    document.getElementById('goalName').value = g.name;
+    selectValueOrKeep('goalWallet', g.wallet, g.wallet_name);
+    document.getElementById('goalTarget').value = g.target;
+    document.getElementById('goalDeadline').value = g.deadline || '';
+  }
+  document.getElementById('goalWallet')._csSync?.();
+  updateGoalTargetLabel();
+  openModal('modalGoal');
+}
+
+document.getElementById('goalWallet')?.addEventListener('change', updateGoalTargetLabel);
+document.getElementById('goalsList')?.addEventListener('click', e => {
+  const card = e.target.closest('[data-goal-id]');
+  if (card) openGoalModal(Number(card.dataset.goalId));
+});
+document.getElementById('goalsList')?.addEventListener('keydown', e => {
+  const card = e.target.closest('[data-goal-id]');
+  if (card && (e.key === 'Enter' || e.key === ' ')) {
+    e.preventDefault();
+    openGoalModal(Number(card.dataset.goalId));
+  }
+});
+
+onSubmitOnce('formGoal', async (e) => {
+  const editId = e.target.dataset.editId;
+  const payload = {
+    name: document.getElementById('goalName').value.trim(),
+    wallet: parseInt(document.getElementById('goalWallet').value),
+    target: readAmount('goalTarget'),
+    deadline: document.getElementById('goalDeadline').value || null,
+  };
+  try {
+    const res = await fetch(editId ? `${API_BASE}/goals/${editId}/` : `${API_BASE}/goals/`, {
+      method: editId ? 'PATCH' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) {
+      showToast(editId ? "Maqsad o'zgartirildi" : "Maqsad qo'shildi");
+      closeModal('modalGoal');
+      await fetchGoals();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast(extractErrorMessage(err, 'Maqsadni saqlashda xatolik'), 'error');
+    }
+  } catch (error) {
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
+  }
+});
+
+async function deleteGoal(id) {
+  if (!(await confirmDelete("Maqsad o'chirilsinmi? Hamyon va undagi pul joyida qoladi."))) return;
+  try {
+    const res = await fetch(`${API_BASE}/goals/${id}/`, { method: 'DELETE' });
+    if (res.ok) {
+      showToast("Maqsad o'chirildi");
+      await fetchGoals();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast(extractErrorMessage(err, "O'chirishda xatolik"), 'error');
+    }
+  } catch (error) {
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
+  }
+}
+
+// "Pul qo'shish" — O'tkazma oynasi maqsad hamyoniga yo'naltirilgan holda ochiladi
+function fundGoal(id) {
+  const g = state.goals.find(x => x.id === id);
+  if (!g) return;
+  if (state.wallets.length < 2) {
+    showToast("Pul qo'shish uchun yana bitta hamyon kerak: pul o'sha hamyondan maqsad hamyoniga o'tkaziladi", 'error');
+    return;
+  }
+  const to = document.getElementById('transferToWallet');
+  const from = document.getElementById('transferFromWallet');
+  to.value = String(g.wallet);
+  if (from.value === to.value) from.value = String(state.wallets.find(w => w.id !== g.wallet).id);
+  [to, from].forEach(el => el._csSync?.());
+  document.getElementById('transferDescription').value = `Maqsad: ${g.name}`;
+  openModal('modalTransfer');
+}
 
 // Helper
 function escapeHtml(text) {
@@ -2242,51 +4098,81 @@ function escapeHtml(text) {
     .replace(/'/g, '&#039;');
 }
 
-// Load more transactions
-document.getElementById('btnLoadMoreTx')?.addEventListener('click', () => {
-  fetchTransactions(true);
-});
 
 // ==========================================
 // AUTHENTICATION ENGINE
 // ==========================================
+
+// Chiqishdan keyin oldingi foydalanuvchining ma'lumotlari (ochiq oynalar va bo'lim sahifalari, ro'yxatlar,
+// tanlagichlar) ekranda ham, sahifa xotirasida ham qolmasligi uchun sahifa toza holda qayta yuklanadi.
+// Xabar qayta yuklangandan keyin ko'rsatiladi
+const FLASH_KEY = 'moliyaFlash';
+
+function reloadSignedOut(message, type = 'success') {
+  try {
+    sessionStorage.setItem(FLASH_KEY, JSON.stringify({ message, type }));
+  } catch (e) { /* xabarsiz qayta yuklanadi */ }
+  location.reload();
+}
+
+function showFlashMessage() {
+  try {
+    const raw = sessionStorage.getItem(FLASH_KEY);
+    if (!raw) return;
+    sessionStorage.removeItem(FLASH_KEY);
+    const { message, type } = JSON.parse(raw);
+    if (message) showToast(message, type);
+  } catch (e) { /* e'tiborsiz */ }
+}
 
 async function checkAuth() {
   const authSection = document.getElementById('authSection');
   const mainApp = document.getElementById('mainApp');
   const userProfileNav = document.getElementById('userProfileNav');
 
+  let data = null;
   try {
     const res = await fetch(`${API_BASE}/auth/me/`);
-    if (res.ok) {
-      const data = await res.json();
-      if (data.authenticated) {
-        state.currentUser = data.user;
-        state.currentUserId = data.user.id;
-        try { localStorage.removeItem(`moliyaNotifs:${data.user.id}`); } catch (e) { /* e'tiborsiz */ }
-
-        // Show main app, hide auth screen
-        if (authSection) authSection.style.display = 'none';
-        if (mainApp) mainApp.style.display = 'block';
-        if (userProfileNav) userProfileNav.style.display = 'flex';
-        const navSections = document.getElementById('navSections');
-        if (navSections) navSections.style.display = 'flex';
-        queueBrandSync();
-        const notifWrap = document.getElementById('notifWrap');
-        if (notifWrap) notifWrap.style.display = 'block';
-        renderUserNav();
-
-        refreshAll();
-        return true;
-      }
-    }
+    if (res.ok) data = await res.json();
   } catch (err) {
     console.error('Auth check error:', err);
+  }
+
+  if (state.currentUser && !(data && data.authenticated)) {
+    // Server javob bermadi (tarmoq uzildi) — sessiya hali amalda bo'lishi mumkin, foydalanuvchi chiqarilmaydi
+    if (!data) return false;
+    reloadSignedOut('Sessiya tugadi — qaytadan kiring', 'error');
+    return false;
+  }
+
+  if (data && data.authenticated) {
+    state.currentUser = data.user;
+    state.currentUserId = data.user.id;
+    try { localStorage.removeItem(`moliyaNotifs:${data.user.id}`); } catch (e) { /* e'tiborsiz */ }
+
+    // Show main app, hide auth screen
+    if (authSection) authSection.style.display = 'none';
+    if (mainApp) mainApp.style.display = 'block';
+    if (userProfileNav) userProfileNav.style.display = 'flex';
+    const navSections = document.getElementById('navSections');
+    if (navSections) navSections.style.display = 'flex';
+    // Brend endi bo'limlar kapsulasida ("Moliya") — alohida logotip takrorlanmasin
+    const brandLogo = document.getElementById('brandLogo');
+    if (brandLogo) brandLogo.style.display = 'none';
+    const notifWrap = document.getElementById('notifWrap');
+    if (notifWrap) notifWrap.style.display = 'block';
+    renderUserNav();
+    startSupportUnreadPolling(data.user.support_unread);
+    fetchNotices();
+
+    refreshAll();
+    return true;
   }
 
   // Not authenticated: Show login screen, hide main app
   state.currentUser = null;
   state.currentUserId = null;
+  stopSupportUnreadPolling();
   _setNotifPanel(false);
 
   if (authSection) authSection.style.display = 'flex';
@@ -2294,7 +4180,8 @@ async function checkAuth() {
   if (userProfileNav) userProfileNav.style.display = 'none';
   const navSectionsEl = document.getElementById('navSections');
   if (navSectionsEl) navSectionsEl.style.display = 'none';
-  queueBrandSync();
+  const brandLogoEl = document.getElementById('brandLogo');
+  if (brandLogoEl) brandLogoEl.style.display = '';
   const notifWrapEl = document.getElementById('notifWrap');
   if (notifWrapEl) notifWrapEl.style.display = 'none';
 
@@ -2335,18 +4222,37 @@ document.getElementById('authTabRegister')?.addEventListener('click', () => {
 // PAROLNI UNUTDIM — emailga kod yuborish va yangi parol o'rnatish
 // ==========================================
 
+// 1 — login/email kiritib kod so'rash, 2 — kodni tekshirish, 3 — yangi parol o'rnatish
 let forgotStep = 1;
+
+const FORGOT_STEPS = {
+  1: {
+    button: 'Kod yuborish',
+    intro: "Foydalanuvchi nomingiz yoki emailingizni kiriting — akkauntga ulangan emailga 6 xonali tiklash kodi yuboramiz."
+  },
+  2: {
+    button: 'Kodni tekshirish',
+    intro: "Emailingizga 6 xonali kod yuborildi (spam papkasini ham tekshiring). Kod 15 daqiqa amal qiladi."
+  },
+  3: {
+    button: 'Parolni yangilash',
+    intro: "Kod tasdiqlandi. Endi yangi parol o'rnating."
+  }
+};
 
 function setForgotStep(step) {
   forgotStep = step;
-  const isCodeStep = step === 2;
-  document.getElementById('forgotStep2').hidden = !isCodeStep;
-  document.getElementById('btnForgotResend').hidden = !isCodeStep;
-  document.getElementById('forgotUsername').readOnly = isCodeStep;
-  document.getElementById('btnForgotSubmit').textContent = isCodeStep ? 'Parolni yangilash' : 'Kod yuborish';
-  document.getElementById('forgotIntro').textContent = isCodeStep
-    ? "Emailingizga 6 xonali kod yuborildi (spam papkasini ham tekshiring). Kod 15 daqiqa amal qiladi."
-    : "Foydalanuvchi nomingiz yoki emailingizni kiriting — akkauntga ulangan emailga 6 xonali tiklash kodi yuboramiz.";
+  document.getElementById('forgotStepCode').hidden = step !== 2;
+  document.getElementById('forgotStepPassword').hidden = step !== 3;
+  document.getElementById('btnForgotResend').hidden = step !== 2;
+  document.getElementById('forgotUsername').readOnly = step !== 1;
+  document.getElementById('btnForgotSubmit').textContent = FORGOT_STEPS[step].button;
+  document.getElementById('forgotIntro').textContent = FORGOT_STEPS[step].intro;
+}
+
+// Kod ko'chirib qo'yilganda probel/defis qo'shilib qolishi mumkin — faqat raqamlarni olamiz
+function getForgotCode() {
+  return document.getElementById('forgotCode').value.replace(/\D/g, '');
 }
 
 function showForgotPassword(show) {
@@ -2387,7 +4293,7 @@ async function requestResetCode() {
     }
     showToast(extractErrorMessage(data, 'Kod yuborishda xatolik'), 'error');
   } catch (err) {
-    showToast('Tarmoq xatosi', 'error');
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
   }
   return false;
 }
@@ -2401,6 +4307,10 @@ document.getElementById('btnForgotResend')?.addEventListener('click', async () =
 
 document.getElementById('forgotCode')?.addEventListener('input', (e) => {
   e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
+  // 6 ta raqam kiritilishi bilan kod avtomatik tekshiriladi
+  if (forgotStep === 2 && e.target.value.length === 6 && !document.getElementById('btnForgotSubmit').disabled) {
+    document.getElementById('formForgotPassword').requestSubmit();
+  }
 });
 
 document.getElementById('formForgotPassword')?.addEventListener('submit', async (e) => {
@@ -2418,15 +4328,32 @@ document.getElementById('formForgotPassword')?.addEventListener('submit', async 
     }
 
     const username = document.getElementById('forgotUsername').value.trim();
-    // Kod ko'chirib qo'yilganda probel/defis qo'shilib qolishi mumkin — faqat raqamlarni olamiz
-    const code = document.getElementById('forgotCode').value.replace(/\D/g, '');
+    const code = getForgotCode();
+
+    if (forgotStep === 2) {
+      if (code.length !== 6) {
+        showToast(`Kod 6 xonali bo'lishi kerak — siz ${code.length} ta raqam kiritdingiz`, 'error');
+        return;
+      }
+      const res = await fetch(`${API_BASE}/auth/password-reset/verify/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, code })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setForgotStep(3);
+        document.getElementById('forgotNewPassword').focus();
+      } else {
+        showToast(extractErrorMessage(data, 'Kod noto\'g\'ri'), 'error');
+        document.getElementById('forgotCode').select();
+      }
+      return;
+    }
+
     const newPassword = document.getElementById('forgotNewPassword').value;
     const newPassword2 = document.getElementById('forgotNewPassword2').value;
 
-    if (code.length !== 6) {
-      showToast(`Kod 6 xonali bo'lishi kerak — siz ${code.length} ta raqam kiritdingiz`, 'error');
-      return;
-    }
     if (newPassword.length < 8) {
       showToast("Yangi parol kamida 8 ta belgidan iborat bo'lishi kerak", 'error');
       return;
@@ -2450,16 +4377,22 @@ document.getElementById('formForgotPassword')?.addEventListener('submit', async 
       document.getElementById('loginPassword').focus();
     } else {
       showToast(extractErrorMessage(data, 'Parolni tiklashda xatolik'), 'error');
+      // Kod shu orada eskirgan bo'lsa — kod kiritish bosqichiga qaytamiz
+      if (data.code) {
+        setForgotStep(2);
+        document.getElementById('forgotCode').value = '';
+        document.getElementById('forgotCode').focus();
+      }
     }
   } catch (err) {
-    showToast('Tarmoq xatosi', 'error');
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
   } finally {
     submitBtn.disabled = false;
   }
 });
 
 // Login Form Submit (Main Auth Screen)
-document.getElementById('formLoginMain')?.addEventListener('submit', async (e) => {
+onSubmitOnce('formLoginMain', async (e) => {
   e.preventDefault();
   const usernameInput = document.getElementById('loginUsername');
   const passwordInput = document.getElementById('loginPassword');
@@ -2476,25 +4409,168 @@ document.getElementById('formLoginMain')?.addEventListener('submit', async (e) =
       body: JSON.stringify(payload)
     });
 
-    const data = await res.json();
-    if (res.ok) {
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.two_factor) {
+      // Parol to'g'ri, lekin ikki bosqichli kirish yoqilgan — emailga kelgan kod so'raladi
+      showLoginCode(data);
+    } else if (res.ok) {
       showToast(`Xush kelibsiz, ${data.user.name || data.user.username}!`);
       e.target.reset();
       await checkAuth();
     } else {
-      showToast(data.error || 'Login yoki parol noto\'g\'ri', 'error');
+      showToast(extractErrorMessage(data, 'Login yoki parol noto\'g\'ri'), 'error');
     }
   } catch (err) {
-    showToast('Tarmoq xatosi', 'error');
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
+  }
+});
+
+// ── Sozlamalar → Qurilmalar: ikki bosqichli kirishni yoqish / o'chirish ──────────
+// idle — holat va tugma; password — joriy parol so'raladi; code — emailga kelgan kod (faqat yoqishda)
+let _twoFactor = { mode: 'idle', target: false, token: null };
+
+function setTwoFactorMode(mode) {
+  _twoFactor.mode = mode;
+  const enabled = !!state.currentUser?.two_factor_enabled;
+  document.getElementById('twoFactorStatus').textContent = enabled
+    ? "Yoqilgan. Yangi qurilmadan kirishda emailingizga kod yuboriladi."
+    : "O'chiq. Yoqilsa, yangi qurilmadan kirishda parol bilan birga emailga kelgan kod ham so'raladi.";
+  document.getElementById('twoFactorBox').classList.toggle('is-on', enabled);
+  const toggle = document.getElementById('btnTwoFactorToggle');
+  toggle.textContent = enabled ? "O'chirish" : 'Yoqish';
+  toggle.hidden = mode !== 'idle';
+  document.getElementById('twoFactorStep').hidden = mode === 'idle';
+  document.getElementById('twoFactorPasswordGroup').hidden = mode !== 'password';
+  document.getElementById('twoFactorCodeGroup').hidden = mode !== 'code';
+  document.getElementById('btnTwoFactorNext').textContent = mode === 'code' ? 'Tasdiqlash' : 'Davom etish';
+  if (mode === 'idle') {
+    document.getElementById('twoFactorPassword').value = '';
+    document.getElementById('twoFactorCode').value = '';
+    _twoFactor.token = null;
+  }
+  if (mode === 'password') document.getElementById('twoFactorPassword').focus();
+  if (mode === 'code') document.getElementById('twoFactorCode').focus();
+}
+
+document.getElementById('btnTwoFactorToggle')?.addEventListener('click', () => {
+  _twoFactor.target = !state.currentUser?.two_factor_enabled;
+  if (_twoFactor.target && !state.currentUser?.email) {
+    showToast("Avval Profil bo'limida email kiriting — kod o'sha emailga keladi", 'error');
+    return;
+  }
+  setTwoFactorMode('password');
+});
+document.getElementById('btnTwoFactorCancel')?.addEventListener('click', () => setTwoFactorMode('idle'));
+
+async function submitTwoFactor() {
+  const btn = document.getElementById('btnTwoFactorNext');
+  if (btn.disabled) return;
+  btn.disabled = true;
+  try {
+    let res;
+    if (_twoFactor.mode === 'password') {
+      res = await fetch(`${API_BASE}/auth/two-factor/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: _twoFactor.target, password: document.getElementById('twoFactorPassword').value.trim() }),
+      });
+    } else {
+      res = await fetch(`${API_BASE}/auth/two-factor/confirm/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: _twoFactor.token, code: document.getElementById('twoFactorCode').value.replace(/\D/g, '') }),
+      });
+    }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      showToast(extractErrorMessage(data, 'Xatolik yuz berdi'), 'error');
+      return;
+    }
+    if (data.token) {
+      // Yoqish: parol to'g'ri — endi emailga kelgan kod bilan tasdiqlanadi
+      _twoFactor.token = data.token;
+      document.getElementById('twoFactorCodeLabel').textContent = `${data.email} ga kelgan kod *`;
+      setTwoFactorMode('code');
+      return;
+    }
+    state.currentUser = data.user;
+    showToast(data.message);
+    setTwoFactorMode('idle');
+  } catch (err) {
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+document.getElementById('btnTwoFactorNext')?.addEventListener('click', submitTwoFactor);
+// Maydonlar Qurilmalar formasi ichida: Enter formani yubormasin, shu qadamni bajarsin
+['twoFactorPassword', 'twoFactorCode'].forEach(id => {
+  document.getElementById(id)?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      submitTwoFactor();
+    }
+  });
+});
+
+// ── Ikki bosqichli kirish: kod qadami ──────────
+let _loginCodeToken = null;
+
+function showLoginCode(data) {
+  const show = !!data;
+  _loginCodeToken = show ? data.token : null;
+  document.getElementById('formLoginMain').style.display = show ? 'none' : 'flex';
+  document.getElementById('formLoginCode').style.display = show ? 'flex' : 'none';
+  const tabs = document.querySelector('.auth-tabs');
+  if (tabs) tabs.style.display = show ? 'none' : '';
+  const title = document.getElementById('authScreenTitle');
+  if (title) title.textContent = show ? 'Kirishni tasdiqlash' : 'Moliya Tizimiga Kirish';
+  document.getElementById('formLoginCode').reset();
+  if (show) {
+    document.getElementById('loginCodeIntro').textContent =
+      `Kod ${data.email} manziliga yuborildi (spam papkasini ham tekshiring). Kod 10 daqiqa amal qiladi.`;
+    document.getElementById('loginCode').focus();
+  } else {
+    document.getElementById('formLoginMain').reset();
+  }
+}
+
+document.getElementById('btnLoginCodeBack')?.addEventListener('click', () => showLoginCode(null));
+
+onSubmitOnce('formLoginCode', async () => {
+  // Ko'chirib qo'yilganda probel/defis qo'shilib qolishi mumkin — faqat raqamlar
+  const code = document.getElementById('loginCode').value.replace(/\D/g, '');
+  if (code.length !== 6) {
+    showToast('Emailga kelgan 6 xonali kodni kiriting', 'error');
+    return;
+  }
+  try {
+    const res = await fetch(`${API_BASE}/auth/login/verify/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: _loginCodeToken, code }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      showToast(`Xush kelibsiz, ${data.user.name || data.user.username}!`);
+      showLoginCode(null);
+      await checkAuth();
+    } else {
+      showToast(extractErrorMessage(data, "Kod noto'g'ri"), 'error');
+      document.getElementById('loginCode').select();
+    }
+  } catch (err) {
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
   }
 });
 
 // Register Form Submit (Main Auth Screen)
-document.getElementById('formRegisterMain')?.addEventListener('submit', async (e) => {
+onSubmitOnce('formRegisterMain', async (e) => {
   e.preventDefault();
   const payload = {
     username: document.getElementById('regUsername').value.trim(),
     password: document.getElementById('regPassword').value.trim(),
+    email: document.getElementById('regEmail').value.trim(),
     first_name: document.getElementById('regFirstName').value.trim(),
     phone: document.getElementById('regPhone').value.trim(),
   };
@@ -2506,16 +4582,16 @@ document.getElementById('formRegisterMain')?.addEventListener('submit', async (e
       body: JSON.stringify(payload)
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
     if (res.ok) {
       showToast(`Ro'yxatdan muvaffaqiyatli o'tdingiz, ${data.user.name || data.user.username}!`);
       e.target.reset();
       await checkAuth();
     } else {
-      showToast(data.error || 'Ro\'yxatdan o\'tishda xatolik yuz berdi', 'error');
+      showToast(extractErrorMessage(data, 'Ro\'yxatdan o\'tishda xatolik yuz berdi'), 'error');
     }
   } catch (err) {
-    showToast('Tarmoq xatosi', 'error');
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
   }
 });
 
@@ -2533,36 +4609,656 @@ function renderUserNav() {
   if (userAvatar) userAvatar.textContent = display[0].toUpperCase();
 }
 
+// Ro'yxatdagi bo'lim nomi — i18n allaqachon tarjima qilgan matn, sarlavhaga shundayligicha ko'chiriladi
+function settingsMenuLabel(tab) {
+  return document.querySelector(`#settingsMenu [data-settings-tab="${tab}"] .help-row-text`)?.textContent || '';
+}
+
+// tab bo'sh bo'lsa — bo'limlar ro'yxati, aks holda o'sha bo'lim ekrani (tepasida "Orqaga")
 function switchSettingsTab(tab) {
-  document.querySelectorAll('.settings-tab').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.settingsTab === tab);
-  });
+  document.getElementById('settingsMenu').hidden = !!tab;
+  document.getElementById('settingsSubHead').hidden = !tab;
+  document.querySelector('.settings-panels').hidden = !tab;
   document.querySelectorAll('[data-settings-panel]').forEach(panel => {
     panel.hidden = panel.dataset.settingsPanel !== tab;
+  });
+  if (!tab) {
+    stopSupportPolling();
+    // Ro'yxatga qaytilganda yarim qolgan tahrir va parol maydonlari tashlab yuboriladi
+    if (state.currentUser) fillProfileForm(state.currentUser);
+    setProfileMode('view');
+    document.getElementById('formSettingsPassword').reset();
+    return;
+  }
+  document.getElementById('settingsSubTitle').textContent = settingsMenuLabel(tab);
+  if (tab === 'devices') {
+    loadDevices();
+    setTwoFactorMode('idle');
+  }
+  if (tab === 'help') showHelpTopics();
+  if (tab === 'assistant') openAssistant();
+  if (tab === 'support') openSupport();
+  else stopSupportPolling();
+}
+
+// ==========================================
+// MA'LUMOTNOMA (Sozlamalar → Ma'lumotnoma)
+// ==========================================
+// Har mavzu — savol-javoblar ro'yxati. Javobdagi har qator (\n) alohida xatboshi bo'lib chiqadi.
+// Qoidalar server tekshiruvlari bilan bir xil yozilgan (views.py / serializers.py) — ular o'zgarsa bu yer ham yangilansin.
+// Moliya yordamchisi shu savol-javoblarning nusxasiga tayanadi (mainapp/assistant_knowledge.md) — mavzu o'zgarsa uni ham yangilang
+const HELP_TOPICS = [
+  { id: 'start', icon: 'person', title: "Ro'yxatdan o'tish va kirish", items: [
+    ["Qanday qilib ro'yxatdan o'tish mumkin?",
+     "Kirish oynasida «Ro'yxatdan o'tish» bo'limini tanlang, foydalanuvchi nomi (login) va kamida 8 belgili parol kiriting.\nRo'yxatdan o'tgach ilova darhol ochiladi — birinchi hamyoningizni qo'shishdan boshlang."],
+    ["Parolimni unutdim. Nima qilaman?",
+     "Kirish oynasida «Parolni unutdingizmi?» tugmasini bosing va foydalanuvchi nomingiz yoki emailingizni kiriting. Akkauntga ulangan emailga 6 xonali kod yuboriladi — kodni va yangi parolni kiriting.\nKod faqat akkauntda email bo'lsa keladi. Shuning uchun emailni oldindan Sozlamalar → Profil bo'limida kiritib qo'ying. Xat «Spam» papkasiga tushib qolishi mumkin."],
+    ["Profil ma'lumotlarini qanday o'zgartiraman?",
+     "Sozlamalar → Profil bo'limida «Tahrirlash» tugmasini bosing. Ism, familiya, login, email va telefonni o'zgartirib «Saqlash» ni bosing.\nEmail parolni tiklash uchun ishlatilgani sababli uni o'zgartirishda joriy parol so'raladi.\nIkki bosqichli kirish yoqilgan bo'lsa, yangi email unga kelgan kod bilan tasdiqlanadi — kod kiritilmaguncha eski email saqlanib turadi."],
+  ]},
+  { id: 'home', icon: 'mobile', title: 'Bosh sahifa', items: [
+    ["Bosh sahifadagi ma'lumotlarni qanday yangilayman?",
+     "Bosh sahifa eng tepada turganda: telefon yoki planshetda barmoq bilan pastga torting, kompyuterda sichqoncha g'ildiragi yoki touchpad bilan yana yuqoriga aylantiring. Ilova belgisi chiqadi — halqasi to'lganda qo'yib yuboring: balans, hamyonlar va operatsiyalar qayta yuklanadi."],
+    ["Nega «Hamyonlarim» bo'limida hamma hamyonlar ko'rinmaydi?",
+     "Bosh sahifa ixcham bo'lishi uchun bu bo'limda faqat 2 ta hamyon turadi. Hammasini ko'rish uchun «Hamyonlarim ›» sarlavhasini bosing. Har bir hamyon balansi «Umumiy balans» kartasida ham ko'rinadi."],
+    ["Takroriy to'lovlar, maqsadlar va a'zolar ro'yxati qayerda?",
+     "Bosh sahifada bu bo'limlarning faqat nomi turadi. Ro'yxatni ko'rish uchun bo'lim nomini bosing — u alohida sahifada ochiladi. Yangi yozuvni nom yonidagi «+» tugmasi bilan darhol qo'shish mumkin."],
+    ["Ilova telefon va planshetda ishlaydimi?",
+     "Ha. Ilova brauzerda ochiladi va ekran o'lchamiga o'zi moslashadi: telefonda ixcham, planshet va kompyuterda kengroq ko'rinadi. Alohida o'rnatish shart emas."],
+    ["Admin xabarlari qayerda ko'rinadi?",
+     "Navbardagi qo'ng'iroqcha belgisini bosing — «Xabarlar» ro'yxatida admin yuborgan xabarlar eng tepada, yashil fonda va «Admin» belgisi bilan turadi. Barcha foydalanuvchilarga yuborilganida «Hammaga» deb yoziladi. Yangi xabar qo'ng'iroqchada son bilan bilinadi va ro'yxatni ochganingizda o'qilgan hisoblanadi; o'qilgan xabar 30 kun ko'rinib turadi."],
+  ]},
+  { id: 'wallets', icon: 'wallet', title: 'Hamyonlar', items: [
+    ['Hamyon nima?',
+     "Hamyon — pulingiz turgan har bir joy: naqd pul, bank kartasi, seyf va hokazo. Har bir kirim, chiqim va qarz qaysidir hamyonga yoziladi, shuning uchun avval kamida bitta hamyon oching."],
+    ["Hamyonni qanday qo'shaman?",
+     "Bosh sahifadagi «Hamyonlarim» bo'limida qo'shish tugmasini bosing. Nom, boshlang'ich mablag' (hozir unda qancha pul borligi) va valyutani tanlang."],
+    ["Hamyon balansini qo'lda o'zgartirsa bo'ladimi?",
+     "Yo'q. Balans faqat Kirim, Chiqim, O'tkazma va Qarz orqali o'zgaradi — shunda har bir so'm qayerdan kelib, qayerga ketgani tarixda saqlanadi.\nAgar boshlang'ich mablag'ni xato kiritgan bo'lsangiz, farqni Kirim yoki Chiqim sifatida yozing."],
+    ['Hamyon valyutasini almashtirsa bo\'ladimi?',
+     "Faqat hamyonda hali birorta operatsiya bo'lmasa. Operatsiyalar bo'lsa, boshqa valyutada yangi hamyon oching va pulni O'tkazma orqali o'tkazing."],
+    ["Hamyonni qanday o'chiraman?",
+     "Hamyon yonidagi o'chirish tugmasini bosing. O'chirish uchun hamyon balansi 0 bo'lishi va unga to'lanmagan qarz bog'lanmagan bo'lishi kerak. Pul qolgan bo'lsa, avval uni O'tkazma orqali boshqa hamyonga o'tkazing."],
+    ['Balansni qanday yashiraman?',
+     "Bosh sahifadagi balans yonidagi ko'z belgisini bosing. Summa, hamyon nomlari va valyutalar xiralashadi. Qayta bosilsa ko'rinadi. Tanlov shu brauzerda eslab qolinadi."],
+  ]},
+  { id: 'income', icon: 'income', title: 'Kirim (daromad)', items: [
+    ['Kirimni qanday yozaman?',
+     "Bosh sahifada «Kirim» tugmasini bosing. Summa, pul tushgan hamyon va daromad manbayini (masalan, Maosh) tanlang. Sana va izoh ixtiyoriy.\nSaqlangach summa tanlangan hamyon balansiga qo'shiladi."],
+    ["Ro'yxatda kerakli manba yo'q bo'lsa-chi?",
+     "Manbalar ro'yxatidan «Boshqa (o'zingiz yozing...)» ni tanlang va yangi nom yozing — u keyingi safar ro'yxatda turadi. Toifalarni oldindan «Toifalarni sozlash» oynasida ham qo'shish mumkin."],
+    ["Barcha kirimlarni qayerdan ko'raman?",
+     "Navbardagi «Kirim» bo'limini bosing. U yerda kirimlar sana bo'yicha ro'yxatlangan, davr va valyuta bo'yicha filtrlash mumkin."],
+  ]},
+  { id: 'expense', icon: 'expense', title: 'Chiqim (harajat)', items: [
+    ['Harajatni qanday yozaman?',
+     "Bosh sahifada «Harajat» tugmasini bosing. Summa, pul chiqqan hamyon va toifani (nimaga sarflandi) tanlang. Sana, «Kimga?» va izoh ixtiyoriy."],
+    ["«Hamyonda mablag' yetarli emas» xatosi chiqdi. Nega?",
+     "Harajat summasi tanlangan hamyondagi puldan oshib ketdi. Boshqa hamyonni tanlang yoki avval shu hamyonga Kirim yoki O'tkazma qiling. Hamyon balansi manfiyga tushmaydi."],
+    ["«Kimga?» maydoni nima uchun?",
+     "Pul kimga sarflanganini belgilash uchun: masalan, ukangiz yoki akangizning oilasi. Ro'yxatga odam yoki oilani «A'zolarim» bo'limida qo'shasiz. Bo'sh qoldirilsa — o'zingiz uchun hisoblanadi."],
+  ]},
+  { id: 'transfer', icon: 'transfer', title: "O'tkazma", items: [
+    ["O'tkazma nima?",
+     "Pulni bir hamyondan boshqasiga o'tkazish: masalan, kartadan naqd pul yechish. Umumiy balans o'zgarmaydi, shuning uchun o'tkazma kirim yoki chiqim hisobiga kirmaydi."],
+    ["Hamyonlar har xil valyutada bo'lsa-chi?",
+     "«Tushadigan summa» kurs bo'yicha avtomatik hisoblanadi. Agar bank yoki ayirboshlash shoxobchasi boshqa kurs bergan bo'lsa, haqiqatda tushgan summani o'zingiz yozing."],
+  ]},
+  { id: 'debts', icon: 'ledger', title: 'Qarzlar', items: [
+    ['Qarzni qanday yozaman?',
+     "«Qarz» tugmasini bosing, shaxs yoki tashkilot nomini, qarz turini, summani va bog'langan hamyonni tanlang. Qaytarish muddati ixtiyoriy."],
+    ["«Qarz berdim» va «Qarz oldim» farqi nima?",
+     "«Qarz berdim» — siz birovga pul berdingiz: summa hamyoningizdan yechiladi va sizga qaytarilishi kutiladi.\n«Qarz oldim» — siz birovdan pul oldingiz: summa hamyoningizga qo'shiladi va uni qaytarishingiz kerak."],
+    ["Qarzni qisman qaytarsa bo'ladimi?",
+     "Ha. Qarzlar daftarida qarz yonidagi «To'lash» tugmasini bosing, to'langan summani va hamyonni tanlang. Qolgan summa avtomatik kamayadi, to'liq to'langanda qarz yopiladi.\nTo'lov qolgan qarzdan ko'p bo'lishi mumkin emas."],
+    ["Qarz boshqa valyutadagi hamyon orqali to'lansa-chi?",
+     "Hamyonga kurs bo'yicha hisoblangan summa yoziladi. Kurs vaqtincha aniqlanmasa, qarz valyutasidagi hamyonni tanlang yoki keyinroq urinib ko'ring."],
+    ["Qarzni o'chirsam nima bo'ladi?",
+     "Qarzning to'lanmagan qismi hamyonga qaytariladi: «Qarz berdim» bo'lsa hamyonga qo'shiladi, «Qarz oldim» bo'lsa hamyondan yechiladi."],
+  ]},
+  { id: 'operations', icon: 'receipt', title: 'Operatsiyalarni tahrirlash va o\'chirish', items: [
+    ["Xato yozilgan operatsiyani qanday tuzataman?",
+     "Kirim yoki Chiqim ro'yxatida operatsiyani bosing — tafsilotlar oynasi ochiladi. «Tahrirlash» tugmasini bosib summa, hamyon, toifa, sana yoki izohni o'zgartiring.\nHamyon balansi faqat farq bo'yicha to'g'rilanadi: masalan 100 000 so'mlik harajat 120 000 ga o'zgartirilsa, hamyondan yana 20 000 yechiladi."],
+    ["Xato yozilgan operatsiyani qanday o'chiraman?",
+     "Tafsilotlar oynasida o'chirish tugmasini bosing. Operatsiya bekor qilinadi va hamyon balansi avvalgi holiga qaytadi."],
+    ["Adashib o'chirib yubordim. Qaytarsa bo'ladimi?",
+     "Ha. O'chirgandan keyin pastda «Qaytarish» tugmali xabar bir necha soniya turadi — uni bossangiz operatsiya va balans qayta tiklanadi.\nAgar shu orada o'sha pul boshqa joyga sarflangan bo'lsa, harajatni qaytarib bo'lmaydi: hamyonda mablag' yetmaydi."],
+    ["Nega ba'zi operatsiyalarni o'zgartirib bo'lmaydi?",
+     "Agar operatsiya o'chirilgan hamyonga tegishli bo'lsa, uni tahrirlab yoki bekor qilib bo'lmaydi — aks holda pul ko'rinmaydigan hamyonga o'tib qolardi."],
+  ]},
+  { id: 'recurring', icon: 'repeat', title: "Takroriy to'lovlar", items: [
+    ["Takroriy to'lov nima?",
+     "Ijara, kommunal, internet, obuna yoki oylik maosh kabi muntazam takrorlanadigan to'lov va tushumlar. Bir marta qo'shasiz — muddati kelganda harajat yoki daromad o'zi yoziladi."],
+    ["Qanday qo'shaman?",
+     "Bosh sahifadagi «Takroriy to'lovlar» bo'limida «+ Qo'shish» tugmasini bosing. Turi, nomi, summa, hamyon, toifa, qanchalik tez-tez (har kuni, hafta, oy yoki yil) va birinchi to'lov sanasini tanlang."],
+    ["To'lov qachon yoziladi?",
+     "Muddati kelgan kuni, ilovani ochganingizda. Bir necha kun ochmagan bo'lsangiz, o'tib ketgan kunlarning hammasi yoziladi.\nBirinchi to'lov sanasi o'tmishda bo'lsa, eski sanalar orqaga qarab yozilmaydi — hisob bugundan boshlanadi."],
+    ["Oyning 31-sanasidagi to'lov qisqa oylarda nima bo'ladi?",
+     "O'sha oyning oxirgi kunida yoziladi (masalan 28-fevral), keyingi oyda yana 31-sanaga qaytadi."],
+    ["Eslatma qanday ishlaydi?",
+     "Muddatidan necha kun oldin eslatilishini o'zingiz belgilaysiz. Shu kundan boshlab navbardagi qo'ng'iroqcha belgisida xabar chiqadi."],
+    ["«Avtomatik yozilmadi» degan xabar chiqdi. Nega?",
+     "Odatda hamyonda pul yetmagan. To'lov keyingi safar ilovani ochganingizda yana urinib ko'riladi — hamyonni to'ldiring yoki to'lovni boshqa hamyonga o'tkazing."],
+    ["Takroriy to'lovni o'chirsam nima bo'ladi?",
+     "Kelgusida yozilmaydi. Avval yozilgan operatsiyalar o'chirilmaydi va balans o'zgarmaydi."],
+  ]},
+  { id: 'goals', icon: 'target', title: 'Jamg\'arma maqsadlari', items: [
+    ["Maqsad qanday ishlaydi?",
+     "Maqsad bitta hamyonga bog'lanadi va yig'ilgan summa — o'sha hamyon balansi. Shuning uchun maqsad uchun alohida hamyon ochish qulay (masalan «Mashina uchun»)."],
+    ["Maqsadga qanday pul qo'shaman?",
+     "Maqsad kartochkasidagi «+ Pul qo'shish» tugmasini bosing — O'tkazma oynasi maqsad hamyoniga yo'naltirilgan holda ochiladi. Pul boshqa hamyondan o'tkaziladi, shuning uchun umumiy balans o'zgarmaydi."],
+    ["Muddat nima beradi?",
+     "Maqsad kartochkasida muddatgacha necha kun qolgani ko'rinadi. Muddat ixtiyoriy."],
+    ["Maqsadni o'chirsam pul yo'qoladimi?",
+     "Yo'q. Faqat maqsad o'chadi — hamyon va undagi pul joyida qoladi."],
+  ]},
+  { id: 'categories', icon: 'tag', title: "Toifalar va a'zolar", items: [
+    ['Toifalarni qayerda sozlayman?',
+     "Kirim yoki Harajat oynasidagi «Toifalarni sozlash» tugmasini bosing. Ochilgan oynada yangi toifa qo'shish yoki keraksizini o'chirish mumkin. Kirim va harajat toifalari alohida."],
+    ["A'zolar nima?",
+     "A'zolar — siz pul sarflaydigan odamlar yoki oilalar. Ularni bosh sahifadagi «A'zolarim» bo'limida qo'shasiz va harajat yozayotganda «Kimga?» maydonida tanlaysiz. Turi «Bitta odam» yoki «Butun oila» bo'lishi mumkin."],
+  ]},
+  { id: 'stats', icon: 'chart', title: 'Statistika va hisobotlar', items: [
+    ['Statistikani qayerdan ko\'raman?',
+     "Bosh sahifadagi statistika kartochkasini bosing. Kunlik dinamika va toifalar bo'yicha taqsimot ko'rsatiladi."],
+    ['Boshqa oy yoki sana oralig\'ini tanlasa bo\'ladimi?',
+     "Ha. Oyni almashtirish yoki «Dan» va «Gacha» sanalarini kiritib ixtiyoriy davrni tanlash mumkin. Davr uzunligi 1 yildan (366 kun) oshmasligi kerak."],
+  ]},
+  { id: 'currency', icon: 'card', title: 'Valyutalar', items: [
+    ['Qaysi valyutalar bor?',
+     "UZS, USD, EUR, RUB, KZT, GBP, CNY, TRY, AED, KRW, JPY va CHF. Har bir hamyon bitta valyutada yuritiladi."],
+    ['Har xil valyutadagi balans qanday ko\'rsatiladi?',
+     "Bosh sahifada balans valyutalar bo'yicha alohida chiqadi: birinchisi katta, qolganlari uning tagida. Har bir hamyon summasi o'z valyutasida ko'rsatiladi."],
+  ]},
+  { id: 'security', icon: 'shield', title: 'Xavfsizlik va qurilmalar', items: [
+    ['Parolni qanday almashtiraman?',
+     "Sozlamalar → Parol bo'limida joriy parolni va yangi parolni (kamida 8 belgi) ikki marta kiriting."],
+    ['Ikki bosqichli kirish nima?',
+     "Yoqilgan bo'lsa, kirishda paroldan keyin emailingizga 6 xonali kod yuboriladi va u kiritilmaguncha akkaunt ochilmaydi. Parolingizni kimdir bilib olsa ham, emailingizga kira olmasa akkauntga kira olmaydi."],
+    ['Ikki bosqichli kirishni qanday yoqaman?',
+     "Sozlamalar → Qurilmalar bo'limida «Ikki bosqichli kirish» yonidagi «Yoqish» tugmasini bosing, joriy parolni kiriting, so'ng emailga kelgan kodni kiriting. Kod kelishi uchun Profil bo'limida email kiritilgan bo'lishi kerak.\nYoqilgan paytda emailni o'chirib bo'lmaydi — aks holda kod keladigan joy qolmaydi."],
+    ['Qurilmalar bo\'limi nima uchun?',
+     "Bu yerda akkauntingizga qaysi qurilmalardan kirilgani va kirish vaqti ko'rinadi. Notanish qurilma bo'lsa, «Boshqa qurilmalarni chiqarish» tugmasini bosing va parolni almashtiring."],
+    ["Nega «Boshqa qurilmalarni chiqarish» ishlamayapti?",
+     "Xavfsizlik uchun bu amalni faqat kamida 15 kun oldin kirilgan qurilmadan bajarish mumkin. Shunda parolingizni bilib olgan begona odam sizni akkauntdan chiqarib yubora olmaydi."],
+    ["Akkauntni qanday o'chiraman?",
+     "Sozlamalar → Profil bo'limida «Akkauntni o'chirish» tugmasini bosing va joriy parolni kiriting. Diqqat: bu amalni ortga qaytarib bo'lmaydi."],
+  ]},
+  { id: 'look', icon: 'note', title: "Ko'rinish va til", items: [
+    ["Yorug' yoki qorong'u rejimni qanday almashtiraman?",
+     "Navbardagi quyosh/oy tugmasini bosing. Tanlov shu brauzerda saqlanadi."],
+    ['Ranglarni qanday o\'zgartiraman?',
+     "Sozlamalar → Ranglar bo'limida mavzuni tanlang — u darhol qo'llanadi. Har bir mavzu yorug' va qorong'u rejimda ishlaydi."],
+    ['Ilova tilini qanday almashtiraman?',
+     "Sozlamalar → Til bo'limida tilni tanlang. O'zbek, tojik, qozoq, qirg'iz, rus, ingliz va turk tillari bor. Tanlangan til shu brauzerda saqlanadi."],
+  ]},
+];
+
+function showHelpTopics() {
+  delete document.getElementById('settingsHelp').dataset.topic;
+  document.getElementById('settingsSubTitle').textContent = settingsMenuLabel('help');
+  const body = document.getElementById('helpBody');
+  body.innerHTML = `<div class="help-list">${HELP_TOPICS.map(t => `
+    <button type="button" class="help-row" data-help-topic="${t.id}">
+      <span class="help-row-icon">${icon(t.icon)}</span>
+      <span class="help-row-text">${escapeHtml(t.title)}</span>
+      ${icon('chevronRight')}
+    </button>`).join('')}</div>`;
+  body.scrollTop = 0;
+}
+
+function showHelpTopic(id) {
+  const topic = HELP_TOPICS.find(t => t.id === id);
+  if (!topic) return;
+  document.getElementById('settingsHelp').dataset.topic = id;
+  document.getElementById('settingsSubTitle').textContent = topic.title;
+  const body = document.getElementById('helpBody');
+  // <details> — klaviatura va ekran o'quvchilar uchun tayyor ochiladigan blok, JS kerak emas
+  body.innerHTML = `<div class="help-list">${topic.items.map(([q, a]) => `
+    <details class="help-item">
+      <summary>${escapeHtml(q)}${icon('chevronDown')}</summary>
+      <div class="help-answer">${a.split('\n').map(p => `<p>${escapeHtml(p)}</p>`).join('')}</div>
+    </details>`).join('')}</div>`;
+  body.scrollTop = 0;
+}
+
+document.getElementById('helpBody')?.addEventListener('click', e => {
+  const row = e.target.closest('[data-help-topic]');
+  if (row) showHelpTopic(row.dataset.helpTopic);
+});
+// Ma'lumotnomada mavzu ochiq bo'lsa avval mavzular ro'yxatiga, aks holda bo'limlar ro'yxatiga qaytadi
+document.getElementById('btnSettingsBack')?.addEventListener('click', () => {
+  const help = document.getElementById('settingsHelp');
+  if (!help.hidden && help.dataset.topic) showHelpTopics();
+  else switchSettingsTab(null);
+});
+
+// ==========================================
+// CHAT YORDAMCHILARI (Moliya yordamchisi va Yordam uchun umumiy)
+// ==========================================
+// Matn har doim textContent bilan qo'yiladi — foydalanuvchi yoki yordamchi yozgan HTML ishlamaydi
+function chatMessageEl({ text, mine, time, error }) {
+  const row = document.createElement('div');
+  row.className = `chat-msg ${mine ? 'is-mine' : 'is-theirs'}${error ? ' is-error' : ''}`;
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-bubble';
+  bubble.textContent = text;
+  row.appendChild(bubble);
+  if (time) {
+    const t = document.createElement('div');
+    t.className = 'chat-time';
+    t.textContent = time;
+    row.appendChild(t);
+  }
+  return row;
+}
+
+function chatTypingEl() {
+  const row = document.createElement('div');
+  row.className = 'chat-msg is-theirs';
+  row.innerHTML = '<div class="chat-bubble"><span class="chat-typing" aria-label="Yozmoqda"><i></i><i></i><i></i></span></div>';
+  return row;
+}
+
+function chatScrollToEnd(log) {
+  log.scrollTop = log.scrollHeight;
+}
+
+// Yozish maydoni matnga qarab 1–5 qatorgacha o'sadi; Enter — yuborish, Shift+Enter — yangi qator
+function setupChatInput(textarea, form) {
+  if (!textarea || !form) return;
+  const grow = () => {
+    textarea.style.height = 'auto';
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
+    textarea.style.overflowY = textarea.scrollHeight > 120 ? 'auto' : 'hidden';
+  };
+  textarea.addEventListener('input', grow);
+  textarea.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+      e.preventDefault();
+      form.requestSubmit();
+    }
+  });
+  textarea._grow = grow;
+}
+
+// ==========================================
+// MOLIYA YORDAMCHISI (Sozlamalar → Moliya yordamchisi)
+// ==========================================
+// Suhbat faqat xotirada (sahifa yangilanguncha) — serverda saqlanmaydi. Javob ma'lumotnomadan qidiriladi (mainapp/faq.py)
+const assistantState = { messages: [] };
+
+function renderAssistant() {
+  const log = document.getElementById('assistantLog');
+  log.innerHTML = '';
+  if (!assistantState.messages.length) {
+    log.innerHTML = `<div class="chat-empty">${icon('sparkle')}
+      <p class="chat-empty-title">Moliya yordamchisi</p>
+      <p>Hamyonlar, kirim va chiqim, qarzlar, valyutalar va sozlamalar bo'yicha savolingizni yozing — ilovadan qanday foydalanishni tushuntirib beraman.</p>
+    </div>`;
+    return;
+  }
+  assistantState.messages.forEach(m => log.appendChild(chatMessageEl({ text: m.content, mine: m.role === 'user', error: m.error })));
+  chatScrollToEnd(log);
+}
+
+function openAssistant() {
+  renderAssistant();
+  document.getElementById('assistantInput').focus();
+}
+
+async function askAssistant(question) {
+  const log = document.getElementById('assistantLog');
+  assistantState.messages.push({ role: 'user', content: question });
+  renderAssistant();
+  log.appendChild(chatTypingEl());
+  chatScrollToEnd(log);
+  // Xato javoblar tarixga kirmaydi — keyingi so'rovda modelga yuborilmaydi
+  const history = assistantState.messages.filter(m => !m.error).map(({ role, content }) => ({ role, content }));
+  let reply;
+  try {
+    const res = await fetch(`${API_BASE}/assistant/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: history }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) reply = { role: 'assistant', content: data.answer };
+    else if (res.status === 429) reply = { role: 'assistant', content: "Juda ko'p savol berildi. Birozdan keyin qayta urinib ko'ring.", error: true };
+    else reply = { role: 'assistant', content: data.error || "Javob olinmadi. Qayta urinib ko'ring.", error: true };
+  } catch (e) {
+    reply = { role: 'assistant', content: NETWORK_ERROR_MESSAGE, error: true };
+  }
+  assistantState.messages.push(reply);
+  renderAssistant();
+}
+
+onSubmitOnce('formAssistant', async () => {
+  const input = document.getElementById('assistantInput');
+  const question = input.value.trim();
+  if (!question) return;
+  input.value = '';
+  input._grow?.();
+  await askAssistant(question);
+  input.focus();
+});
+setupChatInput(document.getElementById('assistantInput'), document.getElementById('formAssistant'));
+
+// ==========================================
+// YORDAM — admin bilan chat (Sozlamalar → Yordam)
+// ==========================================
+// Admin javobni admin panelidan yozadi. Bo'lim ochiq turganda yangi xabarlar har SUPPORT_POLL_MS da so'raladi;
+// o'qilmagan javoblar soni navbar qo'ng'irog'ida ko'rinadi (SUPPORT_UNREAD_POLL_MS da yangilanadi)
+const SUPPORT_POLL_MS = 5000;
+const SUPPORT_UNREAD_POLL_MS = 60000;
+const supportState = { lastId: 0, loaded: false, timer: null, unreadTimer: null };
+
+function supportPanelOpen() {
+  return document.getElementById('modalSettings').classList.contains('active')
+    && !document.getElementById('settingsSupport').hidden;
+}
+
+function renderSupportEmpty() {
+  document.getElementById('supportLog').innerHTML = `<div class="chat-empty">${icon('chat')}
+    <p>Savol, muammo yoki taklifingizni yozing — admin shu yerda javob beradi.</p></div>`;
+}
+
+function appendSupportMessages(messages) {
+  const log = document.getElementById('supportLog');
+  const fresh = messages.filter(m => m.id > supportState.lastId);
+  if (!fresh.length) return;
+  log.querySelector('.chat-empty')?.remove();
+  const atEnd = log.scrollHeight - log.scrollTop - log.clientHeight < 60;
+  fresh.forEach(m => {
+    log.appendChild(chatMessageEl({
+      text: m.text, mine: !m.from_admin,
+      time: `${m.from_admin ? 'Admin · ' : ''}${formatUzDate(m.created_at, { year: true, time: true })}`,
+    }));
+    supportState.lastId = m.id;
+  });
+  if (atEnd) chatScrollToEnd(log);
+}
+
+function stopSupportPolling() {
+  clearInterval(supportState.timer);
+  supportState.timer = null;
+}
+
+async function pollSupport() {
+  if (!supportPanelOpen()) return stopSupportPolling();
+  if (document.hidden) return;
+  try {
+    const res = await fetch(`${API_BASE}/support/messages/?after=${supportState.lastId}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    appendSupportMessages(data.messages);
+    // Ochiq suhbatdagi admin javoblari server tomonida o'qilgan deb belgilandi
+    if (data.messages.some(m => m.from_admin)) setSupportUnread(0);
+  } catch (e) { /* tarmoq uzilgan — keyingi urinishda */ }
+}
+
+async function openSupport() {
+  const log = document.getElementById('supportLog');
+  if (!supportState.loaded) {
+    log.innerHTML = '';
+    log.appendChild(chatTypingEl());
+    try {
+      const res = await fetch(`${API_BASE}/support/messages/`);
+      if (!res.ok) throw new Error(String(res.status));
+      const data = await res.json();
+      log.innerHTML = '';
+      supportState.loaded = true;
+      if (data.messages.length) appendSupportMessages(data.messages);
+      else renderSupportEmpty();
+    } catch (e) {
+      log.innerHTML = '';
+      log.appendChild(chatMessageEl({ text: NETWORK_ERROR_MESSAGE, error: true }));
+      return;
+    }
+  } else {
+    await pollSupport();
+  }
+  setSupportUnread(0);
+  chatScrollToEnd(log);
+  document.getElementById('supportInput').focus();
+  stopSupportPolling();
+  supportState.timer = setInterval(pollSupport, SUPPORT_POLL_MS);
+}
+
+onSubmitOnce('formSupport', async () => {
+  const input = document.getElementById('supportInput');
+  const text = input.value.trim();
+  if (!text) return;
+  try {
+    const res = await fetch(`${API_BASE}/support/messages/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      showToast(res.status === 429 ? "Juda ko'p xabar yuborildi. Birozdan keyin qayta urinib ko'ring." : (data.error || 'Xabar yuborilmadi'), 'error');
+      return;
+    }
+    input.value = '';
+    input._grow?.();
+    // Yuborilgan xabardan oldin kelgan javoblar ham tartib bilan chiqsin
+    await pollSupport();
+    appendSupportMessages([data]);
+    chatScrollToEnd(document.getElementById('supportLog'));
+  } catch (e) {
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
+  }
+  input.focus();
+});
+setupChatInput(document.getElementById('supportInput'), document.getElementById('formSupport'));
+
+// O'qilmagan admin javoblari: navbar qo'ng'irog'i va Sozlamalardagi "Yordam" qatori
+function setSupportUnread(count) {
+  state.supportUnread = count;
+  const badge = document.getElementById('supportMenuBadge');
+  if (badge) {
+    badge.hidden = !count;
+    badge.textContent = count > 99 ? '99+' : count;
+  }
+  renderNotifications();
+}
+
+async function refreshSupportUnread() {
+  if (!state.currentUser || document.hidden || supportPanelOpen()) return;
+  try {
+    const res = await fetch(`${API_BASE}/support/unread/`);
+    if (!res.ok) return;
+    const { unread, notices_unread: noticesUnread } = await res.json();
+    if (unread !== state.supportUnread) setSupportUnread(unread);
+    if (noticesUnread !== state.noticesUnread) fetchNotices();
+  } catch (e) { /* tarmoq uzilgan */ }
+}
+
+// Kirishda (checkAuth) boshlanadi, chiqishda to'xtaydi; suhbatlar xotirasi ham tozalanadi
+function startSupportUnreadPolling(initial) {
+  setSupportUnread(initial || 0);
+  clearInterval(supportState.unreadTimer);
+  supportState.unreadTimer = setInterval(refreshSupportUnread, SUPPORT_UNREAD_POLL_MS);
+}
+
+function stopSupportUnreadPolling() {
+  clearInterval(supportState.unreadTimer);
+  stopSupportPolling();
+  Object.assign(supportState, { unreadTimer: null, loaded: false, lastId: 0 });
+  assistantState.messages = [];
+  state.supportUnread = 0;
+  state.notices = [];
+  state.noticesUnread = 0;
+}
+
+// ==========================================
+// QURILMALAR (Sozlamalar → Qurilmalar)
+// ==========================================
+function deviceName(d) {
+  return [d.browser, d.os].filter(Boolean).join(' · ') || "Noma'lum qurilma";
+}
+
+function renderDevices(data) {
+  const list = document.getElementById('deviceList');
+  const others = data.devices.filter(d => !d.current).length;
+  list.innerHTML = data.devices.map(d => `
+    <div class="device-item${d.current ? ' is-current' : ''}">
+      <span class="device-icon">${icon(d.kind)}</span>
+      <div class="device-info">
+        <div class="device-name"><span>${escapeHtml(deviceName(d))}</span>${d.current ? '<span class="device-badge">Bu qurilma</span>' : ''}</div>
+        <div class="device-meta">Kirgan: ${escapeHtml(formatUzDate(d.created_at, { year: true, time: true }))}</div>
+        <div class="device-meta"><span>${d.current
+          ? 'Hozir faol'
+          : `Oxirgi faollik: ${escapeHtml(formatUzDate(d.last_seen, { year: true, time: true }))}`}</span>${d.ip ? `<span> · IP: ${escapeHtml(d.ip)}</span>` : ''}</div>
+      </div>
+      ${d.current ? '' : `<button type="button" class="btn btn-subtle btn-xs device-end" data-device-end="${d.id}"${data.can_terminate ? '' : ' disabled'}>Chiqarish</button>`}
+    </div>`).join('');
+
+  const hint = document.getElementById('deviceLockHint');
+  // Chiqarish taqiqlangan bo'lsa sababi va qachon ruxsat berilishi ko'rsatiladi
+  hint.hidden = data.can_terminate || !others;
+  if (!hint.hidden) {
+    hint.textContent = `Boshqa qurilmalarni chiqarish uchun bu qurilmada kamida ${data.min_days} kun oldin kirilgan bo'lishi kerak. `
+      + `Ruxsat: ${formatUzDate(data.terminate_allowed_at, { year: true, time: true })}`;
+  }
+  const btnOthers = document.getElementById('btnTerminateOthers');
+  btnOthers.hidden = !others;
+  btnOthers.disabled = !data.can_terminate;
+}
+
+async function loadDevices() {
+  const list = document.getElementById('deviceList');
+  list.innerHTML = '<div class="device-empty">Yuklanmoqda...</div>';
+  try {
+    const res = await fetch(`${API_BASE}/auth/devices/`);
+    if (!res.ok) throw new Error(`status ${res.status}`);
+    renderDevices(await res.json());
+  } catch (err) {
+    list.innerHTML = `<div class="device-empty">Qurilmalarni yuklab bo'lmadi.
+      <button type="button" class="btn btn-subtle btn-xs" id="btnDevicesRetry">Qayta urinish</button></div>`;
+    document.getElementById('btnDevicesRetry')?.addEventListener('click', loadDevices);
+  }
+}
+
+async function terminateDevices(url, confirmMessage, okMessage) {
+  const sure = await showConfirm({ title: 'Qurilmani chiqarish', message: confirmMessage, confirmText: 'Ha, chiqarish', cancelText: "Yo'q" });
+  if (!sure) return;
+  try {
+    const res = await fetch(url, { method: 'POST' });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) showToast(okMessage);
+    else showToast(extractErrorMessage(data, 'Qurilmani chiqarishda xatolik'), 'error');
+  } catch (err) {
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
+  }
+  loadDevices();
+}
+
+document.getElementById('deviceList')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-device-end]');
+  if (!btn || btn.disabled) return;
+  terminateDevices(`${API_BASE}/auth/devices/${Number(btn.dataset.deviceEnd)}/terminate/`,
+    'Bu qurilma akkauntdan chiqariladi. Unda qayta kirish uchun parol kerak bo\'ladi.', 'Qurilma chiqarildi');
+});
+
+document.getElementById('btnTerminateOthers')?.addEventListener('click', () => {
+  terminateDevices(`${API_BASE}/auth/devices/terminate-others/`,
+    'Bu qurilmadan boshqa barcha qurilmalar akkauntdan chiqariladi.', 'Boshqa barcha qurilmalar chiqarildi');
+});
+
+const PROFILE_FIELD_IDS = ['settingsFirstName', 'settingsLastName', 'settingsUsername', 'settingsEmail', 'settingsPhone'];
+
+// Profil maydonlari saqlangan ma'lumot bilan to'ldiriladi (ochilganda va "Bekor qilish" bosilganda)
+function fillProfileForm(user) {
+  document.getElementById('settingsFirstName').value = user.first_name || '';
+  document.getElementById('settingsLastName').value = user.last_name || '';
+  document.getElementById('settingsUsername').value = user.username || '';
+  document.getElementById('settingsEmail').value = user.email || '';
+  document.getElementById('settingsPhone').value = user.phone || '';
+  document.getElementById('settingsEmailPassword').value = '';
+  setEmailConfirm(null);
+  updateEmailPasswordField();
+}
+
+// Ko'rish rejimida maydonlar faqat o'qiladi; bo'sh maydonda namuna ("+998 90...") qiymatdek ko'rinmasligi uchun
+// "Kiritilmagan" yoziladi. Tahrirlashda asl namunalar qaytadi
+function setProfileMode(mode) {
+  const editing = mode === 'edit';
+  document.getElementById('formSettingsProfile').dataset.mode = editing ? 'edit' : 'view';
+  PROFILE_FIELD_IDS.forEach(id => {
+    const input = document.getElementById(id);
+    input.dataset.editPlaceholder ??= input.placeholder;
+    input.readOnly = !editing;
+    input.placeholder = editing ? input.dataset.editPlaceholder : 'Kiritilmagan';
   });
 }
 
 function openSettings() {
   const user = state.currentUser;
   if (!user) return;
-  document.getElementById('settingsFirstName').value = user.first_name || '';
-  document.getElementById('settingsLastName').value = user.last_name || '';
-  document.getElementById('settingsUsername').value = user.username || '';
-  document.getElementById('settingsEmail').value = user.email || '';
-  document.getElementById('settingsPhone').value = user.phone || '';
-  document.getElementById('formSettingsPassword').reset();
-  switchSettingsTab('profile');
+  switchSettingsTab(null);
   openModal('modalSettings');
 }
 
+document.getElementById('btnProfileEdit')?.addEventListener('click', () => {
+  setProfileMode('edit');
+  document.getElementById('settingsFirstName').focus();
+});
+
+// O'zgarishlar bekor qilinadi, oyna yopilmaydi — ko'rish rejimiga qaytadi
+document.getElementById('btnProfileCancel')?.addEventListener('click', () => {
+  if (state.currentUser) fillProfileForm(state.currentUser);
+  setProfileMode('view');
+  document.getElementById('btnProfileEdit').focus();
+});
+
+// Email o'zgartirilsa joriy parol so'raladi (server ham shuni talab qiladi — email parolni tiklash kanali)
+function settingsEmailChanged() {
+  const typed = document.getElementById('settingsEmail').value.trim().toLowerCase();
+  return typed !== (state.currentUser?.email || '').toLowerCase();
+}
+
+function updateEmailPasswordField() {
+  const changed = settingsEmailChanged() && !_emailConfirm.token;
+  document.getElementById('settingsEmailPasswordGroup').hidden = !changed;
+  document.getElementById('settingsEmailPassword').required = changed;
+}
+
+// Ikki bosqichli kirish yoqilgan bo'lsa server yangi emailni darhol saqlamaydi: unga kod yuboradi (email_pending).
+// Shu holatda "Saqlash" kodni tasdiqlaydi (/auth/profile/confirm-email/)
+let _emailConfirm = { token: null };
+
+function setEmailConfirm(pending) {
+  _emailConfirm.token = pending?.token || null;
+  const group = document.getElementById('settingsEmailCodeGroup');
+  const input = document.getElementById('settingsEmailCode');
+  group.hidden = !_emailConfirm.token;
+  input.required = !!_emailConfirm.token;
+  input.value = '';
+  if (pending) document.getElementById('settingsEmailCodeLabel').textContent = `${pending.email} ga kelgan kod *`;
+}
+
+document.getElementById('settingsEmail')?.addEventListener('input', () => {
+  // Email yana o'zgartirilsa eski kod endi bu manzilga tegishli emas — qaytadan parol bilan saqlanadi
+  if (_emailConfirm.token) setEmailConfirm(null);
+  updateEmailPasswordField();
+});
+
 document.getElementById('btnOpenSettings')?.addEventListener('click', openSettings);
 
-document.querySelectorAll('.settings-tab').forEach(btn => {
+document.querySelectorAll('#settingsMenu [data-settings-tab]').forEach(btn => {
   btn.addEventListener('click', () => switchSettingsTab(btn.dataset.settingsTab));
 });
 
-document.getElementById('formSettingsProfile')?.addEventListener('submit', async (e) => {
+onSubmitOnce('formSettingsProfile', async (e) => {
   e.preventDefault();
+  // Ko'rish rejimida maydonda Enter bosilsa ham forma yuboriladi — bu holatda hech narsa saqlanmaydi
+  if (e.target.dataset.mode !== 'edit') return;
+  if (_emailConfirm.token) {
+    await confirmProfileEmail();
+    return;
+  }
   const payload = {
     first_name: document.getElementById('settingsFirstName').value.trim(),
     last_name: document.getElementById('settingsLastName').value.trim(),
@@ -2570,6 +5266,9 @@ document.getElementById('formSettingsProfile')?.addEventListener('submit', async
     email: document.getElementById('settingsEmail').value.trim(),
     phone: document.getElementById('settingsPhone').value.trim(),
   };
+  if (settingsEmailChanged()) {
+    payload.password = document.getElementById('settingsEmailPassword').value;
+  }
 
   try {
     const res = await fetch(`${API_BASE}/auth/profile/`, {
@@ -2578,20 +5277,58 @@ document.getElementById('formSettingsProfile')?.addEventListener('submit', async
       body: JSON.stringify(payload)
     });
     const data = await res.json().catch(() => ({}));
-    if (res.ok) {
+    if (res.ok && data.email_pending) {
+      // Boshqa maydonlar saqlandi, email esa kod tasdiqlangach yoziladi: forma tahrir rejimida qoladi
+      state.currentUser = data.user;
+      renderUserNav();
+      document.getElementById('settingsEmailPassword').value = '';
+      setEmailConfirm(data.email_pending);
+      updateEmailPasswordField();
+      showToast(data.message);
+      document.getElementById('settingsEmailCode').focus();
+    } else if (res.ok) {
       state.currentUser = data.user;
       renderUserNav();
       showToast("Profil ma'lumotlari saqlandi");
-      closeModal('modalSettings');
+      // Oyna ochiq qoladi: saqlangan qiymatlar ko'rish rejimida ko'rinadi
+      fillProfileForm(data.user);
+      setProfileMode('view');
+      document.getElementById('btnProfileEdit').focus();
     } else {
       showToast(extractErrorMessage(data, 'Profilni saqlashda xatolik'), 'error');
     }
   } catch (err) {
-    showToast('Tarmoq xatosi', 'error');
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
   }
 });
 
-document.getElementById('formSettingsPassword')?.addEventListener('submit', async (e) => {
+async function confirmProfileEmail() {
+  try {
+    const res = await fetch(`${API_BASE}/auth/profile/confirm-email/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token: _emailConfirm.token,
+        code: document.getElementById('settingsEmailCode').value.replace(/\D/g, ''),
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      state.currentUser = data.user;
+      renderUserNav();
+      showToast(data.message || 'Email yangilandi');
+      fillProfileForm(data.user);
+      setProfileMode('view');
+      document.getElementById('btnProfileEdit').focus();
+    } else {
+      showToast(extractErrorMessage(data, 'Kodni tasdiqlashda xatolik'), 'error');
+    }
+  } catch (err) {
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
+  }
+}
+
+onSubmitOnce('formSettingsPassword', async (e) => {
   e.preventDefault();
   const oldPassword = document.getElementById('settingsOldPassword').value;
   const newPassword = document.getElementById('settingsNewPassword').value;
@@ -2617,7 +5354,7 @@ document.getElementById('formSettingsPassword')?.addEventListener('submit', asyn
       showToast(extractErrorMessage(data, "Parolni o'zgartirishda xatolik"), 'error');
     }
   } catch (err) {
-    showToast('Tarmoq xatosi', 'error');
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
   }
 });
 
@@ -2635,13 +5372,11 @@ document.getElementById('btnLogout')?.addEventListener('click', async () => {
     const res = await fetch(`${API_BASE}/auth/logout/`, {
       method: 'POST'
     });
-    if (res.ok) {
-      closeModal('modalSettings');
-      showToast('Tizimdan muvaffaqiyatli chiqildi');
-      checkAuth();
-    }
+    // 401 — sessiya allaqachon tugagan: foydalanuvchi baribir chiqqan, kirish oynasiga qaytariladi
+    if (res.ok || res.status === 401) reloadSignedOut('Tizimdan muvaffaqiyatli chiqildi');
+    else showToast(extractErrorMessage(await res.json().catch(() => ({})), 'Tizimdan chiqishda xatolik'), 'error');
   } catch (err) {
-    showToast('Tarmoq xatosi', 'error');
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
   }
 });
 
@@ -2652,16 +5387,9 @@ document.getElementById('btnDeleteAccount')?.addEventListener('click', () => {
   document.getElementById('deleteAccountPassword').focus();
 });
 
-document.getElementById('formDeleteAccount')?.addEventListener('submit', async (e) => {
+onSubmitOnce('formDeleteAccount', async (e) => {
   e.preventDefault();
   const password = document.getElementById('deleteAccountPassword').value;
-  const sure = await showConfirm({
-    title: "Rostan ham o'chirmoqchimisiz?",
-    message: "Akkauntingiz o'chiriladi va unga qayta kira olmaysiz. Bu amalni ortga qaytarib bo'lmaydi.",
-    confirmText: "Ha, akkauntni o'chirish",
-    cancelText: "Yo'q, qoldirish",
-  });
-  if (!sure) return;
 
   try {
     const res = await fetch(`${API_BASE}/auth/delete-account/`, {
@@ -2671,16 +5399,12 @@ document.getElementById('formDeleteAccount')?.addEventListener('submit', async (
     });
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
-      e.target.reset();
-      closeModal('modalDeleteAccount');
-      closeModal('modalSettings');
-      showToast("Akkaunt o'chirildi");
-      checkAuth();
+      reloadSignedOut("Akkaunt o'chirildi");
     } else {
       showToast(extractErrorMessage(data, "Akkauntni o'chirishda xatolik"), 'error');
     }
   } catch (err) {
-    showToast('Tarmoq xatosi', 'error');
+    showToast(NETWORK_ERROR_MESSAGE, 'error');
   }
 });
 
@@ -2708,12 +5432,21 @@ document.querySelectorAll('.toggle-password-btn').forEach(btn => {
 
 // Initial boot
 document.addEventListener('DOMContentLoaded', () => {
+  showFlashMessage();
   fetchCategories();
   checkAuth();
 });
 
 
 
+
+// Sahifa eng tepasida navbar soyasiz, aylantirilganda soya oladi (style.css: .navbar.at-top)
+const _navbarEl = document.querySelector('.navbar');
+function syncNavbarAtTop() {
+  _navbarEl?.classList.toggle('at-top', window.scrollY <= 4);
+}
+window.addEventListener('scroll', syncNavbarAtTop, { passive: true });
+syncNavbarAtTop();
 
 // Navbar doim ko'rinib turadi: ro'yxat sahifalari (overlay) uning ostidan boshlanishi uchun balandligini kuzatib boramiz
 function syncNavbarHeight() {
@@ -2725,33 +5458,280 @@ const _navEl = document.querySelector('.navbar');
 if (_navEl && 'ResizeObserver' in window) new ResizeObserver(syncNavbarHeight).observe(_navEl);
 else window.addEventListener('resize', syncNavbarHeight);
 
-// "Moliya" ovali "Kirim" tugmasi bilan bir xil enda bo'lishi uchun enini unga moslab turamiz.
-// Tor ekranda (tugmalar faqat ikonka) moslash o'chadi va brend o'z eniga qaytadi.
-let _brandSyncQueued = false;
-function syncBrandWidth() {
-  _brandSyncQueued = false;
-  const brand = document.querySelector('.navbar .brand');
-  const link = document.querySelector('.navbar .nav-section-link');
-  if (!brand || !link) return;
-  const label = link.querySelector('.nav-section-label');
-  const iconOnly = !label || getComputedStyle(label).display === 'none';
-  if (iconOnly || link.offsetParent === null) {
-    brand.style.width = '';
+// "Shisha" tugmacha (style.css: .glass-thumb) — segmentli guruhlar (.segmented) va navbar bo'limlari (.nav-sections).
+// Tugmachaning o'rni va eni faol tugmadan o'lchanadi (--thumb-x / --thumb-w), chunki filtrlardagi tugmalar har xil enda.
+// .active / .is-active ni qaysi handler almashtirsa ham kuzatiladi: bosilganda tugmacha linzaga aylanib yangi bo'limga
+// suzib o'tadi, bo'lim ochilganda yoki eni o'zgarganda esa animatsiyasiz joyida turadi.
+// Barmoq yoki sichqoncha bilan surilsa linza unga ergashadi; qo'yib yuborilgan joydagi tugma bosiladi (.click())
+const GLASS_LIFT_MS = 420;
+const GLASS_DRAG_PX = 6;
+const _reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+
+function glassActive(track) {
+  return track.querySelector(':scope > .active, :scope > .is-active');
+}
+
+function glassButtons(track) {
+  return [...track.querySelectorAll(':scope > button')].filter(b => !b.disabled);
+}
+
+function setThumb(track, x, w) {
+  track.style.setProperty('--thumb-x', x + 'px');
+  track.style.setProperty('--thumb-w', w + 'px');
+}
+
+function dropGlassLater(g) {
+  clearTimeout(g.dropTimer);
+  g.dropTimer = setTimeout(() => { if (!g.drag) g.thumb.classList.remove('is-lifted'); }, GLASS_LIFT_MS);
+}
+
+function placeGlassThumb(track, animate) {
+  const g = track._glass;
+  const active = glassActive(track);
+  const changed = active !== g.active;
+  g.active = active;
+  track.classList.toggle('has-active', !!active);
+  track.classList.toggle('is-scrollable', track.scrollWidth > track.clientWidth + 1);
+  if (!active) {
+    g.shown = false;
     return;
   }
-  const target = Math.round(link.getBoundingClientRect().width);
-  if (Math.abs(target - brand.offsetWidth) >= 1) brand.style.width = target + 'px';
+  // Avval hech biri tanlanmagan bo'lsa (navbar boshqa sahifada) tugmacha chetdan suzib kelmasin — joyida paydo bo'ladi
+  const instant = !animate || !g.shown || _reducedMotion?.matches;
+  if (instant) g.thumb.classList.add('no-anim');
+  setThumb(track, active.offsetLeft, active.offsetWidth);
+  if (instant) {
+    void g.thumb.offsetWidth;  // yangi o'rin animatsiyasiz qo'llansin
+    g.thumb.classList.remove('no-anim');
+  }
+  g.shown = true;
+  if (animate && changed && !instant) {
+    g.thumb.classList.add('is-lifted');
+    dropGlassLater(g);
+  }
 }
-function queueBrandSync() {
-  if (_brandSyncQueued) return;
-  _brandSyncQueued = true;
-  setTimeout(syncBrandWidth, 0);
+
+// Linza markaziga eng yaqin tugma
+function glassButtonAt(track, clientX) {
+  let best = null;
+  let bestDist = Infinity;
+  for (const btn of glassButtons(track)) {
+    const r = btn.getBoundingClientRect();
+    const dist = Math.abs(clientX - (r.left + r.width / 2));
+    if (dist < bestDist) { best = btn; bestDist = dist; }
+  }
+  return best;
 }
-if ('ResizeObserver' in window) {
-  const ro = new ResizeObserver(queueBrandSync);
-  ro.observe(document.querySelector('.navbar'));
-  const firstLink = document.querySelector('.navbar .nav-section-link');
-  if (firstLink) ro.observe(firstLink);
+
+function moveGlassLens(track, clientX) {
+  const g = track._glass;
+  const btn = glassButtonAt(track, clientX);
+  if (!btn) return;
+  const buttons = glassButtons(track);
+  const first = buttons[0];
+  const last = buttons[buttons.length - 1];
+  const w = btn.offsetWidth;
+  const x = clientX - track.getBoundingClientRect().left - track.clientLeft + track.scrollLeft - w / 2;
+  setThumb(track, Math.min(Math.max(x, first.offsetLeft), last.offsetLeft + last.offsetWidth - w), w);
+  if (btn !== g.drag.over) {
+    g.drag.over?.classList.remove('is-under-lens');
+    btn.classList.add('is-under-lens');
+    g.drag.over = btn;
+  }
 }
-window.addEventListener('resize', queueBrandSync);
-queueBrandSync();
+
+function endGlassDrag(track, cancelled) {
+  const g = track._glass;
+  const drag = g.drag;
+  if (!drag) return;
+  g.drag = null;
+  drag.over?.classList.remove('is-under-lens');
+  g.thumb.classList.remove('is-dragging');
+  if (drag.moved && !cancelled && drag.over && drag.over !== glassActive(track)) {
+    // Surish oxiridagi brauzer "click"i (boshlangan tugmaga) ikkinchi marta bosilmasin
+    g.suppressClick = true;
+    setTimeout(() => { g.suppressClick = false; }, 0);
+    drag.over.click();
+  }
+  placeGlassThumb(track, true);
+  dropGlassLater(g);
+}
+
+function initGlassTrack(track) {
+  if (track._glass) return;
+  const thumb = document.createElement('span');
+  thumb.className = 'glass-thumb';
+  thumb.setAttribute('aria-hidden', 'true');
+  track.append(thumb);
+  const g = track._glass = { thumb, active: undefined, shown: false, drag: null, dropTimer: 0, suppressClick: false };
+  track.classList.add('has-glass');
+  placeGlassThumb(track, false);
+
+  // Faqat faol bo'lim almashganda (linza ostidagi .is-under-lens ham klass, lekin u tugmachani siljitmasligi kerak)
+  new MutationObserver(() => {
+    if (!g.drag && glassActive(track) !== g.active) placeGlassThumb(track, true);
+  }).observe(track, { subtree: true, attributes: true, attributeFilter: ['class'] });
+  if ('ResizeObserver' in window) {
+    const ro = new ResizeObserver(() => { if (!g.drag) placeGlassThumb(track, false); });
+    ro.observe(track);
+    glassButtons(track).forEach(btn => ro.observe(btn));
+  }
+
+  track.addEventListener('pointerdown', e => {
+    if (e.button !== 0 || g.drag) return;
+    const btn = e.target.closest('button');
+    if (!btn || btn.parentElement !== track || btn.disabled) return;
+    // Sig'magan filtr kapsulasi yonga aylanadi — u yerda surish aylantirishga tegishli
+    if (track.classList.contains('is-scrollable')) return;
+    g.drag = { id: e.pointerId, startX: e.clientX, moved: false, over: null };
+    if (g.active && !_reducedMotion?.matches) {
+      clearTimeout(g.dropTimer);
+      thumb.classList.add('is-lifted');
+    }
+  });
+  track.addEventListener('pointermove', e => {
+    const drag = g.drag;
+    if (!drag || e.pointerId !== drag.id) return;
+    if (!drag.moved) {
+      if (Math.abs(e.clientX - drag.startX) < GLASS_DRAG_PX) return;
+      drag.moved = true;
+      track.setPointerCapture(e.pointerId);
+      thumb.classList.add('is-lifted', 'is-dragging');
+      track.classList.add('has-active');
+    }
+    moveGlassLens(track, e.clientX);
+  });
+  track.addEventListener('pointerup', e => { if (g.drag?.id === e.pointerId) endGlassDrag(track, false); });
+  track.addEventListener('pointercancel', e => { if (g.drag?.id === e.pointerId) endGlassDrag(track, true); });
+  track.addEventListener('lostpointercapture', e => { if (g.drag?.id === e.pointerId) endGlassDrag(track, true); });
+  track.addEventListener('click', e => {
+    if (g.suppressClick && e.isTrusted) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+  }, true);
+}
+
+document.querySelectorAll('.segmented, .nav-sections').forEach(initGlassTrack);
+
+
+// ==========================================
+// PASTGA TORTIB YANGILASH (bosh sahifa: telefon/planshetda barmoq, kompyuterda g'ildirak/touchpad)
+// ==========================================
+// Sahifa eng tepada turganda barmoq pastga tortilsa navbar ostidan brend "kapsulasi" chiqadi: loyiha logotipi (atrofida
+// tortilgan sari to'ladigan halqa) va nomi. PTR_THRESHOLD dan ko'p tortib qo'yib yuborilsa refreshAll() — balans,
+// hamyonlar, operatsiyalar serverdan qayta yuklanadi (sahifa qayta ochilmaydi).
+// Logotip va nom navbardagi brenddan olinadi (.brand-badge-box, .brand-title) — loyiha nomi/logotipi o'zgarsa bu ham
+// o'zi o'zgaradi. Brauzerning o'z "tortib yangilash"i style.css da o'chirilgan: overscroll-behavior-y
+const PTR_THRESHOLD = 70;
+const PTR_MAX = 110;
+const PTR_DONE_MS = 450;  // tugagach halqa shuncha vaqt to'liq turadi — "yangilandi" degani
+const _ptr = { el: null, startY: null, dist: 0, busy: false };
+
+function _ptrIndicator() {
+  if (!_ptr.el) {
+    const name = document.querySelector('.brand-title')?.textContent.trim() || document.title.split('—')[0].trim();
+    _ptr.el = document.createElement('div');
+    _ptr.el.className = 'ptr-indicator';
+    _ptr.el.setAttribute('aria-hidden', 'true');
+    _ptr.el.innerHTML = `
+      <span class="ptr-logo">
+        <span class="brand-badge-box"></span>
+        <svg class="ptr-ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="17" pathLength="100"/></svg>
+      </span>
+      <span class="ptr-name" data-no-i18n>${escapeHtml(name)}</span>`;
+    document.body.appendChild(_ptr.el);
+  }
+  return _ptr.el;
+}
+
+// Faqat bosh sahifada: bo'lim sahifasi, oyna yoki tafsilot ochiq bo'lsa ularning o'z aylantirishi ishlaydi
+function _ptrAllowed() {
+  return !_ptr.busy && window.scrollY <= 0
+    && !!document.getElementById('mainApp')?.offsetParent
+    && !document.getElementById('txPageOverlay')?.classList.contains('open')
+    && !_activeDialogLayer();
+}
+
+function _ptrReset() {
+  _ptr.startY = null;
+  _ptr.dist = 0;
+  if (!_ptr.el) return;
+  _ptr.el.classList.remove('pulling', 'ready');
+  _ptr.el.style.setProperty('--ptr', 0);
+  _ptr.el.style.setProperty('--p', 0);
+}
+
+document.addEventListener('touchstart', (e) => {
+  _ptr.startY = e.touches.length === 1 && _ptrAllowed() ? e.touches[0].clientY : null;
+}, { passive: true });
+
+// Kapsulani "dist" px ga tushiradi (barmoq ham, g'ildirak ham shu orqali)
+function _ptrSetDist(dist) {
+  _ptr.dist = Math.min(PTR_MAX, Math.max(0, dist));
+  const el = _ptrIndicator();
+  el.classList.add('pulling');
+  el.classList.toggle('ready', _ptr.dist >= PTR_THRESHOLD);
+  el.style.setProperty('--ptr', _ptr.dist);
+  el.style.setProperty('--p', Math.min(100, Math.round(_ptr.dist / PTR_THRESHOLD * 100)));
+}
+
+document.addEventListener('touchmove', (e) => {
+  if (_ptr.startY === null) return;
+  const dy = e.touches[0].clientY - _ptr.startY;
+  if (dy <= 0 || window.scrollY > 0) { _ptrReset(); return; }
+  // Barmoqdan sekinroq ergashadi — tortish "og'ir" seziladi, tasodifan yangilanib ketmaydi
+  _ptrSetDist(dy * 0.5);
+}, { passive: true });
+
+function _ptrRelease() {
+  if (_ptr.startY === null) return;
+  _ptrFinish();
+}
+
+// Qo'yib yuborildi (barmoq ko'tarildi yoki g'ildirak to'xtadi): yetarli tortilgan bo'lsa yangilaydi
+async function _ptrFinish() {
+  const go = _ptr.dist >= PTR_THRESHOLD;
+  _ptrReset();
+  if (!go) return;
+  const el = _ptrIndicator();
+  _ptr.busy = true;
+  el.classList.add('refreshing');
+  try {
+    await refreshAll();
+  } catch (err) {
+    console.error('Pull-to-refresh failed:', err);
+  } finally {
+    el.classList.replace('refreshing', 'done');
+    await new Promise(resolve => setTimeout(resolve, PTR_DONE_MS));
+    el.classList.remove('done');
+    _ptr.busy = false;
+  }
+}
+document.addEventListener('touchend', _ptrRelease);
+document.addEventListener('touchcancel', _ptrReset);
+
+// Kompyuter (sichqoncha g'ildiragi, touchpad): sahifa eng tepada turganda yana yuqoriga aylantirish — barmoq bilan
+// tortishning o'zi. Harakat tepada BOSHLANGAN bo'lishi shart: pastdan aylantirib kelib tepaga urilgan foydalanuvchida
+// tasodifan yangilanmasin. G'ildirak PTR_WHEEL_IDLE_MS tinch tursa — "qo'yib yuborildi"
+const PTR_WHEEL_IDLE_MS = 260;
+const PTR_WHEEL_RATE = 0.25;  // 1 px aylantirish → 0.25 px tortish: odatiy sichqonchada ~3 "chiq", touchpadda ravon
+const _ptrWheel = { active: false, lastAt: 0, timer: null };
+
+document.addEventListener('wheel', (e) => {
+  const now = performance.now();
+  const fresh = now - _ptrWheel.lastAt > PTR_WHEEL_IDLE_MS;
+  _ptrWheel.lastAt = now;
+  if (fresh) _ptrWheel.active = e.deltaY < 0 && !e.ctrlKey && _ptrAllowed();
+  if (!_ptrWheel.active) return;
+  if (e.deltaY > 0 || window.scrollY > 0) {  // pastga burildi — bekor
+    _ptrWheel.active = false;
+    clearTimeout(_ptrWheel.timer);
+    _ptrReset();
+    return;
+  }
+  const px = e.deltaMode === 1 ? e.deltaY * 40 : e.deltaMode === 2 ? e.deltaY * window.innerHeight : e.deltaY;
+  _ptrSetDist(_ptr.dist - px * PTR_WHEEL_RATE);
+  clearTimeout(_ptrWheel.timer);
+  _ptrWheel.timer = setTimeout(() => { _ptrWheel.active = false; _ptrFinish(); }, PTR_WHEEL_IDLE_MS);
+}, { passive: true });

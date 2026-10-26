@@ -5,59 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Moliya — Shaxsiy Byudjet va Xarajatlar Kalkulyatori</title>
   <meta name="description" content="O'zbekistondagi eng qulay shaxsiy moliya boshqaruvi: daromad, harajat, hamyonlararo o'tkazma va qarzlar daftari.">
-  <script>
-    (function () {
-      var saved = localStorage.getItem('moliyaTheme');
-      var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-      document.documentElement.setAttribute('data-theme', theme);
-    })();
-  </script>
+  <script src="/static/js/theme-init.js?v=4"></script>
+  <script src="/static/js/i18n.js?v=21"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap">
-  <link rel="stylesheet" href="/static/css/style.css?v=6.7">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..800&display=swap">
+  <link rel="stylesheet" href="/static/css/style.css?v=10.73">
 </head>
 <body>
 
   <!-- ================= NAVBAR ================= -->
   <nav class="navbar">
-    <div class="container nav-wrapper">
+    <div class="container nav-wrapper nav-app-width">
       <a href="/" class="brand" id="brandLogo">
         <div class="brand-badge-box"></div>
         <span class="brand-title">Moliya</span>
       </a>
 
-      <!-- Bo'limlar: to'liq ro'yxatlarni ochadi (faqat tizimga kirgandan keyin) -->
+      <!-- Bo'limlar: to'liq ro'yxatlarni ochadi (faqat tizimga kirgandan keyin). Ochiq bo'lim — app.js: setNavActive -->
       <div class="nav-sections" id="navSections" style="display: none;">
-        <button type="button" class="nav-section-link" onclick="openTxPage('transactions', 'incomes')" title="Barcha kirimlar">
+        <!-- Kirilgandan keyin brend shu yerda: bosh sahifa bo'limi (yuqoridagi alohida logotip yashiriladi) -->
+        <button type="button" class="nav-section-link is-active" data-nav-section="home" data-action="closeTxPage" title="Bosh sahifa" aria-current="page">
+          <span class="brand-badge-box" aria-hidden="true"></span>
+          <span class="nav-section-label">Moliya</span>
+        </button>
+        <button type="button" class="nav-section-link" data-nav-section="incomes" data-action="openTxPage" data-args='["transactions", "incomes"]' title="Barcha kirimlar">
           <span class="ico-slot arrow-badge income" data-icon="incomeArrow"></span>
           <span class="nav-section-label">Kirim</span>
         </button>
-        <button type="button" class="nav-section-link" onclick="openTxPage('transactions', 'expenses')" title="Barcha chiqimlar">
+        <button type="button" class="nav-section-link" data-nav-section="expenses" data-action="openTxPage" data-args='["transactions", "expenses"]' title="Barcha chiqimlar">
           <span class="ico-slot arrow-badge expense" data-icon="expenseArrow"></span>
           <span class="nav-section-label">Chiqim</span>
         </button>
-        <button type="button" class="nav-section-link" onclick="openDebtsPage()" title="Qarzlar tarixi">
+        <button type="button" class="nav-section-link" data-nav-section="debts" data-action="openDebtsPage" title="Qarzlar tarixi">
           <span class="ico-slot" data-icon="ledger"></span>
           <span class="nav-section-label">Qarz</span>
         </button>
+        <button type="button" class="nav-section-link" data-nav-section="rates" data-action="openRatesPage" title="Valyuta kurslari">
+          <span class="ico-slot" data-icon="exchange"></span>
+          <span class="nav-section-label">Kurs</span>
+        </button>
       </div>
 
-      <div class="nav-actions" id="navActions" style="display: flex; align-items: center; gap: 14px;">
-        <div id="userProfileNav" style="display: none; align-items: center; gap: 10px;">
-          <button type="button" class="nav-profile-btn" id="btnOpenSettings" title="Sozlamalar">
-            <span class="avatar" id="userAvatar" style="width: 30px; height: 30px; font-size: 13px;">A</span>
-            <span class="user-name" id="userName" style="color: var(--text-main); font-weight: 600; font-size: 0.95rem;">Admin</span>
-            <span class="nav-profile-gear" data-icon="settings"></span>
-          </button>
-        </div>
+      <div class="nav-actions" id="navActions">
         <button type="button" class="nav-theme-toggle" id="btnThemeToggle" title="Yorug'/qorong'u rejim">
-          <span class="theme-ico-sun"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></span>
-          <span class="theme-ico-moon" style="display:none;"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg></span>
+          <span class="theme-ico-sun"><svg width="18" height="18" data-icon="sun" aria-hidden="true"></svg></span>
+          <span class="theme-ico-moon" style="display:none;"><svg width="18" height="18" data-icon="moon" aria-hidden="true"></svg></span>
         </button>
         <div class="notif-wrap" id="notifWrap" style="display: none;">
           <button type="button" class="nav-theme-toggle nav-bell-btn" id="btnNotif" title="Xabarlar" aria-haspopup="true" aria-expanded="false" aria-controls="notifPanel">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <svg width="18" height="18" data-icon="bell" aria-hidden="true"></svg>
             <span class="notif-badge" id="notifBadge" style="display:none;"></span>
           </button>
           <div class="notif-panel" id="notifPanel" role="dialog" aria-label="Xabarlar" hidden>
@@ -66,6 +63,14 @@
             </div>
             <div class="notif-list" id="notifList"></div>
           </div>
+        </div>
+        <div class="nav-user" id="userProfileNav" style="display: none;">
+          <span class="nav-divider" aria-hidden="true"></span>
+          <button type="button" class="nav-profile-btn" id="btnOpenSettings" title="Sozlamalar">
+            <span class="avatar" id="userAvatar">A</span>
+            <span class="user-name" id="userName">Admin</span>
+            <span class="nav-profile-gear" data-icon="settings"></span>
+          </button>
         </div>
       </div>
     </div>
@@ -81,7 +86,7 @@
       </div>
 
       <!-- Auth Tabs -->
-      <div class="auth-tabs">
+      <div class="auth-tabs segmented">
         <button type="button" class="auth-tab-btn active" id="authTabLogin">Tizimga kirish</button>
         <button type="button" class="auth-tab-btn" id="authTabRegister">Ro'yxatdan o'tish</button>
       </div>
@@ -97,8 +102,8 @@
           <div class="password-input-group">
             <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required autocomplete="current-password">
             <button type="button" class="toggle-password-btn" data-target="loginPassword" title="Parolni ko'rsatish/yashirish" tabindex="-1">
-              <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-              <svg class="eye-hide" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+              <svg class="eye-show" width="18" height="18" data-icon="eye" aria-hidden="true"></svg>
+              <svg class="eye-hide" style="display: none;" width="18" height="18" data-icon="eyeSlash" aria-hidden="true"></svg>
             </button>
           </div>
         </div>
@@ -121,10 +126,14 @@
           <div class="password-input-group">
             <input type="password" id="regPassword" class="form-control" placeholder="••••••••" minlength="8" required autocomplete="new-password">
             <button type="button" class="toggle-password-btn" data-target="regPassword" title="Parolni ko'rsatish/yashirish" tabindex="-1">
-              <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-              <svg class="eye-hide" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+              <svg class="eye-show" width="18" height="18" data-icon="eye" aria-hidden="true"></svg>
+              <svg class="eye-hide" style="display: none;" width="18" height="18" data-icon="eyeSlash" aria-hidden="true"></svg>
             </button>
           </div>
+        </div>
+        <div class="form-group">
+          <label for="regEmail">Email (parolni unutsangiz tiklash uchun)</label>
+          <input type="email" id="regEmail" class="form-control" placeholder="ali@example.com" autocomplete="email">
         </div>
         <div class="form-group">
           <label for="regFirstName">Ismingiz</label>
@@ -140,7 +149,20 @@
         </button>
       </form>
 
-      <!-- Forgot Password Form (2 bosqich: kod so'rash -> kod + yangi parol) -->
+      <!-- Forgot Password Form (3 bosqich: kod so'rash -> kodni tekshirish -> yangi parol) -->
+      <!-- Ikki bosqichli kirish: parol to'g'ri bo'lsa emailga kod keladi (app.js: showLoginCode) -->
+      <form id="formLoginCode" class="auth-form-content" style="display: none;" novalidate>
+        <p class="auth-forgot-intro" id="loginCodeIntro">Emailingizga 6 xonali kirish kodi yuborildi.</p>
+        <div class="form-group">
+          <label for="loginCode">Emailga kelgan kod *</label>
+          <input type="text" id="loginCode" class="form-control auth-code-input" placeholder="000000" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 1rem; justify-content: center;">Tasdiqlash</button>
+        <div class="auth-forgot-actions">
+          <button type="button" class="auth-link-btn" id="btnLoginCodeBack">&larr; Kirish sahifasiga qaytish</button>
+        </div>
+      </form>
+
       <form id="formForgotPassword" class="auth-form-content" style="display: none;" novalidate>
         <p class="auth-forgot-intro" id="forgotIntro">Foydalanuvchi nomingiz yoki emailingizni kiriting — akkauntga ulangan emailga 6 xonali tiklash kodi yuboramiz.</p>
 
@@ -149,18 +171,19 @@
           <input type="text" id="forgotUsername" class="form-control" placeholder="Masalan: admin yoki admin@example.com" autocomplete="username">
         </div>
 
-        <div id="forgotStep2" class="auth-form-content" hidden>
-          <div class="form-group">
-            <label for="forgotCode">Emailga kelgan kod *</label>
-            <input type="text" id="forgotCode" class="form-control auth-code-input" placeholder="000000" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
-          </div>
+        <div id="forgotStepCode" class="form-group" hidden>
+          <label for="forgotCode">Emailga kelgan kod *</label>
+          <input type="text" id="forgotCode" class="form-control auth-code-input" placeholder="000000" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+        </div>
+
+        <div id="forgotStepPassword" class="auth-form-content" hidden>
           <div class="form-group">
             <label for="forgotNewPassword">Yangi parol (kamida 8 ta belgi) *</label>
             <div class="password-input-group">
               <input type="password" id="forgotNewPassword" class="form-control" placeholder="••••••••" minlength="8" autocomplete="new-password">
               <button type="button" class="toggle-password-btn" data-target="forgotNewPassword" title="Parolni ko'rsatish/yashirish" tabindex="-1">
-              <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-              <svg class="eye-hide" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+              <svg class="eye-show" width="18" height="18" data-icon="eye" aria-hidden="true"></svg>
+              <svg class="eye-hide" style="display: none;" width="18" height="18" data-icon="eyeSlash" aria-hidden="true"></svg>
               </button>
             </div>
           </div>
@@ -169,8 +192,8 @@
             <div class="password-input-group">
               <input type="password" id="forgotNewPassword2" class="form-control" placeholder="••••••••" autocomplete="new-password">
               <button type="button" class="toggle-password-btn" data-target="forgotNewPassword2" title="Parolni ko'rsatish/yashirish" tabindex="-1">
-              <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-              <svg class="eye-hide" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+              <svg class="eye-show" width="18" height="18" data-icon="eye" aria-hidden="true"></svg>
+              <svg class="eye-hide" style="display: none;" width="18" height="18" data-icon="eyeSlash" aria-hidden="true"></svg>
               </button>
             </div>
           </div>
@@ -195,77 +218,67 @@
     <div class="hero-balance-banner">
       <div class="hero-balance-top">
         <div class="hero-balance-title">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+          <svg width="15" height="15" data-icon="wallet" aria-hidden="true"></svg>
           Umumiy balans
         </div>
         <button type="button" class="hero-eye-toggle" id="btnToggleBalance" title="Balansni yashirish/ko'rsatish">
-          <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-          <svg class="eye-hide" style="display:none" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+          <svg class="eye-show" width="17" height="17" data-icon="eye" aria-hidden="true"></svg>
+          <svg class="eye-hide" style="display:none" width="17" height="17" data-icon="eyeSlash" aria-hidden="true"></svg>
         </button>
       </div>
-      <div class="hero-balance-sum" id="heroBalanceSum">
-        <span id="statTotalBalance">0</span> <span class="hero-curr">UZS</span>
+      <div class="hero-balance-main">
+        <div class="hero-balance-totals">
+          <div class="hero-balance-sum" id="heroBalanceSum">
+            <span id="statTotalBalance">0</span> <span class="hero-curr" id="statTotalCurrency">UZS</span>
+          </div>
+          <div class="hero-balance-extra" id="heroBalanceExtra"></div>
+        </div>
+        <div class="hero-wallets" id="heroWalletList" aria-label="Hamyonlar bo'yicha balans"></div>
       </div>
     </div>
 
     <!-- 2. 4 Action Buttons Row -->
     <div class="action-grid-row">
       <!-- Kirim -->
-      <button class="action-card-btn btn-action-income" id="btnOpenIncomeModal" onclick="openModal('modalIncome')">
+      <button class="action-card-btn btn-action-income" id="btnOpenIncomeModal" data-action="openModal" data-args='["modalIncome"]'>
         <span class="action-icon-circle">
-          <svg class="action-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="7" y1="17" x2="17" y2="7"></line>
-            <polyline points="7 7 17 7 17 17"></polyline>
-          </svg>
+          <svg class="action-svg-icon" data-icon="arrowUpRight" aria-hidden="true"></svg>
         </span>
         <span class="action-card-label">Kirim</span>
         <span class="action-card-amount income">+<span id="statMonthlyIncome">0</span></span>
       </button>
 
       <!-- Harajat -->
-      <button class="action-card-btn btn-action-expense" id="btnOpenExpenseModal" onclick="openModal('modalExpense')">
+      <button class="action-card-btn btn-action-expense" id="btnOpenExpenseModal" data-action="openModal" data-args='["modalExpense"]'>
         <span class="action-icon-circle">
-          <svg class="action-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="7" y1="7" x2="17" y2="17"></line>
-            <polyline points="17 7 17 17 7 17"></polyline>
-          </svg>
+          <svg class="action-svg-icon" data-icon="arrowDownRight" aria-hidden="true"></svg>
         </span>
         <span class="action-card-label">Harajat</span>
         <span class="action-card-amount expense">−<span id="statMonthlyExpense">0</span></span>
       </button>
 
       <!-- O'tkazma -->
-      <button class="action-card-btn btn-action-transfer" id="btnOpenTransferModal" onclick="openModal('modalTransfer')">
+      <button class="action-card-btn btn-action-transfer" id="btnOpenTransferModal" data-action="openModal" data-args='["modalTransfer"]'>
         <span class="action-icon-circle">
-          <svg class="action-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="17 1 21 5 17 9"></polyline>
-            <path d="M3 5h18"></path>
-            <polyline points="7 23 3 19 7 15"></polyline>
-            <path d="M21 19H3"></path>
-          </svg>
+          <svg class="action-svg-icon" data-icon="transfer" aria-hidden="true"></svg>
         </span>
         <span class="action-card-label">O'tkazma</span>
       </button>
 
       <!-- Qarz -->
-      <button class="action-card-btn btn-action-debt" id="btnOpenDebtModal" onclick="openModal('modalDebt')">
+      <button class="action-card-btn btn-action-debt" id="btnOpenDebtModal" data-action="openModal" data-args='["modalDebt"]'>
         <span class="action-icon-circle">
-          <svg class="action-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-          </svg>
+          <svg class="action-svg-icon" data-icon="members" aria-hidden="true"></svg>
         </span>
         <span class="action-card-label">Qarz</span>
       </button>
     </div>
 
     <!-- 3. So'nggi operatsiyalar — kichik preview -->
-    <div class="card-surface ops-card" style="cursor:pointer;" onclick="openTxPage()">
+    <div class="card-surface card-clickable ops-card" data-action="openTxPage">
       <div class="card-surface-header" style="pointer-events:none;">
         <h4><span class="ico-slot" data-icon="receipt"></span> So'nggi operatsiyalar</h4>
-        <span class="btn btn-subtle btn-xs" style="pointer-events:all;" onclick="event.stopPropagation(); openTxPage()">
+        <span class="btn btn-subtle btn-xs" style="pointer-events:all;" data-action="openTxPage" data-stop>
           Barchasi →
         </span>
       </div>
@@ -275,7 +288,7 @@
     </div>
 
     <!-- 4. Hafta kunlari bo'yicha xarajat grafigi -->
-    <div class="card-surface chart-card-compact" style="cursor:pointer;" onclick="openTxPage('stats')">
+    <div class="card-surface card-clickable chart-card-compact" data-action="openTxPage" data-args='["stats"]'>
       <div class="card-surface-header" style="flex-direction: column; align-items: flex-start; gap: 2px;">
         <h4><span class="ico-slot" data-icon="chart"></span> Hafta kunlari bo'yicha xarajat</h4>
         <span style="font-size: 0.78rem; color: var(--text-subtle);">Qaysi kuni eng ko'p sarflaysiz · to'liq statistika uchun bosing</span>
@@ -288,33 +301,49 @@
       <!-- Hamyonlar -->
       <div class="card-surface">
         <div class="card-surface-header">
-          <h4><span class="ico-slot" data-icon="wallet"></span> Hamyonlarim</h4>
-          <button class="btn btn-subtle btn-xs" onclick="openModal('modalWallet')">+ Yangi hamyon</button>
+          <!-- Kartochkada 2 ta hamyon; sarlavha bosilsa barchasi (kartochkaning o'zi emas — hamyon qatorlari o'z sahifasini ochadi) -->
+          <h4 class="card-title-link" data-action="openWalletsPage" role="button" tabindex="0"><span class="ico-slot" data-icon="wallet"></span> Hamyonlarim <span class="ico-slot card-open-chevron" data-icon="chevronRight"></span></h4>
+          <button class="btn btn-subtle btn-xs" data-action="openModal" data-args='["modalWallet"]'>+ Qo'shish</button>
         </div>
         <div class="wallets-compact-list" id="walletsList">
           <!-- Rendered by JS -->
         </div>
       </div>
 
-      <!-- Qarzlar -->
-      <div class="card-surface">
+      <!-- Qarzlar: bosh sahifada oxirgi qarzlar, kartochka bosilsa butun daftar ochiladi -->
+      <div class="card-surface card-clickable" id="debtsCard" title="Qarzlar daftarini ochish">
         <div class="card-surface-header">
           <h4><span class="ico-slot" data-icon="ledger"></span> Qarzlar Daftari</h4>
-          <button class="btn btn-subtle btn-xs" onclick="openModal('modalDebt')">+ Qarz yozish</button>
+          <button class="btn btn-subtle btn-xs" data-action="openModal" data-args='["modalDebt"]'>+ Qarz yozish</button>
         </div>
         <div class="debts-compact-list" id="debtsList">
           <!-- Rendered by JS -->
         </div>
       </div>
 
-      <!-- A'zolar -->
-      <div class="card-surface" style="grid-column: 1 / -1;">
+      <!-- Takroriy to'lovlar: muddati kelganda avtomatik yoziladi (mainapp/recurring.py), oldindan xabarlarda eslatiladi -->
+      <!-- Bu uch bo'lim bosh sahifada faqat sarlavha: bosilsa ro'yxat sahifasi ochiladi (app.js: openHomeListPage).
+           Ro'yxatlarning o'zi pastda, #statsHomeListSection ichida -->
+      <div class="card-surface card-clickable card-header-only" data-action="openHomeListPage" data-args='["recurring"]' role="button" tabindex="0">
         <div class="card-surface-header">
-          <h4><span class="ico-slot" data-icon="members"></span> A'zolarim</h4>
-          <button class="btn btn-subtle btn-xs" onclick="openModal('modalMember')">+ Yangi a'zo</button>
+          <h4><span class="ico-slot" data-icon="repeat"></span> Takroriy to'lovlar <span class="ico-slot card-open-chevron" data-icon="chevronRight"></span></h4>
+          <button class="btn btn-subtle btn-xs" data-action="openRecurringModal">+ Qo'shish</button>
         </div>
-        <div class="members-compact-list" id="membersList">
-          <!-- Rendered by JS -->
+      </div>
+
+      <!-- Jamg'arma maqsadlari: progress — bog'langan hamyon balansi -->
+      <div class="card-surface card-clickable card-header-only" data-action="openHomeListPage" data-args='["goals"]' role="button" tabindex="0">
+        <div class="card-surface-header">
+          <h4><span class="ico-slot" data-icon="target"></span> Maqsadlarim <span class="ico-slot card-open-chevron" data-icon="chevronRight"></span></h4>
+          <button class="btn btn-subtle btn-xs" data-action="openGoalModal">+ Qo'shish</button>
+        </div>
+      </div>
+
+      <!-- A'zolar -->
+      <div class="card-surface card-clickable card-header-only" style="grid-column: 1 / -1;" data-action="openHomeListPage" data-args='["members"]' role="button" tabindex="0">
+        <div class="card-surface-header">
+          <h4><span class="ico-slot" data-icon="members"></span> A'zolarim <span class="ico-slot card-open-chevron" data-icon="chevronRight"></span></h4>
+          <button class="btn btn-subtle btn-xs" data-action="openModal" data-args='["modalMember"]'>+ Qo'shish</button>
         </div>
       </div>
     </div>
@@ -325,41 +354,48 @@
 
   <!-- 1. Modal Expense -->
   <div class="modal-backdrop" id="modalExpense">
-    <div class="modal-window">
+    <div class="modal-window modal-wide">
       <div class="modal-header">
-        <h3><span><span class="ico-slot" data-icon="expense"></span></span> Harajat Kiritish</h3>
-        <button class="modal-close" onclick="closeModal('modalExpense')">&times;</button>
+        <h3><span><span class="ico-slot" data-icon="expense"></span></span> <span data-tx-title>Harajat Kiritish</span></h3>
+        <button class="modal-close" data-action="closeModal" data-args='["modalExpense"]'>&times;</button>
       </div>
       <form id="formAddExpense">
         <div class="modal-body">
-          <div class="form-group">
-            <label for="expenseSumma">Summa (so'm) *</label>
-            <input type="number" id="expenseSumma" class="form-control" placeholder="Masalan: 35000" min="1" required>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="expenseSumma" id="expenseSummaLabel">Summa *</label>
+              <input type="number" id="expenseSumma" class="form-control" placeholder="Masalan: 35000" min="0.01" step="0.01" inputmode="decimal" required>
+            </div>
+
+            <div class="form-group" id="expenseWalletGroup">
+              <label for="expenseWalletSelect">Qaysi hamyondan? *</label>
+              <select id="expenseWalletSelect" class="form-control" required></select>
+            </div>
           </div>
 
           <div class="form-group">
-            <label for="expenseCategorySelect">Nima narsaga? (Harajat toifasi) *</label>
+            <div class="label-row">
+              <label for="expenseCategorySelect">Nima narsaga? (Harajat toifasi) *</label>
+              <button type="button" class="label-action" data-action="openCategoryManager" data-args='["expense"]'><span class="ico-slot" data-icon="tag"></span> Toifalarni sozlash</button>
+            </div>
             <select id="expenseCategorySelect" class="form-control" required></select>
             <div id="expenseCustomCategoryGroup" style="display: none; margin-top: 8px;">
               <input type="text" id="expenseCustomCategory" class="form-control" placeholder="Yangi harajat toifasi nomini yozing...">
             </div>
           </div>
 
-          <div class="form-group" id="expenseWalletGroup">
-            <label for="expenseWalletSelect">Qaysi hamyondan? *</label>
-            <select id="expenseWalletSelect" class="form-control" required></select>
-          </div>
+          <div class="form-row">
+            <div class="form-group" id="expenseMemberGroup" style="display: none;">
+              <label for="expenseMemberSelect">Kimga? (Ixtiyoriy)</label>
+              <select id="expenseMemberSelect" class="form-control">
+                <option value="">-- O'zim uchun --</option>
+              </select>
+            </div>
 
-          <div class="form-group" id="expenseMemberGroup" style="display: none;">
-            <label for="expenseMemberSelect">Kimga? (Ixtiyoriy)</label>
-            <select id="expenseMemberSelect" class="form-control">
-              <option value="">-- O'zim uchun --</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="expenseDate">Sana va vaqt</label>
-            <input type="datetime-local" id="expenseDate" class="form-control">
+            <div class="form-group">
+              <label for="expenseDate">Sana</label>
+              <input type="date" id="expenseDate" class="form-control" min="1900-01-01" max="2100-12-31">
+            </div>
           </div>
 
           <div class="form-group">
@@ -368,8 +404,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-subtle" onclick="closeModal('modalExpense')">Bekor qilish</button>
-          <button type="submit" class="btn btn-rose">Saqlash</button>
+          <button type="button" class="btn btn-subtle" data-action="closeModal" data-args='["modalExpense"]'>Bekor qilish</button>
+          <button type="submit" class="btn btn-rose" data-tx-submit>Saqlash</button>
         </div>
       </form>
     </div>
@@ -377,34 +413,39 @@
 
   <!-- 2. Modal Income -->
   <div class="modal-backdrop" id="modalIncome">
-    <div class="modal-window">
+    <div class="modal-window modal-wide">
       <div class="modal-header">
-        <h3><span><span class="ico-slot" data-icon="income"></span></span> Daromad Kiritish</h3>
-        <button class="modal-close" onclick="closeModal('modalIncome')">&times;</button>
+        <h3><span><span class="ico-slot" data-icon="income"></span></span> <span data-tx-title>Daromad Kiritish</span></h3>
+        <button class="modal-close" data-action="closeModal" data-args='["modalIncome"]'>&times;</button>
       </div>
       <form id="formAddIncome">
         <div class="modal-body">
-          <div class="form-group">
-            <label for="incomeSumma">Kirim Summasi (so'm) *</label>
-            <input type="number" id="incomeSumma" class="form-control" placeholder="Masalan: 5000000" min="1" required>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="incomeSumma" id="incomeSummaLabel">Kirim Summasi *</label>
+              <input type="number" id="incomeSumma" class="form-control" placeholder="Masalan: 5000000" min="0.01" step="0.01" inputmode="decimal" required>
+            </div>
+
+            <div class="form-group" id="incomeWalletGroup">
+              <label for="incomeWalletSelect">Qaysi hamyonga tushdi? *</label>
+              <select id="incomeWalletSelect" class="form-control" required></select>
+            </div>
           </div>
 
           <div class="form-group">
-            <label for="incomeCategorySelect">Daromad manbayi *</label>
+            <div class="label-row">
+              <label for="incomeCategorySelect">Daromad manbayi *</label>
+              <button type="button" class="label-action" data-action="openCategoryManager" data-args='["income"]'><span class="ico-slot" data-icon="tag"></span> Toifalarni sozlash</button>
+            </div>
             <select id="incomeCategorySelect" class="form-control" required></select>
             <div id="incomeCustomCategoryGroup" style="display: none; margin-top: 8px;">
               <input type="text" id="incomeCustomCategory" class="form-control" placeholder="Yangi daromad manbayi nomini yozing...">
             </div>
           </div>
 
-          <div class="form-group" id="incomeWalletGroup">
-            <label for="incomeWalletSelect">Qaysi hamyonga tushdi? *</label>
-            <select id="incomeWalletSelect" class="form-control" required></select>
-          </div>
-
           <div class="form-group">
-            <label for="incomeDate">Sana va vaqt</label>
-            <input type="datetime-local" id="incomeDate" class="form-control">
+            <label for="incomeDate">Sana</label>
+            <input type="date" id="incomeDate" class="form-control" min="1900-01-01" max="2100-12-31">
           </div>
 
           <div class="form-group">
@@ -413,8 +454,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-subtle" onclick="closeModal('modalIncome')">Bekor qilish</button>
-          <button type="submit" class="btn btn-emerald">Kirimni Saqlash</button>
+          <button type="button" class="btn btn-subtle" data-action="closeModal" data-args='["modalIncome"]'>Bekor qilish</button>
+          <button type="submit" class="btn btn-emerald" data-tx-submit>Kirimni Saqlash</button>
         </div>
       </form>
     </div>
@@ -422,27 +463,39 @@
 
   <!-- 3. Modal Transfer -->
   <div class="modal-backdrop" id="modalTransfer">
-    <div class="modal-window">
+    <div class="modal-window modal-wide">
       <div class="modal-header">
-        <h3><span><span class="ico-slot" data-icon="transfer"></span></span> Hamyonlararo O'tkazma</h3>
-        <button class="modal-close" onclick="closeModal('modalTransfer')">&times;</button>
+        <h3><span><span class="ico-slot" data-icon="transfer"></span></span> <span data-tx-title>Hamyonlararo O'tkazma</span></h3>
+        <button class="modal-close" data-action="closeModal" data-args='["modalTransfer"]'>&times;</button>
       </div>
       <form id="formAddTransfer">
         <div class="modal-body">
-          <div class="form-group">
-            <label for="transferFromWallet">Chiqadigan Hamyon *</label>
-            <select id="transferFromWallet" class="form-control" required></select>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="transferFromWallet">Chiqadigan Hamyon *</label>
+              <select id="transferFromWallet" class="form-control" required></select>
+            </div>
+
+            <div class="form-group">
+              <label for="transferToWallet">Tushadigan Hamyon *</label>
+              <select id="transferToWallet" class="form-control" required></select>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label for="transferToWallet">Tushadigan Hamyon *</label>
-            <select id="transferToWallet" class="form-control" required></select>
-          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="transferSumma" id="transferSummaLabel">O'tkazma Summasi *</label>
+              <input type="number" id="transferSumma" class="form-control" placeholder="Masalan: 100000" min="0.01" step="0.01" inputmode="decimal" required>
+            </div>
 
-          <div class="form-group">
-            <label for="transferSumma">O'tkazma Summasi *</label>
-            <input type="number" id="transferSumma" class="form-control" placeholder="Masalan: 100000" min="1" required>
+            <!-- Hamyonlar valyutasi har xil bo'lsa ko'rinadi: summa Markaziy bank kursi bo'yicha avtomatik hisoblanadi -->
+            <div class="form-group" id="transferToSummaGroup" style="display: none;">
+              <label for="transferToSumma" id="transferToSummaLabel">Tushadigan summa</label>
+              <input type="number" id="transferToSumma" class="form-control" min="0.01" step="0.01" inputmode="decimal" placeholder="Avtomatik hisoblanadi">
+            </div>
           </div>
+          <!-- Kurs izohi uzun bo'lgani uchun butun qator kengligida -->
+          <div class="settings-account-hint" id="transferRateHint" style="margin: -8px 0 18px;"></div>
 
           <div class="form-group">
             <label for="transferDescription">Izoh</label>
@@ -450,8 +503,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-subtle" onclick="closeModal('modalTransfer')">Bekor qilish</button>
-          <button type="submit" class="btn btn-cyan">O'tkazish</button>
+          <button type="button" class="btn btn-subtle" data-action="closeModal" data-args='["modalTransfer"]'>Bekor qilish</button>
+          <button type="submit" class="btn btn-cyan" data-tx-submit>O'tkazish</button>
         </div>
       </form>
     </div>
@@ -459,39 +512,45 @@
 
   <!-- 4. Modal Debt -->
   <div class="modal-backdrop" id="modalDebt">
-    <div class="modal-window">
+    <div class="modal-window modal-wide">
       <div class="modal-header">
         <h3><span><span class="ico-slot" data-icon="ledger"></span></span> Qarz Yozish</h3>
-        <button class="modal-close" onclick="closeModal('modalDebt')">&times;</button>
+        <button class="modal-close" data-action="closeModal" data-args='["modalDebt"]'>&times;</button>
       </div>
       <form id="formAddDebt">
         <div class="modal-body">
-          <div class="form-group">
-            <label for="debtPersonName">Shaxs ismi yoki Tashkilot *</label>
-            <input type="text" id="debtPersonName" class="form-control" placeholder="Masalan: Rustam aka" required>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="debtPersonName">Shaxs ismi yoki Tashkilot *</label>
+              <input type="text" id="debtPersonName" class="form-control" placeholder="Masalan: Rustam aka" required>
+            </div>
+
+            <div class="form-group">
+              <label for="debtTypeSelect">Qarz turi *</label>
+              <select id="debtTypeSelect" class="form-control" required>
+                <option value="give">Qarz berdim (Menga qaytarishadi)</option>
+                <option value="take">Qarz oldim (Men qaytarishim kerak)</option>
+              </select>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label for="debtTypeSelect">Qarz turi *</label>
-            <select id="debtTypeSelect" class="form-control" required>
-              <option value="give">Qarz berdim (Menga qaytarishadi)</option>
-              <option value="take">Qarz oldim (Men qaytarishim kerak)</option>
-            </select>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="debtSumma" id="debtSummaLabel">Summa *</label>
+              <input type="number" id="debtSumma" class="form-control" placeholder="Masalan: 200000" min="0.01" step="0.01" inputmode="decimal" required>
+            </div>
+
+            <div class="form-group">
+              <label for="debtDueDate">Qaytarish muddati</label>
+              <input type="date" id="debtDueDate" class="form-control" min="1900-01-01" max="2100-12-31">
+            </div>
           </div>
 
+          <!-- Qarz berilsa summa hamyondan yechiladi, olinsa hamyonga qo'shiladi; valyuta — hamyon valyutasi -->
           <div class="form-group">
-            <label for="debtSumma">Summa (so'm) *</label>
-            <input type="number" id="debtSumma" class="form-control" placeholder="Masalan: 200000" min="1" required>
-          </div>
-
-          <div class="form-group">
-            <label for="debtDueDate">Qaytarish muddati</label>
-            <input type="date" id="debtDueDate" class="form-control">
-          </div>
-
-          <div class="form-group">
-            <label for="debtWalletSelect">Bog'langan hamyon (Ixtiyoriy)</label>
-            <select id="debtWalletSelect" class="form-control"></select>
+            <label for="debtWalletSelect">Bog'langan hamyon *</label>
+            <select id="debtWalletSelect" class="form-control" required></select>
+            <div class="settings-account-hint" id="debtWalletCurrencyHint"></div>
           </div>
 
           <div class="form-group">
@@ -500,7 +559,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-subtle" onclick="closeModal('modalDebt')">Bekor qilish</button>
+          <button type="button" class="btn btn-subtle" data-action="closeModal" data-args='["modalDebt"]'>Bekor qilish</button>
           <button type="submit" class="btn btn-amber">Qarzni Saqlash</button>
         </div>
       </form>
@@ -512,7 +571,7 @@
     <div class="modal-window">
       <div class="modal-header">
         <h3><span><span class="ico-slot" data-icon="wallet"></span></span> Yangi Hamyon Qo'shish</h3>
-        <button class="modal-close" onclick="closeModal('modalWallet')">&times;</button>
+        <button class="modal-close" data-action="closeModal" data-args='["modalWallet"]'>&times;</button>
       </div>
       <form id="formAddWallet">
         <div class="modal-body">
@@ -522,17 +581,17 @@
           </div>
 
           <div class="form-group">
-            <label for="walletInitialSumma">Boshlang'ich mablag' (so'm)</label>
-            <input type="number" id="walletInitialSumma" class="form-control" placeholder="0" min="0" value="0">
+            <label for="walletInitialSumma">Boshlang'ich mablag'</label>
+            <input type="number" id="walletInitialSumma" class="form-control" placeholder="0" min="0" step="0.01" inputmode="decimal" value="0">
           </div>
 
           <div class="form-group">
             <label for="walletCurrency">Valyuta</label>
-            <input type="text" id="walletCurrency" class="form-control" value="UZS" required>
+            <input type="text" id="walletCurrency" class="form-control" value="UZS" maxlength="10" list="currencyOptions" autocomplete="off" required>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-subtle" onclick="closeModal('modalWallet')">Bekor qilish</button>
+          <button type="button" class="btn btn-subtle" data-action="closeModal" data-args='["modalWallet"]'>Bekor qilish</button>
           <button type="submit" class="btn btn-primary">Hamyonni Yaratish</button>
         </div>
       </form>
@@ -544,7 +603,7 @@
     <div class="modal-window">
       <div class="modal-header">
         <h3><span><span class="ico-slot" data-icon="members"></span></span> Yangi A'zo Qo'shish</h3>
-        <button class="modal-close" onclick="closeModal('modalMember')">&times;</button>
+        <button class="modal-close" data-action="closeModal" data-args='["modalMember"]'>&times;</button>
       </div>
       <form id="formAddMember">
         <div class="modal-body">
@@ -561,8 +620,122 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-subtle" onclick="closeModal('modalMember')">Bekor qilish</button>
+          <button type="button" class="btn btn-subtle" data-action="closeModal" data-args='["modalMember"]'>Bekor qilish</button>
           <button type="submit" class="btn btn-primary">A'zoni Qo'shish</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Takroriy to'lov: qo'shish va tahrirlash (form.dataset.editId) -->
+  <div class="modal-backdrop" id="modalRecurring">
+    <div class="modal-window modal-wide">
+      <div class="modal-header">
+        <h3><span><span class="ico-slot" data-icon="repeat"></span></span> <span data-tx-title>Takroriy to'lov</span></h3>
+        <button class="modal-close" data-action="closeModal" data-args='["modalRecurring"]'>&times;</button>
+      </div>
+      <form id="formRecurring">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="recurringKind">Turi</label>
+              <select id="recurringKind" class="form-control">
+                <option value="expense">Harajat (to'lov)</option>
+                <option value="income">Daromad (tushum)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="recurringName">Nomi *</label>
+              <input type="text" id="recurringName" class="form-control" maxlength="255" placeholder="Masalan: Ijara, Internet, Maosh" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="recurringSumma" id="recurringSummaLabel">Summa *</label>
+              <input type="number" id="recurringSumma" class="form-control" min="0.01" step="0.01" inputmode="decimal" required>
+            </div>
+            <div class="form-group">
+              <label for="recurringWallet">Hamyon *</label>
+              <select id="recurringWallet" class="form-control" required></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="recurringCategory" id="recurringCategoryLabel">Toifa *</label>
+              <select id="recurringCategory" class="form-control" required></select>
+            </div>
+            <div class="form-group" id="recurringMemberGroup">
+              <label for="recurringMember">Kimga? (Ixtiyoriy)</label>
+              <select id="recurringMember" class="form-control"></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="recurringFrequency">Qanchalik tez-tez</label>
+              <select id="recurringFrequency" class="form-control">
+                <option value="monthly">Har oy</option>
+                <option value="weekly">Har hafta</option>
+                <option value="daily">Har kuni</option>
+                <option value="yearly">Har yil</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="recurringStart">Birinchi to'lov sanasi *</label>
+              <input type="date" id="recurringStart" class="form-control" min="1900-01-01" max="2100-12-31" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="recurringEnd">Tugash sanasi (ixtiyoriy)</label>
+              <input type="date" id="recurringEnd" class="form-control" min="1900-01-01" max="2100-12-31">
+            </div>
+            <div class="form-group">
+              <label for="recurringRemind">Necha kun oldin eslatilsin</label>
+              <input type="number" id="recurringRemind" class="form-control" min="0" max="30" step="1" value="2">
+            </div>
+          </div>
+          <p class="settings-account-hint">Muddati kelganda operatsiya avtomatik yoziladi. O'tib ketgan sanalar uchun orqaga qarab yozilmaydi.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-subtle" data-action="closeModal" data-args='["modalRecurring"]'>Bekor qilish</button>
+          <button type="submit" class="btn btn-primary" data-tx-submit>Saqlash</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Jamg'arma maqsadi: qo'shish va tahrirlash -->
+  <div class="modal-backdrop" id="modalGoal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3><span><span class="ico-slot" data-icon="target"></span></span> <span data-tx-title>Yangi maqsad</span></h3>
+        <button class="modal-close" data-action="closeModal" data-args='["modalGoal"]'>&times;</button>
+      </div>
+      <form id="formGoal">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="goalName">Nima uchun yig'yapsiz? *</label>
+            <input type="text" id="goalName" class="form-control" maxlength="255" placeholder="Masalan: Mashina, Ta'til, Uy" required>
+          </div>
+          <div class="form-group">
+            <label for="goalWallet">Pul turadigan hamyon *</label>
+            <select id="goalWallet" class="form-control" required></select>
+            <p class="settings-account-hint" style="margin-top: 6px;">Yig'ilgan summa — shu hamyon balansi. Maqsad uchun alohida hamyon ochib, pulni unga O'tkazma qilib qo'ying.</p>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="goalTarget" id="goalTargetLabel">Maqsad summasi *</label>
+              <input type="number" id="goalTarget" class="form-control" min="0.01" step="0.01" inputmode="decimal" required>
+            </div>
+            <div class="form-group">
+              <label for="goalDeadline">Muddat (ixtiyoriy)</label>
+              <input type="date" id="goalDeadline" class="form-control" min="1900-01-01" max="2100-12-31">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-subtle" data-action="closeModal" data-args='["modalGoal"]'>Bekor qilish</button>
+          <button type="submit" class="btn btn-primary" data-tx-submit>Saqlash</button>
         </div>
       </form>
     </div>
@@ -573,14 +746,31 @@
     <div class="modal-window">
       <div class="modal-header">
         <h3><span><span class="ico-slot" data-icon="settings"></span></span> Sozlamalar</h3>
-        <button class="modal-close" onclick="closeModal('modalSettings')">&times;</button>
+        <button class="modal-close" data-action="closeModal" data-args='["modalSettings"]'>&times;</button>
       </div>
-      <div class="settings-tabs" role="tablist">
-        <button type="button" class="settings-tab active" data-settings-tab="profile" role="tab">Profil</button>
-        <button type="button" class="settings-tab" data-settings-tab="password" role="tab">Parol</button>
+      <!-- Bo'limlar ro'yxati: har biri alohida qator. Bosilganda ro'yxat yashirinib, bo'lim ekrani ochiladi (app.js: switchSettingsTab) -->
+      <div class="settings-menu help-list" id="settingsMenu">
+        <button type="button" class="help-row" data-settings-tab="profile"><span class="help-row-icon"><span class="ico-slot" data-icon="person"></span></span><span class="help-row-text">Profil</span><span class="ico-slot settings-menu-chevron" data-icon="chevronRight"></span></button>
+        <button type="button" class="help-row" data-settings-tab="password"><span class="help-row-icon"><span class="ico-slot" data-icon="lock"></span></span><span class="help-row-text">Parol</span><span class="ico-slot settings-menu-chevron" data-icon="chevronRight"></span></button>
+        <button type="button" class="help-row" data-settings-tab="devices"><span class="help-row-icon"><span class="ico-slot" data-icon="mobile"></span></span><span class="help-row-text">Qurilmalar</span><span class="ico-slot settings-menu-chevron" data-icon="chevronRight"></span></button>
+        <button type="button" class="help-row" data-settings-tab="palette"><span class="help-row-icon"><span class="ico-slot" data-icon="palette"></span></span><span class="help-row-text">Ranglar</span><span class="ico-slot settings-menu-chevron" data-icon="chevronRight"></span></button>
+        <button type="button" class="help-row" data-settings-tab="language"><span class="help-row-icon"><span class="ico-slot" data-icon="globe"></span></span><span class="help-row-text">Til</span><span class="ico-slot settings-menu-chevron" data-icon="chevronRight"></span></button>
+        <button type="button" class="help-row" data-settings-tab="help"><span class="help-row-icon"><span class="ico-slot" data-icon="help"></span></span><span class="help-row-text">Ma'lumotnoma</span><span class="ico-slot settings-menu-chevron" data-icon="chevronRight"></span></button>
+        <button type="button" class="help-row" data-settings-tab="assistant"><span class="help-row-icon"><span class="ico-slot" data-icon="sparkle"></span></span><span class="help-row-text">Moliya yordamchisi</span><span class="ico-slot settings-menu-chevron" data-icon="chevronRight"></span></button>
+        <button type="button" class="help-row" data-settings-tab="support"><span class="help-row-icon"><span class="ico-slot" data-icon="chat"></span></span><span class="help-row-text">Yordam</span><span class="settings-unread" id="supportMenuBadge" hidden></span><span class="ico-slot settings-menu-chevron" data-icon="chevronRight"></span></button>
+        <button type="button" class="help-row" data-settings-tab="about"><span class="help-row-icon"><span class="ico-slot" data-icon="info"></span></span><span class="help-row-text">Dastur haqida</span><span class="ico-slot settings-menu-chevron" data-icon="chevronRight"></span></button>
       </div>
 
-      <form id="formSettingsProfile" data-settings-panel="profile">
+      <!-- Bo'lim ekrani sarlavhasi: "Orqaga" ro'yxatga qaytaradi (Ma'lumotnomada mavzu ochiq bo'lsa — mavzular ro'yxatiga) -->
+      <div class="help-head" id="settingsSubHead" hidden>
+        <button type="button" class="btn-icon help-back" id="btnSettingsBack" title="Orqaga"><span class="ico-slot" data-icon="chevronLeft"></span></button>
+        <h4 class="help-title" id="settingsSubTitle"></h4>
+      </div>
+
+      <!-- Uchala panel bitta katakka ustma-ust qo'yiladi: oyna eng baland panel o'lchamida turadi, bo'lim almashganda sakramaydi -->
+      <div class="settings-panels" hidden>
+      <!-- Ochilganda faqat ko'rish (data-mode="view"); "Tahrirlash" bosilgandagina maydonlar ochiladi — app.js: setProfileMode -->
+      <form id="formSettingsProfile" data-settings-panel="profile" data-mode="view">
         <div class="modal-body">
           <div class="settings-row">
             <div class="form-group">
@@ -600,6 +790,16 @@
             <label for="settingsEmail">Email</label>
             <input type="email" id="settingsEmail" class="form-control" placeholder="ism@example.com" autocomplete="email">
           </div>
+          <!-- Email — parolni tiklash kanali: uni o'zgartirish joriy parol bilan tasdiqlanadi -->
+          <div class="form-group" id="settingsEmailPasswordGroup" hidden>
+            <label for="settingsEmailPassword">Joriy parol *</label>
+            <input type="password" id="settingsEmailPassword" class="form-control" placeholder="Emailni o'zgartirish uchun" autocomplete="current-password">
+          </div>
+          <!-- Ikki bosqichli kirish yoqilgan bo'lsa yangi email kod bilan tasdiqlanadi: xato yozilgan email akkauntni qulflamasin -->
+          <div class="form-group" id="settingsEmailCodeGroup" hidden>
+            <label for="settingsEmailCode" id="settingsEmailCodeLabel">Yangi emailga kelgan kod *</label>
+            <input type="text" id="settingsEmailCode" class="form-control auth-code-input" placeholder="000000" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+          </div>
           <div class="form-group">
             <label for="settingsPhone">Telefon</label>
             <input type="tel" id="settingsPhone" class="form-control" maxlength="20" placeholder="+998 90 123 45 67" autocomplete="tel">
@@ -607,14 +807,17 @@
 
         </div>
         <div class="modal-footer">
-          <div class="settings-footer-account">
+          <div class="settings-footer-account" data-profile-view>
             <button type="button" class="btn btn-subtle" id="btnLogout" style="color: var(--rose); border-color: var(--rose-glow);">
               <span class="ico-slot" data-icon="logout"></span> Chiqish
             </button>
             <button type="button" class="btn btn-subtle" id="btnDeleteAccount" style="color: var(--rose); border-color: var(--rose-glow);">Akkauntni o'chirish</button>
           </div>
-          <button type="button" class="btn btn-subtle" onclick="closeModal('modalSettings')">Bekor qilish</button>
-          <button type="submit" class="btn btn-primary">Saqlash</button>
+          <button type="button" class="btn btn-primary" id="btnProfileEdit" data-profile-view>
+            <span class="ico-slot" data-icon="edit"></span> Tahrirlash
+          </button>
+          <button type="button" class="btn btn-subtle" id="btnProfileCancel" data-profile-edit>Bekor qilish</button>
+          <button type="submit" class="btn btn-primary" data-profile-edit>Saqlash</button>
         </div>
       </form>
 
@@ -625,8 +828,8 @@
             <div class="password-input-group">
               <input type="password" id="settingsOldPassword" class="form-control" placeholder="••••••••" required autocomplete="current-password">
               <button type="button" class="toggle-password-btn" data-target="settingsOldPassword" title="Parolni ko'rsatish/yashirish" tabindex="-1">
-                <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                <svg class="eye-hide" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                <svg class="eye-show" width="18" height="18" data-icon="eye" aria-hidden="true"></svg>
+                <svg class="eye-hide" style="display: none;" width="18" height="18" data-icon="eyeSlash" aria-hidden="true"></svg>
               </button>
             </div>
           </div>
@@ -635,8 +838,8 @@
             <div class="password-input-group">
               <input type="password" id="settingsNewPassword" class="form-control" placeholder="••••••••" minlength="8" required autocomplete="new-password">
               <button type="button" class="toggle-password-btn" data-target="settingsNewPassword" title="Parolni ko'rsatish/yashirish" tabindex="-1">
-                <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                <svg class="eye-hide" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                <svg class="eye-show" width="18" height="18" data-icon="eye" aria-hidden="true"></svg>
+                <svg class="eye-hide" style="display: none;" width="18" height="18" data-icon="eyeSlash" aria-hidden="true"></svg>
               </button>
             </div>
           </div>
@@ -645,17 +848,240 @@
             <div class="password-input-group">
               <input type="password" id="settingsNewPassword2" class="form-control" placeholder="••••••••" required autocomplete="new-password">
               <button type="button" class="toggle-password-btn" data-target="settingsNewPassword2" title="Parolni ko'rsatish/yashirish" tabindex="-1">
-                <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                <svg class="eye-hide" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                <svg class="eye-show" width="18" height="18" data-icon="eye" aria-hidden="true"></svg>
+                <svg class="eye-hide" style="display: none;" width="18" height="18" data-icon="eyeSlash" aria-hidden="true"></svg>
               </button>
             </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-subtle" onclick="closeModal('modalSettings')">Bekor qilish</button>
+          <button type="button" class="btn btn-subtle" data-action="closeModal" data-args='["modalSettings"]'>Bekor qilish</button>
           <button type="submit" class="btn btn-primary">Parolni o'zgartirish</button>
         </div>
       </form>
+
+      <!-- Qurilmalar: bo'lim ochilganda ro'yxat yuklanadi (app.js: loadDevices). Boshqa qurilmalarni chiqarish uchun
+           bu qurilmada kamida 15 kun oldin kirilgan bo'lishi kerak — server ham tekshiradi -->
+      <form id="formSettingsDevices" data-settings-panel="devices" hidden>
+        <div class="modal-body">
+          <!-- Ikki bosqichli kirish (app.js: setTwoFactorMode). Yoqish emailga kelgan kod bilan tasdiqlanadi -->
+          <div class="twofa-box" id="twoFactorBox">
+            <div class="twofa-head">
+              <span class="twofa-icon"><span class="ico-slot" data-icon="shield"></span></span>
+              <div class="twofa-text">
+                <b>Ikki bosqichli kirish</b>
+                <p class="settings-account-hint" id="twoFactorStatus">O'chiq. Yoqilsa, yangi qurilmadan kirishda parol bilan birga emailga kelgan kod ham so'raladi.</p>
+              </div>
+              <button type="button" class="btn btn-subtle btn-xs" id="btnTwoFactorToggle">Yoqish</button>
+            </div>
+            <div class="twofa-step" id="twoFactorStep" hidden>
+              <div class="form-group" id="twoFactorPasswordGroup">
+                <label for="twoFactorPassword">Joriy parol *</label>
+                <input type="password" id="twoFactorPassword" class="form-control" placeholder="••••••••" autocomplete="current-password">
+              </div>
+              <div class="form-group" id="twoFactorCodeGroup" hidden>
+                <label for="twoFactorCode" id="twoFactorCodeLabel">Emailga kelgan kod *</label>
+                <input type="text" id="twoFactorCode" class="form-control auth-code-input" placeholder="000000" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+              </div>
+              <div class="twofa-actions">
+                <button type="button" class="btn btn-subtle" id="btnTwoFactorCancel">Bekor qilish</button>
+                <button type="button" class="btn btn-primary" id="btnTwoFactorNext">Davom etish</button>
+              </div>
+            </div>
+          </div>
+
+          <p class="settings-account-hint palette-intro">Akkauntingizga kirilgan qurilmalar va kirish vaqti.</p>
+          <div class="device-list" id="deviceList"></div>
+          <p class="settings-account-hint device-lock-hint" id="deviceLockHint" hidden></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-subtle" id="btnTerminateOthers" style="color: var(--rose); border-color: var(--rose-glow);" hidden>Boshqa qurilmalarni chiqarish</button>
+          <button type="button" class="btn btn-subtle" data-action="closeModal" data-args='["modalSettings"]'>Yopish</button>
+        </div>
+      </form>
+
+      <!-- Rang mavzusi: tanlansa darhol qo'llanadi. Har bir variant ko'rinishi — yorug' | qorong'u -->
+      <form id="formSettingsPalette" data-settings-panel="palette" hidden>
+        <div class="modal-body">
+          <p class="settings-account-hint palette-intro">Faqat ranglar almashadi. Yorug' va qorong'u rejim har bir mavzuda ishlaydi.</p>
+          <div class="palette-grid" role="radiogroup" aria-label="Rang mavzusi">
+            <label class="palette-option">
+              <input type="radio" name="palette" value="oltin">
+              <span class="palette-preview" style="--pv-lbg:#EDEDED;--pv-lpr:#FCA311;--pv-lexp:#D1495B;--pv-lamb:#14213D;--pv-dbg:#000000;--pv-dpr:#FCA311;--pv-dexp:#FF6B6B;--pv-damb:#3A5085">
+                <span class="pv-light"><i></i><i></i><i></i></span><span class="pv-dark"><i></i><i></i><i></i></span>
+              </span>
+              <span class="palette-name">Oltin <small>Standart · to'q ko'k va oltin</small></span>
+            </label>
+            <label class="palette-option">
+              <input type="radio" name="palette" value="moy">
+              <span class="palette-preview" style="--pv-lbg:#EEF2EC;--pv-lpr:#2F6F57;--pv-lexp:#B5542D;--pv-lamb:#946515;--pv-dbg:#11160F;--pv-dpr:#4F9B7D;--pv-dexp:#E0875F;--pv-damb:#D4A94E">
+                <span class="pv-light"><i></i><i></i><i></i></span><span class="pv-dark"><i></i><i></i><i></i></span>
+              </span>
+              <span class="palette-name">Moy-yashil <small>Klassik</small></span>
+            </label>
+            <label class="palette-option">
+              <input type="radio" name="palette" value="zumrad">
+              <span class="palette-preview" style="--pv-lbg:#EFF8F4;--pv-lpr:#047857;--pv-lexp:#DC4C3E;--pv-lamb:#B45309;--pv-dbg:#07140F;--pv-dpr:#34D399;--pv-dexp:#F87171;--pv-damb:#FBBF24">
+                <span class="pv-light"><i></i><i></i><i></i></span><span class="pv-dark"><i></i><i></i><i></i></span>
+              </span>
+              <span class="palette-name">Zumrad <small>Yorqin yashil</small></span>
+            </label>
+            <label class="palette-option">
+              <input type="radio" name="palette" value="firuza">
+              <span class="palette-preview" style="--pv-lbg:#EEF6F6;--pv-lpr:#0E7C86;--pv-lexp:#C0392B;--pv-lamb:#C08A1E;--pv-dbg:#08161C;--pv-dpr:#2EC4C9;--pv-dexp:#F07F70;--pv-damb:#E6B655">
+                <span class="pv-light"><i></i><i></i><i></i></span><span class="pv-dark"><i></i><i></i><i></i></span>
+              </span>
+              <span class="palette-name">Firuza <small>Samarqand koshinlari</small></span>
+            </label>
+            <label class="palette-option">
+              <input type="radio" name="palette" value="lojuvard">
+              <span class="palette-preview" style="--pv-lbg:#F7F4EC;--pv-lpr:#2643A8;--pv-lexp:#B83A32;--pv-lamb:#B8862B;--pv-dbg:#0A0F24;--pv-dpr:#7D96F0;--pv-dexp:#F27D72;--pv-damb:#E0B654">
+                <span class="pv-light"><i></i><i></i><i></i></span><span class="pv-dark"><i></i><i></i><i></i></span>
+              </span>
+              <span class="palette-name">Lojuvard <small>Ko'k va oltin</small></span>
+            </label>
+            <label class="palette-option">
+              <input type="radio" name="palette" value="zaytun">
+              <span class="palette-preview" style="--pv-lbg:#F5F3EA;--pv-lpr:#556B2F;--pv-lexp:#B4462B;--pv-lamb:#B5852A;--pv-dbg:#12130C;--pv-dpr:#A9BC6A;--pv-dexp:#EB8466;--pv-damb:#E0B866">
+                <span class="pv-light"><i></i><i></i><i></i></span><span class="pv-dark"><i></i><i></i><i></i></span>
+              </span>
+              <span class="palette-name">Zaytun <small>Zaytun va qaymoq</small></span>
+            </label>
+            <label class="palette-option">
+              <input type="radio" name="palette" value="olcha">
+              <span class="palette-preview" style="--pv-lbg:#F8F1F3;--pv-lpr:#8B1E3F;--pv-lexp:#D9480F;--pv-lamb:#A16207;--pv-dbg:#140A0E;--pv-dpr:#E26D8F;--pv-dexp:#FF8A4C;--pv-damb:#E7B45A">
+                <span class="pv-light"><i></i><i></i><i></i></span><span class="pv-dark"><i></i><i></i><i></i></span>
+              </span>
+              <span class="palette-name">Olcha <small>Vino rang</small></span>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-subtle" data-action="closeModal" data-args='["modalSettings"]'>Yopish</button>
+        </div>
+      </form>
+
+      <!-- Interfeys tili: tanlansa sahifa shu tilda qayta yuklanadi (i18n.js). Til nomlari o'z tilida yoziladi — tarjima qilinmaydi -->
+      <form id="formSettingsLanguage" data-settings-panel="language" hidden>
+        <div class="modal-body">
+          <p class="settings-account-hint palette-intro">Tanlangan til shu brauzerda saqlanadi.</p>
+          <div class="palette-grid lang-grid" role="radiogroup" aria-label="Ilova tili">
+            <label class="palette-option lang-option" data-no-i18n><input type="radio" name="language" value="uz"><svg class="lang-flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#fff"/><rect width="30" height="6.4" fill="#0099B5"/><rect y="13.6" width="30" height="6.4" fill="#1EB53A"/><rect y="6.4" width="30" height="0.6" fill="#CE1126"/><rect y="13" width="30" height="0.6" fill="#CE1126"/><circle cx="5" cy="3.2" r="2.2" fill="#fff"/><circle cx="5.8" cy="3.2" r="2" fill="#0099B5"/><circle cx="9" cy="2" r=".45" fill="#fff"/><circle cx="10.6" cy="2" r=".45" fill="#fff"/><circle cx="12.2" cy="2" r=".45" fill="#fff"/><circle cx="9" cy="3.6" r=".45" fill="#fff"/><circle cx="10.6" cy="3.6" r=".45" fill="#fff"/><circle cx="12.2" cy="3.6" r=".45" fill="#fff"/><circle cx="10.6" cy="5.1" r=".45" fill="#fff"/></svg><span class="palette-name">O'zbekcha</span></label>
+            <label class="palette-option lang-option" data-no-i18n><input type="radio" name="language" value="tg"><svg class="lang-flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#fff"/><rect width="30" height="5.7" fill="#CC0000"/><rect y="14.3" width="30" height="5.7" fill="#006600"/><path d="M12.6 11.6h4.8l.5-2.4-1.2 1-1.7-2-1.7 2-1.2-1z" fill="#F8C300"/></svg><span class="palette-name">Тоҷикӣ</span></label>
+            <label class="palette-option lang-option" data-no-i18n><input type="radio" name="language" value="kk"><svg class="lang-flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#00AFCA"/><circle cx="15" cy="9" r="3.2" fill="#FEC50C"/><path d="M10.5 14.5q4.5 2.4 9 0" stroke="#FEC50C" stroke-width="1" fill="none"/><rect x="2" y="2" width="1.2" height="16" fill="#FEC50C" opacity=".85"/></svg><span class="palette-name">Қазақша</span></label>
+            <label class="palette-option lang-option" data-no-i18n><input type="radio" name="language" value="ky"><svg class="lang-flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#E8112D"/><circle cx="15" cy="10" r="5" fill="#FFEF00"/><circle cx="15" cy="10" r="2.6" fill="#E8112D"/><circle cx="15" cy="10" r="1.9" fill="#FFEF00"/><path d="M13.2 8.8l3.6 2.4M16.8 8.8l-3.6 2.4" stroke="#E8112D" stroke-width=".5"/></svg><span class="palette-name">Кыргызча</span></label>
+            <label class="palette-option lang-option" data-no-i18n><input type="radio" name="language" value="ru"><svg class="lang-flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#fff"/><rect y="6.67" width="30" height="6.67" fill="#0039A6"/><rect y="13.33" width="30" height="6.67" fill="#D52B1E"/></svg><span class="palette-name">Русский</span></label>
+            <label class="palette-option lang-option" data-no-i18n><input type="radio" name="language" value="en"><svg class="lang-flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#012169"/><path d="M0 0l30 20M30 0L0 20" stroke="#fff" stroke-width="4"/><path d="M0 0l30 20M30 0L0 20" stroke="#C8102E" stroke-width="1.6"/><path d="M15 0v20M0 10h30" stroke="#fff" stroke-width="6"/><path d="M15 0v20M0 10h30" stroke="#C8102E" stroke-width="3.4"/></svg><span class="palette-name">English</span></label>
+            <label class="palette-option lang-option" data-no-i18n><input type="radio" name="language" value="tr"><svg class="lang-flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#E30A17"/><circle cx="11" cy="10" r="5" fill="#fff"/><circle cx="12.3" cy="10" r="4" fill="#E30A17"/><path d="M17.5 10l3.9-1.27-2.41 3.32V7.95l2.41 3.32z" fill="#fff"/></svg><span class="palette-name">Türkçe</span></label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-subtle" data-action="closeModal" data-args='["modalSettings"]'>Yopish</button>
+        </div>
+      </form>
+
+      <!-- Ma'lumotnoma: mavzular ro'yxati → mavzu ichida ochiladigan savol-javoblar. Matnlar app.js: HELP_TOPICS.
+           Panel boshqa bo'limlar egallagan joyga joylashadi (style.css: .settings-help) — uzun matn oynani cho'zmasin -->
+      <div class="settings-help" id="settingsHelp" data-settings-panel="help" hidden>
+        <div class="modal-body help-body" id="helpBody"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-subtle" data-action="closeModal" data-args='["modalSettings"]'>Yopish</button>
+        </div>
+      </div>
+
+      <!-- Moliya yordamchisi: ilovadan foydalanish bo'yicha savolga Ma'lumotnomadan javob topadi (server: mainapp/faq.py).
+           Suhbat faqat shu brauzer xotirasida (app.js: assistantState), serverda saqlanmaydi -->
+      <div class="settings-help settings-chat" id="settingsAssistant" data-settings-panel="assistant" hidden>
+        <div class="chat-log" id="assistantLog" aria-live="polite" data-no-i18n></div>
+        <form class="chat-compose" id="formAssistant">
+          <textarea id="assistantInput" class="form-control" rows="1" maxlength="1000" placeholder="Savolingizni yozing…" aria-label="Savol" required></textarea>
+          <button type="submit" class="btn btn-primary" title="Yuborish"><span class="ico-slot" data-icon="send"></span></button>
+        </form>
+        <p class="chat-note">Javoblar Ma'lumotnoma asosida. Topilmasa — «Yordam» bo'limida adminga yozing.</p>
+      </div>
+
+      <!-- Yordam: admin bilan chat. Admin javobni admin panelidan yozadi (panel/support/); yangi xabarlar polling bilan olinadi -->
+      <div class="settings-help settings-chat" id="settingsSupport" data-settings-panel="support" hidden>
+        <div class="chat-log" id="supportLog" aria-live="polite" data-no-i18n></div>
+        <form class="chat-compose" id="formSupport">
+          <textarea id="supportInput" class="form-control" rows="1" maxlength="2000" placeholder="Adminga xabar yozing…" aria-label="Xabar" required></textarea>
+          <button type="submit" class="btn btn-primary" title="Yuborish"><span class="ico-slot" data-icon="send"></span></button>
+        </form>
+      </div>
+
+      <!-- Dastur haqida. Dasturchi ma'lumotlari: «—» o'rniga ism va kontaktlarni yozing (kerak bo'lmagan qatorni o'chiring) -->
+      <div class="settings-help" id="settingsAbout" data-settings-panel="about" hidden>
+        <div class="modal-body">
+          <div class="about-hero">
+            <span class="about-logo" aria-hidden="true">M</span>
+            <h4>Moliya</h4>
+            <p class="about-tagline">Loyihamiz sizni yaxshi amallarga yetaklab, yomonlaridan yiroq tutsin.</p>
+            <p class="about-text">Moliya — shaxsiy va oilaviy byudjetingizni bir joyda yuritadigan ilova. Kirim-chiqimni yozing, qarz va to'lovlarni kuzating, maqsad sari jamg'aring — pulingiz qayerga ketayotganini aniq ko'ring.</p>
+          </div>
+          <div class="about-section-title">Imkoniyatlar</div>
+          <ul class="about-features">
+            <li>Bir nechta hamyon va valyuta, Markaziy bank kursi bo'yicha hisob</li>
+            <li>Kirim, chiqim va hamyonlar orasida o'tkazma</li>
+            <li>Qarzlar daftari: muddat va qisman to'lash</li>
+            <li>Takroriy to'lovlar va jamg'arma maqsadlari</li>
+            <li>Toifalar, oila a'zolari va oylik statistika</li>
+            <li>Ikki bosqichli kirish va qurilmalarni boshqarish</li>
+            <li>Telefon, planshet va kompyuterga moslashgan ko'rinish</li>
+            <li>Bosh sahifani tortib yangilash — telefonda ham, kompyuterda ham</li>
+            <li>Admin xabarlari — qo'ng'iroqchada alohida ko'rinishda</li>
+          </ul>
+          <div class="about-section-title">Dasturchi</div>
+          <div class="about-contacts">
+            <div class="about-contact"><span class="about-contact-label">Ism</span><span class="about-contact-value" data-no-i18n>—</span></div>
+            <div class="about-contact"><span class="about-contact-label">Telegram</span><span class="about-contact-value" data-no-i18n>—</span></div>
+            <div class="about-contact"><span class="about-contact-label">Email</span><span class="about-contact-value" data-no-i18n>—</span></div>
+            <div class="about-contact"><span class="about-contact-label">Telefon</span><span class="about-contact-value" data-no-i18n>—</span></div>
+          </div>
+          <p class="settings-account-hint" style="margin-top: 14px;">Savol yoki taklif bo'lsa — Sozlamalar → Yordam bo'limida yozing.</p>
+          <p class="about-mission">Bu loyihadan maqsadimiz — ummatga manfaat yetkazish va har bir oilaga halol rizqini barakali boshqarishda ko'maklashish.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-subtle" data-action="closeModal" data-args='["modalSettings"]'>Yopish</button>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toifalarni sozlash: qo'shish, o'chirish, qaytarish -->
+  <div class="modal-backdrop" id="modalCategories">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3><span><span class="ico-slot" data-icon="tag"></span></span> Toifalarni sozlash</h3>
+        <button type="button" class="modal-close" data-action="closeModal" data-args='["modalCategories"]'>&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="cat-tabs segmented" id="catKindTabs">
+          <button type="button" class="cat-tab active" data-kind="expense">Harajat toifalari</button>
+          <button type="button" class="cat-tab" data-kind="income">Daromad turlari</button>
+        </div>
+
+        <form id="formAddCategory" class="cat-add-row">
+          <input type="text" id="newCategoryName" class="form-control" placeholder="Yangi toifa nomi" maxlength="255" required>
+          <button type="submit" class="btn btn-primary">Qo'shish</button>
+        </form>
+
+        <div class="cat-list" id="categoryManagerList"></div>
+
+        <details class="cat-hidden-box" id="hiddenCategoriesBox" hidden>
+          <summary>O'chirilgan umumiy toifalar (<span id="hiddenCatCount">0</span>)</summary>
+          <div class="cat-list" id="hiddenCategoryList"></div>
+        </details>
+
+        <div class="settings-account-hint" style="margin-top: 14px;">
+          Nomini o'zgartirish uchun ustiga bosib yozing: Enter — saqlash, Esc — bekor qilish. Yangi nom eski operatsiyalaringizda ham ko'rinadi.
+          Umumiy toifa nomi faqat sizda o'zgaradi, boshqa foydalanuvchilarga ta'sir qilmaydi.
+          O'zingiz qo'shgan toifa o'chirilganda oldingi operatsiyalaringizda nomi saqlanib qoladi.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-subtle" data-action="closeModal" data-args='["modalCategories"]'>Yopish</button>
+      </div>
     </div>
   </div>
 
@@ -664,7 +1090,7 @@
     <div class="modal-window">
       <div class="modal-header">
         <h3><span><span class="ico-slot" data-icon="wallet"></span></span> Hamyonni tahrirlash</h3>
-        <button type="button" class="modal-close" onclick="closeModal('modalEditWallet')">&times;</button>
+        <button type="button" class="modal-close" data-action="closeModal" data-args='["modalEditWallet"]'>&times;</button>
       </div>
       <form id="formEditWallet">
         <div class="modal-body">
@@ -674,7 +1100,7 @@
           </div>
           <div class="form-group">
             <label for="editWalletCurrency">Valyuta *</label>
-            <input type="text" id="editWalletCurrency" class="form-control" maxlength="10" required>
+            <input type="text" id="editWalletCurrency" class="form-control" maxlength="10" list="currencyOptions" autocomplete="off" required>
           </div>
           <div class="settings-account-hint">
             Balansni bu yerda o'zgartirib bo'lmaydi: Kirim, Harajat yoki O'tkazma orqali o'zgartiring.
@@ -682,7 +1108,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-subtle" onclick="closeModal('modalEditWallet')">Bekor qilish</button>
+          <button type="button" class="btn btn-subtle" data-action="closeModal" data-args='["modalEditWallet"]'>Bekor qilish</button>
           <button type="submit" class="btn btn-primary">Saqlash</button>
         </div>
       </form>
@@ -694,7 +1120,7 @@
     <div class="modal-window">
       <div class="modal-header">
         <h3 style="color: var(--rose);">Akkauntni o'chirish</h3>
-        <button type="button" class="modal-close" onclick="closeModal('modalDeleteAccount')">&times;</button>
+        <button type="button" class="modal-close" data-action="closeModal" data-args='["modalDeleteAccount"]'>&times;</button>
       </div>
       <form id="formDeleteAccount">
         <div class="modal-body">
@@ -707,14 +1133,14 @@
             <div class="password-input-group">
               <input type="password" id="deleteAccountPassword" class="form-control" placeholder="••••••••" required autocomplete="current-password">
               <button type="button" class="toggle-password-btn" data-target="deleteAccountPassword" title="Parolni ko'rsatish/yashirish" tabindex="-1">
-                <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                <svg class="eye-hide" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                <svg class="eye-show" width="18" height="18" data-icon="eye" aria-hidden="true"></svg>
+                <svg class="eye-hide" style="display: none;" width="18" height="18" data-icon="eyeSlash" aria-hidden="true"></svg>
               </button>
             </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-subtle" onclick="closeModal('modalDeleteAccount')">Bekor qilish</button>
+          <button type="button" class="btn btn-subtle" data-action="closeModal" data-args='["modalDeleteAccount"]'>Bekor qilish</button>
           <button type="submit" class="btn btn-rose">Akkauntni o'chirish</button>
         </div>
       </form>
@@ -726,7 +1152,7 @@
     <div class="modal-window">
       <div class="modal-header">
         <h3><span><span class="ico-slot" data-icon="card"></span></span> Qarzni Qaytarish / To'lash</h3>
-        <button class="modal-close" onclick="closeModal('modalRepayDebt')">&times;</button>
+        <button class="modal-close" data-action="closeModal" data-args='["modalRepayDebt"]'>&times;</button>
       </div>
       <form id="formRepayDebt">
         <div class="modal-body">
@@ -736,16 +1162,17 @@
 
           <div class="form-group">
             <label for="repayAmount">To'lov Summasi *</label>
-            <input type="number" id="repayAmount" class="form-control" min="1" required>
+            <input type="number" id="repayAmount" class="form-control" min="0.01" step="0.01" inputmode="decimal" required>
           </div>
 
           <div class="form-group">
             <label for="repayWalletSelect">Qaysi hamyon orqali? *</label>
             <select id="repayWalletSelect" class="form-control" required></select>
+            <div class="settings-account-hint" id="repayConvertHint"></div>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-subtle" onclick="closeModal('modalRepayDebt')">Bekor qilish</button>
+          <button type="button" class="btn btn-subtle" data-action="closeModal" data-args='["modalRepayDebt"]'>Bekor qilish</button>
           <button type="submit" class="btn btn-emerald">To'lovni Tasdiqlash</button>
         </div>
       </form>
@@ -757,7 +1184,7 @@
     <div class="modal-window">
       <div class="modal-header">
         <h3 id="txFilterTitle"><span><span class="ico-slot" data-icon="receipt"></span></span> Operatsiyalar</h3>
-        <button class="modal-close" onclick="closeModal('modalTxFilter')">&times;</button>
+        <button class="modal-close" data-action="closeModal" data-args='["modalTxFilter"]'>&times;</button>
       </div>
       <div class="modal-body">
         <div class="tx-filter-summary" id="txFilterSummary"></div>
@@ -772,35 +1199,66 @@
 
     <!-- Sticky header -->
     <div class="tx-page-header">
-      <button class="tx-page-back" onclick="closeTxPage()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
+      <button class="tx-page-back" data-action="closeTxPage">
+        <svg width="20" height="20" data-icon="chevronLeft" aria-hidden="true"></svg>
       </button>
-      <div style="flex:1;">
+      <div class="tx-page-heading">
         <div class="tx-page-title"><span class="ico-slot" data-icon="chart" id="txPageTitleIcon"></span> <span id="txPageTitleText">Oylik Statistika</span></div>
         <div class="tx-page-subtitle" id="txPageMonth">Joriy oy</div>
       </div>
-      <!-- Oy tanlash -->
-      <div class="month-nav-controls">
-        <button class="month-nav-btn" id="btnPrevMonth" title="Oldingi oy">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      <!-- Davr tanlash: ‹ [kalendar Oktabr 2026 ▾] ›. Strelkalar oy rejimida bir oyga, oraliqda shu oraliq uzunligiga suradi.
+           O'rtasi bosilsa — tezkor davrlar va "dan — gacha" oralig'i (app.js: _setPeriodPanel) -->
+      <div class="month-nav-controls period-nav" id="periodNav">
+        <button type="button" class="period-step" id="btnPrevMonth" title="Oldingi davr" aria-label="Oldingi davr">
+          <span class="ico-slot" data-icon="chevronLeft"></span>
         </button>
-        <span class="month-nav-label" id="monthNavLabel">Oct 2026</span>
-        <button class="month-nav-btn" id="btnNextMonth" title="Keyingi oy">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        <button type="button" class="period-trigger" id="btnPeriod" aria-haspopup="dialog" aria-expanded="false" aria-controls="periodPanel">
+          <span class="ico-slot" data-icon="calendar"></span>
+          <span class="period-label" id="monthNavLabel">Joriy oy</span>
+          <span class="ico-slot period-caret" data-icon="chevronDown"></span>
         </button>
+        <button type="button" class="period-step" id="btnNextMonth" title="Keyingi davr" aria-label="Keyingi davr">
+          <span class="ico-slot" data-icon="chevronRight"></span>
+        </button>
+
+        <div class="period-panel" id="periodPanel" role="dialog" aria-label="Davrni tanlash" hidden>
+          <div class="period-panel-label">Tezkor tanlov</div>
+          <div class="period-presets">
+            <button type="button" class="period-preset" data-period-preset="thisMonth">Bu oy</button>
+            <button type="button" class="period-preset" data-period-preset="lastMonth">O'tgan oy</button>
+            <button type="button" class="period-preset" data-period-preset="last7">Oxirgi 7 kun</button>
+            <button type="button" class="period-preset" data-period-preset="last30">Oxirgi 30 kun</button>
+            <button type="button" class="period-preset" data-period-preset="last90">Oxirgi 90 kun</button>
+            <button type="button" class="period-preset" data-period-preset="thisYear">Bu yil</button>
+          </div>
+          <form class="period-range" id="formPeriodRange" novalidate>
+            <div class="period-panel-label">Oraliq</div>
+            <div class="period-range-fields">
+              <label class="period-field">
+                <span>Dan</span>
+                <input type="date" id="periodFrom" class="form-control" min="1900-01-01">
+              </label>
+              <span class="period-range-sep" aria-hidden="true">—</span>
+              <label class="period-field">
+                <span>Gacha</span>
+                <input type="date" id="periodTo" class="form-control" min="1900-01-01">
+              </label>
+            </div>
+            <div class="period-range-error" id="periodRangeError" role="alert"></div>
+            <button type="submit" class="btn btn-primary period-apply">Qo'llash</button>
+          </form>
+        </div>
       </div>
     </div>
 
     <!-- Scrollable full content -->
     <div class="tx-page-scroll-body" id="txPageScrollBody">
 
-      <!-- ── Statistika ko'rinishi: Oylik dinamika + kategoriyalar ── -->
+      <!-- ── Statistika ko'rinishi: Kunlik dinamika + kategoriyalar ── -->
       <div id="statsOverviewSection">
         <div class="stats-section-card">
           <div class="stats-section-header">
-            <span><span class="ico-slot" data-icon="chart"></span> Oylik dinamika</span>
+            <span><span class="ico-slot" data-icon="chart"></span> Kunlik dinamika</span>
             <div class="trend-legend-inline">
               <span class="trend-legend-item income"><span class="trend-legend-dot income"></span>Kirim</span>
               <span class="trend-legend-item expense"><span class="trend-legend-dot expense"></span>Chiqim</span>
@@ -830,10 +1288,10 @@
       <div id="statsOperationsSection">
         <div class="stats-tx-section-header">
           <span><span class="ico-slot" data-icon="receipt"></span> Operatsiyalar</span>
-          <div class="tx-page-tabs-inline" id="txPageTabs">
+          <div class="segmented segmented-fit" id="txPageTabs">
             <button class="tx-page-tab active" data-filter="all">Barchasi</button>
-            <button class="tx-page-tab" data-filter="expenses"><span class="ico-slot arrow-badge expense" data-icon="expenseArrow"></span> Chiqim</button>
             <button class="tx-page-tab" data-filter="incomes"><span class="ico-slot arrow-badge income" data-icon="incomeArrow"></span> Kirim</button>
+            <button class="tx-page-tab" data-filter="expenses"><span class="ico-slot arrow-badge expense" data-icon="expenseArrow"></span> Chiqim</button>
             <button class="tx-page-tab" data-filter="transfers"><span class="ico-slot" data-icon="transfer"></span> O'tkazma</button>
           </div>
         </div>
@@ -842,6 +1300,8 @@
         <div class="tx-page-list-inline" id="txPageList">
           <!-- rendered by JS -->
         </div>
+        <!-- Sahifalash (app.js: pageSlice) — bitta sahifaga sig'sa bo'sh qoladi -->
+        <nav class="list-pager" id="txPagePager" aria-label="Operatsiyalar sahifalari"></nav>
       </div>
 
       <!-- ── Qarzlar tarixi: to'langan va to'lanmagan ── -->
@@ -852,7 +1312,7 @@
 
         <div class="stats-tx-section-header">
           <span><span class="ico-slot" data-icon="ledger"></span> Qarzlar tarixi</span>
-          <div class="tx-page-tabs-inline" id="debtPageTabs">
+          <div class="segmented segmented-fit" id="debtPageTabs">
             <button class="tx-page-tab active" data-debt-filter="all">Barchasi</button>
             <button class="tx-page-tab" data-debt-filter="open">To'lanmagan</button>
             <button class="tx-page-tab" data-debt-filter="settled">To'langan</button>
@@ -862,6 +1322,7 @@
         <div class="tx-page-list-inline" id="debtPageList">
           <!-- rendered by JS -->
         </div>
+        <nav class="list-pager" id="debtPagePager" aria-label="Qarzlar sahifalari"></nav>
       </div>
 
       <!-- ── Hamyon sahifasi: hamyon ma'lumotlari + shu hamyon operatsiyalari ── -->
@@ -871,7 +1332,7 @@
 
         <div class="stats-tx-section-header">
           <span><span class="ico-slot" data-icon="receipt"></span> Operatsiyalar</span>
-          <div class="tx-page-tabs-inline" id="walletPageTabs">
+          <div class="segmented segmented-fit" id="walletPageTabs">
             <button class="tx-page-tab active" data-wallet-filter="all">Barchasi</button>
             <button class="tx-page-tab" data-wallet-filter="incomes">Kirim</button>
             <button class="tx-page-tab" data-wallet-filter="expenses">Chiqim</button>
@@ -883,25 +1344,75 @@
         <div class="tx-page-list-inline" id="walletPageList">
           <!-- rendered by JS -->
         </div>
+        <nav class="list-pager" id="walletPagePager" aria-label="Hamyon operatsiyalari sahifalari"></nav>
+      </div>
+
+      <!-- ── Kurs sahifasi: Markaziy bankning bugungi kurslari + kalkulyator (app.js: openRatesPage) ── -->
+      <div id="statsRatesSection" style="display:none;">
+        <div class="rates-status" id="ratesStatus" role="status"></div>
+        <div class="rates-main-grid" id="ratesMainGrid"><!-- rendered by JS --></div>
+
+        <div class="stats-section-card rates-converter">
+          <div class="stats-section-header">
+            <span><span class="ico-slot" data-icon="transfer"></span> Valyuta kalkulyatori</span>
+          </div>
+          <div class="rates-conv-row">
+            <input type="number" id="ratesConvAmount" class="form-control rates-conv-amount" value="100" min="0" step="0.01" inputmode="decimal" aria-label="Summa">
+            <select id="ratesConvFrom" class="form-control" aria-label="Qaysi valyutadan"></select>
+            <button type="button" class="btn-icon rates-conv-swap" id="ratesConvSwap" title="Valyutalarni almashtirish" aria-label="Valyutalarni almashtirish">
+              <span class="ico-slot" data-icon="transfer"></span>
+            </button>
+            <select id="ratesConvTo" class="form-control" aria-label="Qaysi valyutaga"></select>
+          </div>
+          <div class="rates-conv-result" id="ratesConvResult" aria-live="polite"></div>
+        </div>
+
+        <div class="stats-section-card">
+          <div class="stats-section-header">
+            <span><span class="ico-slot" data-icon="globe"></span> Boshqa valyutalar</span>
+            <span class="stats-section-total">1 birlik = so'm</span>
+          </div>
+          <div class="rates-table" id="ratesTable"><!-- rendered by JS --></div>
+          <nav class="list-pager" id="ratesPagePager" aria-label="Valyutalar sahifalari"></nav>
+        </div>
+        <p class="rates-source" id="ratesSource"></p>
+      </div>
+
+      <!-- Barcha hamyonlar (bosh sahifadagi "Hamyonlarim"da faqat 2 tasi) -->
+      <div id="statsWalletsSection" style="display:none;">
+        <div class="wallets-compact-list" id="allWalletsList"><!-- rendered by JS --></div>
+      </div>
+
+      <!-- Takroriy to'lovlar / Maqsadlarim / A'zolarim: bosh sahifadagi kartochka bosilganda (bittasi ko'rinadi) -->
+      <div id="statsHomeListSection" style="display:none;">
+        <div data-home-list="recurring">
+          <div class="home-list-actions"><button class="btn btn-subtle btn-xs" data-action="openRecurringModal">+ Qo'shish</button></div>
+          <div class="members-compact-list" id="recurringList"><!-- Rendered by JS --></div>
+        </div>
+        <div data-home-list="goals">
+          <div class="home-list-actions"><button class="btn btn-subtle btn-xs" data-action="openGoalModal">+ Qo'shish</button></div>
+          <div class="members-compact-list" id="goalsList"><!-- Rendered by JS --></div>
+        </div>
+        <div data-home-list="members">
+          <div class="home-list-actions"><button class="btn btn-subtle btn-xs" data-action="openModal" data-args='["modalMember"]'>+ Qo'shish</button></div>
+          <div class="members-compact-list" id="membersList"><!-- Rendered by JS --></div>
+        </div>
       </div>
 
     </div><!-- /.tx-page-scroll-body -->
   </div><!-- /.tx-page-overlay -->
 
   <!-- Transaction Detail Drawer -->
-  <div class="detail-drawer-backdrop" id="txDetailBackdrop" onclick="closeTxDetail(event)">
-    <div class="detail-drawer" id="txDetailDrawer">
-      <div class="detail-drawer-handle"></div>
-
+  <div class="detail-drawer-backdrop" id="txDetailBackdrop">
+    <div class="detail-drawer" id="txDetailDrawer" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
       <div class="detail-drawer-header">
         <span class="detail-type-badge" id="detailTypeBadge">Harajat</span>
         <span class="detail-drawer-title" id="detailTitle">—</span>
-        <button class="detail-drawer-close" onclick="closeTxDetail()">&times;</button>
+        <button class="detail-drawer-close" data-action="closeTxDetail">&times;</button>
       </div>
 
       <div class="detail-amount-row">
         <span class="detail-amount-big" id="detailAmountBig">0</span>
-        <span class="detail-amount-currency">UZS</span>
       </div>
 
       <div class="detail-rows" id="detailRows">
@@ -909,11 +1420,28 @@
       </div>
 
       <div class="detail-drawer-footer">
-        <button class="btn btn-subtle" style="flex:1; justify-content:center;" onclick="closeTxDetail()">Yopish</button>
+        <button class="btn btn-subtle" style="flex:1; justify-content:center;" data-action="closeTxDetail">Yopish</button>
+        <button class="btn btn-subtle" style="flex:1; justify-content:center;" id="detailEditBtn"><span class="ico-slot" data-icon="edit"></span> Tahrirlash</button>
         <button class="btn btn-rose" style="flex:1; justify-content:center;" id="detailDeleteBtn"><span class="ico-slot" data-icon="trash"></span> O'chirish</button>
       </div>
     </div>
   </div>
+
+  <!-- Valyuta kodlari (hamyon va qarz valyutasi maydonlari uchun taklif ro'yxati) -->
+  <datalist id="currencyOptions">
+    <option value="UZS">O'zbek so'mi</option>
+    <option value="USD">AQSH dollari</option>
+    <option value="EUR">Yevro</option>
+    <option value="RUB">Rossiya rubli</option>
+    <option value="KZT">Qozog'iston tengesi</option>
+    <option value="GBP">Funt sterling</option>
+    <option value="CNY">Xitoy yuani</option>
+    <option value="TRY">Turk lirasi</option>
+    <option value="AED">BAA dirhami</option>
+    <option value="KRW">Koreya voni</option>
+    <option value="JPY">Yapon iyenasi</option>
+    <option value="CHF">Shveytsariya franki</option>
+  </datalist>
 
   <!-- Tasdiqlash oynasi (o'chirish va boshqa muhim amallar uchun) -->
   <div class="modal-backdrop" id="modalConfirm" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMessage">
@@ -935,6 +1463,6 @@
 
 
 
-  <script src="/static/js/app.js?v=3.32"></script>
+  <script src="/static/js/app.js?v=4.12"></script>
 </body>
 </html>

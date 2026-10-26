@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 import os
 import sys
 from pathlib import Path
+from django.utils.csp import CSP
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -32,21 +33,45 @@ if not SECRET_KEY:
 # DEBUG sozlamasi .env fayldan o'qiladi
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
-
-# Ishlab chiqarishda (DEBUG=False) cookie va ulanish xavfsizligi avtomatik yoqiladi.
-# HTTPS orqasida proksi (nginx va h.k.) bo'lsa: .env ga BEHIND_PROXY=True qo'shing.
 def _env_bool(name, default):
     return os.environ.get(name, str(default)).lower() in ('true', '1', 'yes')
 
+
+def _env_list(name, default=''):
+    return [item.strip() for item in os.environ.get(name, default).split(',') if item.strip()]
+
+
+ALLOWED_HOSTS = _env_list('ALLOWED_HOSTS', '127.0.0.1,localhost')
+
+# Sayt domeni (HTTPS bilan), masalan: https://moliya.uz,https://www.moliya.uz
+CSRF_TRUSTED_ORIGINS = _env_list('CSRF_TRUSTED_ORIGINS')
+
+# HTTPS orqasida proksi (nginx va h.k.) bo'lsa: .env ga BEHIND_PROXY=True qo'shing.
+# NUM_PROXIES — foydalanuvchi bilan server orasidagi proksilar soni. Usiz har kim X-Forwarded-For
+# sarlavhasiga soxta IP yozib so'rovlar cheklovini (throttle) aylanib o'ta olardi
+# Windows'da waitress ham proksi orqasida shu sozlamalar bilan ishlaydi, lekin unga `--trusted-proxy` berilishi shart:
+# usiz waitress X-Forwarded-* sarlavhalarini tashlab yuboradi (HTTPS yo'naltirish aylanib qoladi, hamma IP bitta
+# bo'lib ko'rinadi). Tayyor buyruq — DEPLOY.md
+BEHIND_PROXY = _env_bool('BEHIND_PROXY', False)
+NUM_PROXIES = int(os.environ.get('NUM_PROXIES', '1' if BEHIND_PROXY else '0'))
+
+# Ishlab chiqarishda (DEBUG=False) cookie va ulanish xavfsizligi avtomatik yoqiladi.
 if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_SSL_REDIRECT = _env_bool('SECURE_SSL_REDIRECT', True)
     SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', '31536000'))
+    # Barcha subdomenlar ham faqat HTTPS bilan ishlasagina yoqing
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = _env_bool('SECURE_HSTS_INCLUDE_SUBDOMAINS', False)
+    SECURE_HSTS_PRELOAD = _env_bool('SECURE_HSTS_PRELOAD', False)
     SECURE_CONTENT_TYPE_NOSNIFF = True
-    if _env_bool('BEHIND_PROXY', False):
+    if BEHIND_PROXY:
         SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Admin panel manzili: standart "admin/" o'rniga taxmin qilib bo'lmaydigan nom bering (masalan: boshqaruv-7x2k/)
+ADMIN_URL = os.environ.get('ADMIN_URL', 'admin').strip('/') + '/'
+# Akkauntlar paneli manzili: navbarda havola yo'q, faqat shu manzilni bilgan xodim kiradi
+PANEL_URL = os.environ.get('PANEL_URL', 'panel').strip('/') + '/'
 
 
 # Application definition
@@ -66,13 +91,21 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'django.middleware.csp.ContentSecurityPolicyMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'mainapp.middleware.SessionRefreshMiddleware',
+    'mainapp.middleware.SessionMaxAgeMiddleware',
+    'mainapp.middleware.DeviceTrackingMiddleware',
 ]
+if not DEBUG:
+    # DEBUG=False bo'lganda Django CSS/JS fayllarni o'zi bermaydi — ularni WhiteNoise beradi
+    # (avval `collectstatic` bilan STATIC_ROOT ga yig'iladi). Lokal ishlab chiqishda runserver o'zi beradi
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 ROOT_URLCONF = 'config.urls'
 
@@ -101,8 +134,36 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        # Bir vaqtda bir nechta so'rov kelganda "database is locked" xatosi chiqmasligi uchun
+        'OPTIONS': {
+            'timeout': 20,
+            'transaction_mode': 'IMMEDIATE',
+            'init_command': 'PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;',
+        },
     }
 }
+
+
+# Cache — login bloklash va so'rovlar cheklovi hisoblagichlari shu yerda saqlanadi.
+# Server bir nechta jarayonda (worker) ishlaganda ham hisoblagich umumiy bo'lishi kerak:
+# shuning uchun xotira (LocMem) emas, baza yoki Redis ishlatiladi. Jadval 0013 migratsiyada yaratiladi
+if os.environ.get('REDIS_URL'):
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': os.environ['REDIS_URL'],
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+            'LOCATION': 'django_cache',
+            # Standart MAX_ENTRIES=300: undan oshganda kalitlar alifbo bo'yicha o'chiriladi va "login_fail:*"
+            # hisoblagichlari birinchi ketadi — ko'p IP'dan so'rov yuborib bloklashni bekor qilish mumkin edi
+            'OPTIONS': {'MAX_ENTRIES': 100000},
+        }
+    }
 
 
 # Password validation
@@ -117,6 +178,11 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'mainapp.validators.SimplePasswordValidator',
     },
     {
+        # "password", "qwerty12" kabi eng ko'p tarqalgan parollar — ularni bitta parolni ko'p loginlarda
+        # sinab ko'rish (password spraying) bilan oson topishadi
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
@@ -125,6 +191,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Testlar tez ishlashi uchun (faqat `manage.py test` paytida) yengil parol shifrlash ishlatiladi
 if 'test' in sys.argv[1:2]:
     PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
+    # Testlarda eskirgan valyuta kursi so'rov ichida yangilanadi: fon oqimi test tranzaksiyasidagi
+    # ma'lumotlarni ko'rmaydi (qarang: mainapp/currency.py)
+    CURRENCY_BACKGROUND_REFRESH = False
 
 
 # Internationalization
@@ -146,6 +215,24 @@ AUTH_USER_MODEL = 'mainapp.User'
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+# Serverda `python manage.py collectstatic` fayllarni shu papkaga yig'adi
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+
+# Content-Security-Policy: sahifada faqat o'zimizning skriptlar ishlaydi. Agar qaysidir yo'l bilan
+# sahifaga begona <script> yoki onclick="..." kiritilsa ham, brauzer uni bajarmaydi (XSS himoyasi)
+SECURE_CSP = {
+    'default-src': [CSP.SELF],
+    'script-src': [CSP.SELF],
+    'style-src': [CSP.SELF, CSP.UNSAFE_INLINE, 'https://fonts.googleapis.com'],
+    'font-src': [CSP.SELF, 'https://fonts.gstatic.com'],
+    'img-src': [CSP.SELF, 'data:'],
+    'connect-src': [CSP.SELF],
+    'object-src': [CSP.NONE],
+    'base-uri': [CSP.SELF],
+    'form-action': [CSP.SELF],
+    'frame-ancestors': [CSP.NONE],
+}
 
 
 # Email
@@ -155,8 +242,10 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 # .env da berilmasa, xatlar yuborilmaydi — server konsoliga chiqariladi (ishlab chiqish uchun qulay)
 EMAIL_SMTP_HOST = os.environ.get('EMAIL_HOST', '')
 EMAIL_SMTP_USER = os.environ.get('EMAIL_HOST_USER', '')
+# Google App parolni "abcd efgh ijkl mnop" ko'rinishida ko'rsatadi — bo'sh joylar olib tashlanadi
+EMAIL_SMTP_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '').replace(' ', '')
 
-if EMAIL_SMTP_HOST and os.environ.get('EMAIL_HOST_PASSWORD'):
+if EMAIL_SMTP_HOST and EMAIL_SMTP_PASSWORD:
     MAILERS = {
         'default': {
             'BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
@@ -164,7 +253,7 @@ if EMAIL_SMTP_HOST and os.environ.get('EMAIL_HOST_PASSWORD'):
                 'host': EMAIL_SMTP_HOST,
                 'port': int(os.environ.get('EMAIL_PORT', '587')),
                 'username': EMAIL_SMTP_USER,
-                'password': os.environ.get('EMAIL_HOST_PASSWORD', ''),
+                'password': EMAIL_SMTP_PASSWORD,
                 'use_tls': os.environ.get('EMAIL_USE_TLS', 'True').lower() in ('true', '1', 'yes'),
                 'timeout': 15,
             },
@@ -179,9 +268,23 @@ else:
 
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL') or EMAIL_SMTP_USER or 'Moliya <noreply@localhost>'
 
+# Moliya yordamchisi ixtiyoriy ravishda Claude API orqali (pullik). Berilmasa bepul ma'lumotnoma qidiruvi ishlaydi (mainapp/faq.py)
+ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '').strip()
+
+# Yordam bo'limiga yangi xabar kelsa xat oladigan manzillar (vergul bilan). Berilmasa — admin panelni ko'ra oladigan
+# xodimlarning emaili. Xat yuqoridagi pochta sozlamasi orqali ketadi
+SUPPORT_NOTIFY_EMAILS = _env_list('SUPPORT_NOTIFY_EMAILS', '')
+
+# Parolni tiklash xati fon oqimida yuboriladi: sinxron SMTP chaqiruvi mavjud akkauntga javobni sekinlashtirib,
+# akkaunt borligini oshkor qilardi. `manage.py test` paytida False — xat shu zahoti yuboriladi: fon oqimi test
+# tranzaksiyasidagi ma'lumotlarni ko'rmaydi, mail.outbox ni esa testning o'zi o'qiydi
+MAIL_IN_BACKGROUND = 'test' not in sys.argv[1:2]
+
 REST_FRAMEWORK = {
+    # Summalar (Decimal) JSON'da satr emas, son bo'lib qaytadi — frontend Number() bilan o'qiydi
+    "COERCE_DECIMAL_TO_STRING": False,
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.SessionAuthentication",
+        "mainapp.backends.SessionAuthentication401",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
@@ -198,14 +301,64 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "anon": "60/min",
         "user": "300/min",
+        # Kirish, ro'yxatdan o'tish va parol tiklash — bitta IP dan
+        "auth": "20/min",
+        # AI yordamchi — har bir so'rov pullik, bitta foydalanuvchidan
+        "assistant": "30/hour",
+        # Yordam chatiga xabar yuborish
+        "support": "20/min",
     },
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "NUM_PROXIES": NUM_PROXIES,
+    # LimitOffsetPagination + ?limit= uchun yuqori chegara (200) — qarang: mainapp/pagination.py
+    "DEFAULT_PAGINATION_CLASS": "mainapp.pagination.MaxLimitPagination",
     "PAGE_SIZE": 10,
 }
+if not DEBUG:
+    # Ishlab chiqarishda API faqat JSON qaytaradi (DRF'ning brauzerdagi sinov sahifasi o'chiriladi)
+    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = ["rest_framework.renderers.JSONRenderer"]
 
-# Session xavfsizligi: Brauzer yopilganda sessiya o'chiriladi va akkauntdan chiqiladi
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SESSION_SAVE_EVERY_REQUEST = True
+
+# Loglar: DEBUG=False bo'lganda Django xatolarni standart holatda hech qayerga yozmaydi —
+# shuning uchun ular konsolga (server logiga) chiqariladi
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {'format': '{asctime} {levelname} {name}: {message}', 'style': '{'},
+    },
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler', 'formatter': 'simple'},
+    },
+    'root': {'handlers': ['console'], 'level': 'WARNING'},
+    'loggers': {
+        'django': {'handlers': ['console'], 'level': os.environ.get('DJANGO_LOG_LEVEL', 'WARNING'), 'propagate': False},
+        # 4xx javoblar (noto'g'ri parol, topilmadi...) oddiy holat — faqat 5xx server xatolari traceback bilan yoziladi
+        'django.request': {'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
+        # Xavfsizlik hodisalari: noto'g'ri kirish, bloklash, parol tiklash/o'zgartirish, akkaunt o'chirish.
+        # Parol va tiklash kodi hech qachon yozilmaydi (qarang: mainapp/security_log.py). Server logidan: grep security
+        'security': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+    },
+}
+
+if 'test' in sys.argv[1:2]:
+    # Testlar yuzlab xavfsizlik hodisasini yozadi — konsolni to'ldirmasin (assertLogs baribir ushlaydi)
+    LOGGING['handlers']['null'] = {'class': 'logging.NullHandler'}
+    LOGGING['loggers']['security']['handlers'] = ['null']
+
+# Sessiya: sayt, o'ralgan mobil ilova (WebView/PWA) yoki keyinchalik bot — foydalanuvchi brauzer/ilovani
+# yopib qayta ochganda ham tizimda qoladi. Parol faqat "Chiqish" bosilgach (logout) yoki parol almashgach
+# (Django sessiya xeshi orqali boshqa qurilmalar chiqib ketadi) qayta so'raladi
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # doimiy cookie (Max-Age bilan) — brauzer yopilganda o'chmaydi
+# Har so'rovda sessiyani yozish SQLite'ning yagona yozuvchisini band qiladi (yordam chati har 5 soniyada so'raydi ->
+# "database is locked"), shuning uchun o'chirilgan. Muddatni uzaytirish mainapp.middleware.SessionRefreshMiddleware'da:
+# sessiya kuniga ko'pi bilan bir marta yoziladi
+SESSION_SAVE_EVERY_REQUEST = False
+# Amalda harakatsizlik chegarasi yo'q: SessionRefreshMiddleware bu muddatni kuniga bir marta qaytadan
+# 365 kundan boshlaydi (sliding), ya'ni sessiya faqat bir yil davomida ilova umuman ochilmasa tugaydi
+SESSION_COOKIE_AGE = 365 * 24 * 60 * 60
+# Mutlaq muddat (kirilgandan beri, soniyada) o'chirilgan. Keyinchalik kerak bo'lsa son qo'yiladi
+# (masalan 30 * 24 * 60 * 60) — mainapp.middleware.SessionMaxAgeMiddleware o'zi ishga tushadi
+SESSION_MAX_AGE = None
 
 # Foydalanuvchi nomi yoki email bilan kirish
 AUTHENTICATION_BACKENDS = ["mainapp.backends.UsernameOrEmailBackend"]

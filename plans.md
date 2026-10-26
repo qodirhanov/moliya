@@ -1,7 +1,18 @@
 # 💰 Moliya (Kalkulator) — Loyiha Rejasi va Progress
 
 > Bu fayl loyihaning qayerga kelganini kuzatib borish uchun.
-> Oxirgi yangilangan: **2026-10-02 18:32**
+> Oxirgi yangilangan: **2026-10-26**
+
+---
+
+## 🐞 KAMCHILIKLAR VA XATOLAR (navbat bilan tuzatiladi)
+
+> Tuzatilgan band shu ro'yxatdan o'chiriladi. Tartib — muhimligi bo'yicha.
+
+### Past
+1. **Parolni tiklash xati spamga tushadi.** Xat shaxsiy Gmail (`smtp.gmail.com`) orqali ketadi va har qanday manzilga yetadi, lekin yangi qabul qiluvchilarda Spam papkasiga tushishi mumkin (ekranda "spam papkasini ham tekshiring" eslatmasi bor). To'liq yechim — o'z domeningiz + Resend (SPF/DKIM), DEPLOY.md 163-qator; eski Resend sozlamasi `.env` da izoh sifatida turibdi. Gmail limiti — kuniga ~500 xat. Xat endi matn + HTML ko'rinishida (2026-10-21) — bu yordam berishi mumkin, lekin kafolat emas.
+2. **"Dastur haqida" to'ldirilmagan.** Dasturchi ismi va kontaktlari `templates/index.html` dagi "Dastur haqida" blokida hozircha «—».
+3. SQLite summalarni float'da qo'shadi: ko'p yozuvlarning **jami** ~10¹³ dan oshsa, tiyin noaniq bo'lishi mumkin (bitta summa ≤ 10¹² bo'lgani uchun alohida qiymatlar aniq). PostgreSQL'ga o'tilganda o'z-o'zidan yo'qoladi.
 
 ---
 
@@ -30,106 +41,111 @@
 | 19 | Brauzer yopilganda sessiyani yakunlash (`SESSION_EXPIRE_AT_BROWSER_CLOSE`) | ✅ Bajarildi | 2026-10-02 |
 | 20 | Eski duplikat `modalAuth` ni tozalash va toza DOM arxitekturasi | ✅ Bajarildi | 2026-10-02 |
 | 21 | Harajat modalida **Summa** maydonini 1-o'ringa ko'chirish (UX bir xilligi) | ✅ Bajarildi | 2026-10-02 |
+| 22 | Admin panel (`/panel/`): akkauntlar ro'yxati, qidiruv, filtrlar, akkaunt sahifasi | ✅ Bajarildi | 2026-10-15 |
+| 23 | Kamchiliklar ro'yxatidagi 13 ta xato tuzatildi (oy bo'yicha operatsiyalar, ikki marta yuborish, hamyon o'chirish, `status` himoyasi va b.) | ✅ Bajarildi | 2026-10-15 |
+| 24 | Chiqish/sessiya tugashida oldingi foydalanuvchi ma'lumotlari tozalanadi; o'chirilgan hamyon yozuvlarini bekor qilish taqiqlandi | ✅ Bajarildi | 2026-10-15 |
+| 25 | Yangi navbar va "Oltin" rang mavzusi (to'q ko'k + oltin) | ✅ Bajarildi | 2026-10-16 |
+| 26 | Tor telefonlarda navbar, ro'yxatdan o'tishda email, Esc va telefon "orqaga" tugmasi, oynalarda fokus | ✅ Bajarildi | 2026-10-16 |
+| 27 | Segmentli tugmalar (Sozlamalar, kirish, toifalar, bo'lim filtrlari) yangi kapsula uslubida | ✅ Bajarildi | 2026-10-20 |
+| 28 | Davr filtri: tezkor davrlar va "dan — gacha" oralig'i (`date_from` / `date_to`, statistika ham) | ✅ Bajarildi | 2026-10-20 |
+| 29 | Kamchiliklar ro'yxatidagi 24 ta band tuzatildi: login bloklash va Unicode nomlar, xodim/superuser himoyasi, tahrirda balans (faqat farq qo'llanadi), qarz tahriri, `/repay/` tekshiruvi, parol tiklashda akkaunt sir saqlanishi, xavfsizlik logi, panel 404, N+1 so'rovlar va `limit` ≤ 200, frontend mayda xatolari (testlar: 364 ta) | ✅ Bajarildi | 2026-10-21 |
+| 30 | Har bir daromad/harajatning so'mdagi kursi (`uzs_rate`) yozilgan kuni saqlanadi — o'tgan oylar statistikasi endi kundan-kunga o'zgarmaydi (eski yozuvlarga 2026-10-21 kursi yozildi; testlar: 380 ta) | ✅ Bajarildi | 2026-10-21 |
+| 31 | Login nomlari kirill harflarida ham katta-kichikka qaramay yagona (`username_key`): "Али" va "али" bitta akkaunt, kirish va bloklash hisoblagichi ham umumiy (testlar: 411 ta) | ✅ Bajarildi | 2026-10-21 |
+| 32 | `/users/` da parallel so'rovdagi login to'qnashuvi 500 o'rniga 400 beradi; `/users/?search=` va paneldagi qidiruv kirill harflarida katta-kichikni farqlamaydi; band login xabari o'zbekcha (testlar: 438 ta) | ✅ Bajarildi | 2026-10-21 |
+| 33 | O'tkazma kursi 0 ga yaxlitlanib saqlanmaydi: kursning pastki chegarasi 0.00000001, undan kichigi tushunarli xato bilan rad etiladi (testlar: 446 ta) | ✅ Bajarildi | 2026-10-21 |
+| 34 | "Shisha" (Liquid Glass) tugmacha: navbar bo'limlari va barcha segmentli tugmalarda tanlov linzaga aylanib prujinali suzadi, barmoq/sichqoncha bilan surib tanlash mumkin (`app.js: initGlassTrack`) | ✅ Bajarildi | 2026-10-21 |
+| 35 | Sessiya "Chiqish" bosilguncha saqlanadi: brauzer/ilova yopilganda va 12/24 soatdan keyin ham parol so'ralmaydi (testlar: 454 ta) | ✅ Bajarildi | 2026-10-21 |
+| 36 | "Barcha qurilmalardan chiqish" tugmasi (Sozlamalar → Profil): shu va boshqa barcha qurilmalardagi sessiyalar yopiladi (`/api/v1/auth/logout-all/`, `User.session_epoch`; testlar: 463 ta) | ✅ Bajarildi | 2026-10-21 |
+| 37 | Parolni tiklash xati Resend sinov manzili o'rniga Gmail SMTP (App parol) orqali yuboriladi — endi har qanday foydalanuvchi pochtasiga yetadi; App paroldagi bo'sh joylar avtomatik olib tashlanadi (testlar: 463 ta) | ✅ Bajarildi | 2026-10-21 |
+| 38 | Admin o'chirgan akkaunt ham foydalanuvchi o'zi o'chirgandagidek tozalanadi (ism, email, telefon, parol; login nomi bo'shaydi) — `User.delete()` → `close_account()`; avval o'chirilgan 8 ta akkaunt ham tozalandi (migratsiya 0021) | ✅ Bajarildi | 2026-10-21 |
+| 39 | Summalarda tiyin/sent: barcha valyutalarda 2 xonali kasr (`DecimalField(15,2)`, migratsiya 0022), eng kichigi 0.01, eng kattasi 1 000 000 000 000; balans yangilanishi `Round(…, 2)` bilan; frontendda `readAmount()` va brauzerga bog'liq bo'lmagan son formati (testlar: 491 ta) | ✅ Bajarildi | 2026-10-21 |
+| 40 | "Muzlatilgan shisha" (iOS tab bar uslubi): navbar shaffof, ostidan sahifa xira ko'rinadi (`backdrop-filter` alohida `::before` qatlamda), tanlangan bo'lim yorqinroq shisha tugmacha; segmentli tugmalar, davr tanlash, oynalar, toast, ochiladigan ro'yxatlar, Xabarlar paneli ham shu uslubda. `--glass-*` o'zgaruvchilari — 5 rang mavzusi va ikkala rejimda; xiralashtirish yo'q brauzerda va `prefers-reduced-transparency` da fon to'liq yopiq (style.css v10.13) | ✅ Bajarildi | 2026-10-21 |
+| 41 | Navbarda "Moliya" (bosh sahifa) Kirim / Chiqim / Qarz bilan bitta shisha kapsulada: kirilgandan keyin alohida logotip yashiriladi, bosh sahifada (statistika, hamyon sahifalarida ham) "Moliya" tanlangan bo'ladi, bosilsa ochiq sahifa yopiladi (`setNavActive`, style.css v10.14, app.js v3.76) | ✅ Bajarildi | 2026-10-21 |
+| 42 | Sozlamalarga 3 bo'lim: **Moliya yordamchisi** — bepul: savolga `assistant_knowledge.md` (Ma'lumotnoma nusxasi) dan kalit so'z qidiruvi bilan javob topadi (`mainapp/faq.py`: qo'shimchasiz solishtirish, sinonimlar, kirill yozuv); `.env` da `ANTHROPIC_API_KEY` bo'lsa ixtiyoriy ravishda Claude javob beradi (pullik, 30/soat, model nomi ko'rsatilmaydi), **Yordam** — admin bilan chat (`SupportMessage`, migratsiya 0025, polling; admin javobi `panel/support/`, navbar qo'ng'irog'ida "Admin javob berdi"; yangi xabar haqida adminlarga email — admin o'qimaguncha qayta yuborilmaydi, manzillar `SUPPORT_NOTIFY_EMAILS` yoki panelga kira oladigan xodimlar emaili), **Dastur haqida** (style.css v10.41, app.js v3.98, panel.css v7, i18n v10) | ✅ Bajarildi | 2026-10-23 |
+| 43 | Kamchiliklar ro'yxatidagi 6 ta band tuzatildi: 2FA yoqilganda yangi email kod bilan tasdiqlanadi (`/auth/profile/confirm-email/`, `LoginCode.new_email`, migratsiya 0028; kod maqsadlari ajratilgan), 2FA kodi urinishi tekshiruvdan oldin bazada band qilinadi (parallel so'rovlar limitni aylanib o'tmaydi), o'tgan sanadagi operatsiyaga o'sha kungi CBU kursi yoziladi (arxiv keshlanadi), sessiya har so'rovda emas kuniga bir marta yangilanadi (`SessionRefreshMiddleware`), yordamchi tarixi qisqartiriladi, kod git'ga commit qilindi (testlar: 587 ta; app.js v4.12, i18n v21) | ✅ Bajarildi | 2026-10-26 |
 
 ---
 
 ## 🏗️ ARXITEKTURA
 
 ### Backend (Django + DRF)
-- **Framework:** Django 5.x + Django REST Framework
-- **DB:** SQLite (`db.sqlite3`)
+- **Framework:** Django 6.1 + Django REST Framework
+- **DB:** SQLite (`db.sqlite3`, WAL rejimi); zaxiralar `Kalkulator/backups/` da
 - **Virtual env:** `myenv/` (Python 3.12)
-- **Secret management:** `.env` fayl (`python-dotenv`)
-- **Auth:** Django Session Authentication (cookie-based)
+- **Secret management:** `.env` fayl (`python-dotenv`), namuna — `.env.example`
+- **Auth:** Django Session Authentication (cookie), login yoki email bilan kirish
+- **Valyuta kursi:** O'zbekiston Markaziy banki (cbu.uz), `ExchangeRate` jadvalida saqlanadi
 - **API prefix:** `/api/v1/`
 
 ### Fayl tuzilmasi
 ```
 Newproject/
-├── config/          # Django settings, urls, wsgi
-│   ├── settings.py
-│   └── urls.py
-├── mainapp/         # Asosiy ilova
-│   ├── models.py    # User, Wallet, Income, Expense, Transfer, Debt, Category, ExpenseCategory
-│   ├── views.py     # Auth API + ViewSets + summary endpoint
+├── config/              # settings.py, urls.py, wsgi.py
+├── mainapp/
+│   ├── models.py        # User, Wallet, Member, Category, ExpenseCategory, Income, Expense, Transfer, Debt, ...
 │   ├── serializers.py
-│   ├── urls.py      # Router + auth urls
-│   └── admin.py
+│   ├── views.py         # Auth API + ViewSet'lar + statistika
+│   ├── panel.py         # Admin panel (/panel/) — akkauntlar haqida ma'lumot
+│   ├── currency.py      # Markaziy bank kursi va valyuta o'girish
+│   ├── backends.py      # Login/email bilan kirish, urinishlar cheklovi
+│   ├── middleware.py    # Sessiyaning mutlaq muddati
+│   ├── templatetags/    # Panel uchun o'zbekcha sana filtrlari
+│   └── tests.py
 ├── templates/
-│   └── index.html   # SPA-style Dashboard (Auth + Main App)
+│   ├── index.html       # Asosiy ilova (SPA)
+│   └── panel/           # Admin panel sahifalari
 ├── static/
-│   ├── css/style.css  # Premium dark fintech design system
-│   └── js/app.js      # Vanilla JS frontend engine
-├── .env             # SECRET_KEY, DEBUG
-├── db.sqlite3       # Ma'lumotlar bazasi
-├── plans.md         # ← SHU FAYL
-└── requirements.txt
+│   ├── css/style.css, css/panel.css
+│   └── js/app.js, js/theme-init.js
+├── DEPLOY.md            # Serverga joylash yo'riqnomasi
+└── plans.md             # ← SHU FAYL
 ```
 
 ### API Endpointlar
 | Method | URL | Tavsif |
 |--------|-----|--------|
-| POST | `/api/v1/auth/login/` | Tizimga kirish |
-| POST | `/api/v1/auth/logout/` | Tizimdan chiqish |
-| GET | `/api/v1/auth/me/` | Joriy foydalanuvchi holati |
-| POST | `/api/v1/auth/register/` | Yangi foydalanuvchi ro'yxati |
-| GET | `/api/v1/wallets/` | Hamyonlar ro'yxati |
-| GET | `/api/v1/wallets/summary/` | Umumiy statistika (balans, kirim, chiqim, qarz, kategoriya taqsimoti, 7 kunlik trend) |
-| CRUD | `/api/v1/incomes/` | Daromadlar |
-| CRUD | `/api/v1/expenses/` | Harajatlar |
-| CRUD | `/api/v1/transfers/` | O'tkazmalar |
-| CRUD | `/api/v1/debts/` | Qarzlar |
-| POST | `/api/v1/debts/{id}/repay/` | Qarzni to'lash |
-| CRUD | `/api/v1/categories/` | Daromad kategoriyalari |
-| CRUD | `/api/v1/expense-categories/` | Harajat kategoriyalari |
+| POST | `/api/v1/auth/login/`, `/auth/logout/`, `/auth/register/` | Kirish, chiqish, ro'yxatdan o'tish |
+| GET | `/api/v1/auth/me/` | Joriy foydalanuvchi |
+| PATCH / POST | `/api/v1/auth/profile/`, `/auth/change-password/`, `/auth/delete-account/` | Sozlamalar |
+| POST | `/api/v1/auth/password-reset/` (+ `verify/`, `confirm/`) | Parolni email orqali tiklash |
+| CRUD | `/api/v1/wallets/` (+ `summary/`) | Hamyonlar va umumiy statistika |
+| CRUD | `/api/v1/incomes/`, `/expenses/`, `/transfers/` | Operatsiyalar (`?year=&month=` yoki `?date_from=&date_to=` — YYYY-MM-DD, ikkala kun ham kiradi) |
+| CRUD | `/api/v1/debts/` (+ `{id}/repay/`) | Qarzlar daftari |
+| CRUD | `/api/v1/members/` | A'zolar (xarajat kimga) |
+| CRUD | `/api/v1/categories/`, `/expense-categories/` (+ `{id}/restore/`) | Daromad va harajat toifalari |
+| GET | `/api/v1/stats/monthly/?year=&month=` yoki `?date_from=&date_to=` | Oy yoki oraliq statistikasi (oraliq ≤ 366 kun, aks holda 400) |
+| GET | `/api/v1/rates/convert/?from=&to=&amount=` | Valyuta kalkulyatori |
 
 ---
 
 ## 🎨 FRONTEND IMKONIYATLARI
 
-### Autentifikatsiya ekrani (`#authSection`)
-- **Login formasi** — username + password (vektorli SVG `eye-show` / `eye-hide` toggle bilan, bachkana emojilarsiz)
-- **Register formasi** — username, password, ism, telefon
-- **Tab switcher** — "Tizimga kirish" / "Ro'yxatdan o'tish"
-- Login bo'lmaganda boshqa hech narsa ko'rinmaydi
-
-### Asosiy Dashboard (`#mainApp`)
-1. **Navbar:** Moliya logo, foydalanuvchi avatar/ismi, Chiqish tugmasi, Admin panel link
-2. **Hero Balance Banner:** Indigo gradient karta — umumiy balans, kirim, harajat
-3. **4 ta Tezkor Tugma:** Harajat, Kirim, O'tkazma, Qarz
-4. **So'nggi Operatsiyalar:** Filter pills (Barchasi/Chiqim/Kirim/O'tkazma), clean list, "Yana yuklash" pagination
-5. **Analitika Grid (2 ustunli):**
-   - Oylik harajatlar taqsimoti — kategoriya nomi, summa, foiz, progress bar
-   - 7 kunlik dinamika — compact canvas grafik (kirim=yashil, chiqim=qizil, bezier curves)
-6. **Hamyonlar va Qarzlar:** Compact card'lar (balans, to'lash tugmasi)
-7. **Modal dialog'lar:** Harajat, Kirim, O'tkazma, Qarz, Hamyon yaratish
-   - Harajat va Kirim modallarida **Summa (so'm)** maydoni qulaylik uchun eng 1-o'rinda turadi
-
-### Dizayn tizimi
-- **Tema:** Premium dark (bg: #080c16, surface: #0f172a)
-- **Shriftlar:** Plus Jakarta Sans + Outfit (Google Fonts)
-- **Ranglar:** Indigo (#6366f1), Emerald (#10b981), Rose (#f43f5e), Cyan (#06b6d4), Amber (#f59e0b)
-- **Effektlar:** Glassmorphism, gradient glow, bezier animatsiyalar, hover transitions, vector SVG icons
-- **Kesh boshqaruvi:** Statik fayllar versiyalash bilan chaqiriladi (`?v=2.2`)
+- **Kirish ekrani:** login (yoki email) + parol, ro'yxatdan o'tish, parolni email orqali tiklash
+- **Navbar:** Kirim / Chiqim / Qarz bo'limlari, profil (Sozlamalar), tema, xabarlar, adminlar uchun Admin panel belgisi
+- **Bosh sahifa:** umumiy balans (valyutalar bo'yicha), tezkor tugmalar (Harajat, Kirim, O'tkazma, Qarz), so'nggi operatsiyalar, hafta kunlari bo'yicha harajat, hamyonlar, qarzlar, a'zolar
+- **Bo'lim sahifalari:** barcha operatsiyalar va statistika (oy, tezkor davr yoki "dan — gacha" oralig'i bo'yicha), qarzlar tarixi, hamyon sahifasi
+- **Dizayn:** "Ledger Light" — och fon va moy-yashil urg'u, qorong'u rejim va 5 ta rang mavzusi
+- **Kesh boshqaruvi:** statik fayllar versiya bilan chaqiriladi (`style.css?v=…`, `app.js?v=…`)
 
 ---
 
 ## 🔐 XAVFSIZLIK
 
 - `SECRET_KEY` — `.env` faylda saqlanadi (git'ga tushmaydi)
-- CSRF token — global fetch interceptor orqali avtomatik qo'shiladi
-- Session Authentication — cookie-based, server-side
-- `SESSION_EXPIRE_AT_BROWSER_CLOSE = True` — brauzer yopilishi bilan sessiya o'chiriladi va avtomatik akkauntdan chiqiladi
-- User-scoped data — har bir foydalanuvchi faqat o'z ma'lumotlarini ko'radi
-- 401 javob kelsa — avtomatik login ekraniga qaytaradi
+- CSRF token — global fetch interceptor orqali avtomatik qo'shiladi; Content-Security-Policy inline skriptlarni bloklaydi
+- Login va joriy parolni tekshirish: 15 daqiqada (akkaunt + IP) bo'yicha 5 ta, akkaunt bo'yicha jami 30 ta, bitta IP dan jami 30 ta noto'g'ri urinishdan keyin bloklanadi
+- Parol tiklash javoblari akkaunt bor-yo'qligini oshkor qilmaydi; xat fonda yuboriladi
+- Xavfsizlik hodisalari (kirish, bloklash, parol tiklash/o'zgartirish, akkaunt o'chirish) `security` logger'iga IP bilan yoziladi
+- Sessiya: brauzer/ilova yopilsa ham saqlanadi; parol faqat "Chiqish" bosilgach yoki parol almashgach (boshqa qurilmalar chiqib ketadi) qayta so'raladi; Sozlamalardagi "Barcha qurilmalardan chiqish" hamma joydagi sessiyalarni yopadi. Sessiya 1 yil umuman ochilmasa tugaydi (`SESSION_MAX_AGE` ga son qo'yilsa mutlaq muddat qayta yoqiladi)
+- Har bir foydalanuvchi faqat o'z ma'lumotlarini ko'radi; 401 javobida kirish ekraniga qaytaradi
 
 ---
 
-## 👤 ADMIN HISOB
+## 👤 ADMIN
 
-- **Username:** `admin`
-- **Password:** `admin123`
-- **Admin panel:** http://localhost:8000/admin/
+- Admin akkaunt `python manage.py createsuperuser` bilan yaratiladi. Parollar bu faylga yozilmaydi.
+- **Admin panel (akkauntlar haqida ma'lumot):** `.env` dagi `PANEL_URL` manzili (standart: http://localhost:8000/panel/) — faqat superuser yoki `view_user` ruxsati bor xodimlar. Kirmagan odamga oddiy 404 chiqadi: avval bosh sahifada (yoki Django admin'da) kiring, keyin panel manzilini oching. Navbarda havola yo'q
+- **Django admin (tahrirlash):** `.env` dagi `ADMIN_URL` manzili (standart: http://localhost:8000/admin/)
 
 ---
 
@@ -137,23 +153,19 @@ Newproject/
 
 ```bash
 cd c:\Users\User\Desktop\Kalkulator\Newproject
-.\myenv\Scripts\python.exe manage.py runserver 0.0.0.0:8000
+.\myenv\Scripts\python.exe manage.py runserver 127.0.0.1:8000
 ```
 
 - **Dashboard:** http://localhost:8000/
 - **API:** http://localhost:8000/api/v1/
-- **Admin:** http://localhost:8000/admin/
+- Serverga joylash: `DEPLOY.md`
 
 ---
 
 ## 💡 KELGUSI REJALAR (Qilinishi mumkin bo'lgan ishlar)
 
-- [ ] Parolni unutdim (Password reset)
-- [ ] Profil sahifasi (ism, telefon, parolni o'zgartirish)
 - [ ] Oylik byudjet limiti belgilash (va ogohlantirish)
-- [ ] Kategoriyalarni tahrirlash/o'chirish interfeysi
-- [ ] Valyuta konvertori (USD/EUR/RUB)
+- [ ] Operatsiyalarni tahrirlash (hozir faqat o'chirish mumkin)
 - [ ] Ma'lumotlarni Excel/PDF export qilish
-- [ ] Mobil-responsive optimizatsiya (kichik ekranlar uchun)
 - [ ] Telegram bot integratsiyasi
-- [ ] Production deploy (Gunicorn + Nginx + PostgreSQL)
+- [ ] Production: PostgreSQL ga o'tish
