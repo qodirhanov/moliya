@@ -38,8 +38,8 @@ from .models import (
 )
 from .devices import active_devices, device_payload, end_device, register_device, terminate_wait
 from .backends import (
-    clear_login_fails, find_user_by_login, is_login_locked, login_attempts_left, over_limit, refund_limit,
-    verify_current_password,
+    CURRENT_PASSWORD_LOCKED_MESSAGE, clear_login_fails, find_user_by_login, is_login_locked, login_attempts_left,
+    over_limit, refund_limit, verify_current_password,
 )
 from .db_functions import casefold_contains_q, fold
 from .currency import CurrencyRateError, UzsConverter, convert, get_rates_snapshot, normalize_currency, round_amount
@@ -153,7 +153,6 @@ def enforce_csrf(view):
     return wrapper
 
 
-CURRENT_PASSWORD_LOCKED_MESSAGE = "Juda ko'p noto'g'ri urinish. 15 daqiqadan keyin qayta urinib ko'ring."
 
 
 def current_password_problem(user, password, field, wrong_message="Joriy parol noto'g'ri"):
@@ -449,6 +448,9 @@ def profile_api(request):
     try:
         with transaction.atomic():
             user.save(update_fields=list(changes))
+            if "email" in changes and email_changed:
+                # Eski manzilga yuborilgan tiklash kodi endi egasiniki bo'lmasligi mumkin
+                user.password_reset_codes.filter(used=False).update(used=True)
     except IntegrityError as exc:
         # Ikki kishi bir vaqtda bir xil nomni olmoqchi bo'lganda (tekshiruvdan keyin) 500 xato o'rniga
         if not is_username_conflict(exc):
@@ -922,7 +924,9 @@ def confirm_email_api(request):
         return Response({"email": email_error}, status=status.HTTP_400_BAD_REQUEST)
     user.email = new_email
     try:
-        user.save(update_fields=["email"])
+        with transaction.atomic():
+            user.save(update_fields=["email"])
+            user.password_reset_codes.filter(used=False).update(used=True)
     except IntegrityError:
         return Response({"email": "Bu elektron pochta boshqa hisobda ishlatilgan"}, status=status.HTTP_400_BAD_REQUEST)
     log_event("email_changed", request, user_id=user.pk)
@@ -1475,6 +1479,11 @@ class WalletViewSet(viewsets.ModelViewSet):
         if instance.is_goal:
             return Response({
                 "error": "Bu maqsad hamyoni. Uni Maqsadlar bo'limida maqsad bilan birga o'chiring."
+            }, status=status.HTTP_400_BAD_REQUEST)
+        # Maqsad hamyonidan chiqim/kirim qilib bo'lmaydi: oddiy hamyon qolmasa Chiqim/Kirim oynasi bo'sh qolardi
+        if not Wallet.objects.filter(user_id=instance.user_id, status=True, is_goal=False).exclude(pk=instance.pk).exists():
+            return Response({
+                "error": "Bu oxirgi hamyoningiz — o'chirib bo'lmaydi. Avval boshqa hamyon oching."
             }, status=status.HTTP_400_BAD_REQUEST)
         # Puli bor hamyon o'chirilsa pul umumiy hisobdan yo'qolardi; ochiq qarz o'chirilganda esa
         # qoldig'i o'chirilgan (ko'rinmaydigan) hamyonga qaytardi

@@ -11,6 +11,7 @@ o'zbekcha matnni g'alati o'qirdi. Provayderlar shu tartibda sinab ko'riladi (soz
 Hech biri bo'lmasa — brauzer o'z ovozida o'qiydi (static/js/voice.js). Bir xil gaplar ("Qancha sarfladingiz?")
 keshlanadi: qayta pul to'lanmaydi va javob darhol chiqadi. Qo'shimcha kutubxona kerak emas (urllib)"""
 import hashlib
+import http.client
 import json
 import logging
 import re
@@ -117,8 +118,10 @@ def voicelab_voices(language="uz"):
     except urllib.error.HTTPError as e:
         logger.error("VoiceLab: ovozlar ro'yxati olinmadi (HTTP %s)", e.code)
         raise TtsError("VoiceLab ovozlari olinmadi")
-    except (urllib.error.URLError, TimeoutError, OSError, ValueError):
+    except (urllib.error.URLError, http.client.HTTPException, TimeoutError, OSError, ValueError):
         raise TtsError("VoiceLab ga ulanib bo'lmadi")
+    if not isinstance(payload, dict):
+        raise TtsError("VoiceLab javobi buzilgan")
     return [v for v in (payload.get("data") or []) if isinstance(v, dict) and v.get("id")]
 
 
@@ -213,7 +216,7 @@ def _fetch(name, text, gender):
         else:
             logger.error("Ovozli javob (%s): xato %s", name, e.code)
         raise _Skip()
-    except (urllib.error.URLError, TimeoutError, OSError):
+    except (urllib.error.URLError, http.client.HTTPException, TimeoutError, OSError):
         logger.warning("Ovozli javob (%s): ulanib bo'lmadi", name)
         raise _Skip()
 

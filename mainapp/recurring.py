@@ -9,7 +9,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 
-from .models import Expense, Income, RecurringPayment
+from .models import Expense, Income, RecurringPayment, prepare_uzs_rate
 
 # Bitta to'lov uchun bir chaqiruvda yoziladigan eng ko'p sana: "har kuni" to'lov yil davomida ochilmasa ham
 # so'rov uzoq cho'zilib ketmasin. Qolganlari keyingi ochilishda yoziladi
@@ -46,13 +46,16 @@ def process_payment(payment, today=None):
                 payment.last_error = error
             break
         following = payment.date_after(due)
+        operation = _operation_for(payment, due)
+        # Kurs tranzaksiyadan oldin olinadi: cbu.uz 10 soniyagacha javob bermasligi mumkin, shu payt yozuv qulfi band bo'lmasin
+        prepare_uzs_rate(operation)
         try:
             with transaction.atomic():
                 moved = RecurringPayment.objects.filter(pk=payment.pk, next_date=due, status=True).update(
                     next_date=following, last_error="")
                 if not moved:
                     break  # boshqa so'rov allaqachon yozgan yoki to'lov o'chirilgan
-                _operation_for(payment, due).save()
+                operation.save()
         except (ValueError, ValidationError) as e:
             # Odatda hamyonda pul yetmaydi: sana surilmaydi, keyingi ochilishda yana urinib ko'riladi
             error = str(e.messages[0] if isinstance(e, ValidationError) else e)[:255]

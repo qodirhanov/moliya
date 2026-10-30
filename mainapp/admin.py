@@ -1,7 +1,8 @@
 from django.contrib import admin
-from django.contrib.admin.forms import AdminAuthenticationForm
+from django.contrib.admin.forms import AdminAuthenticationForm, AdminPasswordChangeForm
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.core.exceptions import ValidationError
+from .backends import CURRENT_PASSWORD_LOCKED_MESSAGE, verify_current_password
 from .models import User, Category, ExpenseCategory, Wallet, Member, Income, Expense, Transfer, Debt, SupportMessage
 
 
@@ -19,7 +20,20 @@ class TwoFactorAdminAuthenticationForm(AdminAuthenticationForm):
             )
 
 
+class LimitedAdminPasswordChangeForm(AdminPasswordChangeForm):
+    """Joriy parolni taxmin qilish limiti (15 daqiqada 5 ta) Sozlamalardagi bilan umumiy: ochiq qolgan admin sessiyasi
+    orqali parolni shu formadan cheksiz sinab ko'rib bo'lmaydi"""
+    def clean_old_password(self):
+        result = verify_current_password(self.user, self.cleaned_data["old_password"])
+        if result == "locked":
+            raise ValidationError(CURRENT_PASSWORD_LOCKED_MESSAGE, code="password_locked")
+        if result == "wrong":
+            raise ValidationError(self.error_messages["password_incorrect"], code="password_incorrect")
+        return self.cleaned_data["old_password"]
+
+
 admin.site.login_form = TwoFactorAdminAuthenticationForm
+admin.site.password_change_form = LimitedAdminPasswordChangeForm
 
 
 class SoftDeleteAdminMixin:

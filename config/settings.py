@@ -315,6 +315,11 @@ if not MAIL_IN_BACKGROUND:
 REST_FRAMEWORK = {
     # Summalar (Decimal) JSON'da satr emas, son bo'lib qaytadi — frontend Number() bilan o'qiydi
     "COERCE_DECIMAL_TO_STRING": False,
+    "DEFAULT_PARSER_CLASSES": [
+        "mainapp.parsers.ObjectJSONParser",
+        "rest_framework.parsers.FormParser",
+        "rest_framework.parsers.MultiPartParser",
+    ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "mainapp.backends.SessionAuthentication401",
     ],

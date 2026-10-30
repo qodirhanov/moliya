@@ -1365,7 +1365,7 @@ function walletCardHtml(w) {
         <div style="font-weight: 600; font-size: 1.05rem; color: var(--text-main);">
           ${formatNumber(w.summa)} <span style="font-size: 0.8rem; color: var(--text-muted);">${escapeHtml(w.currency)}</span>
         </div>
-        ${state.wallets.length > 1 && !w.is_goal ? `
+        ${!w.is_goal && state.wallets.filter((x) => !x.is_goal).length > 1 ? `
           <button class="btn-icon" style="width: 24px; height: 24px; font-size: 0.72rem; opacity: 0.6;" title="Hamyonni o'chirish" data-action="deleteWallet" data-stop data-args="${actionArgs(w.id)}">${icon('trash')}</button>
         ` : ''}
       </div>

@@ -9,6 +9,7 @@ Provayderlar shu tartibda sinab ko'riladi (sozlanganlari; biri xato bersa — ke
 Ovoz yozuvi diskka yozilmaydi — xotiradan to'g'ridan-to'g'ri provayderga yuboriladi. Qo'shimcha kutubxona kerak
 emas (urllib)"""
 import base64
+import http.client
 import json
 import time
 import uuid
@@ -155,8 +156,11 @@ def _openai(data, content_type):
         # Kalit yoki limit muammosi — sababi logga, foydalanuvchiga umumiy xabar
         logger.error("Ovozni tanish: OpenAI xatosi %s", e.code)
         raise SttError(FAILED_MESSAGE)
-    except (urllib.error.URLError, TimeoutError, OSError, ValueError):
+    except (urllib.error.URLError, http.client.HTTPException, TimeoutError, OSError, ValueError):
         logger.warning("Ovozni tanish: OpenAI ga ulanib bo'lmadi")
+        raise SttError(FAILED_MESSAGE)
+    if not isinstance(payload, dict):
+        logger.warning("Ovozni tanish: OpenAI javobi buzilgan")
         raise SttError(FAILED_MESSAGE)
     return str(payload.get("text") or "").strip()
 
@@ -196,7 +200,8 @@ def _voicelab(data, content_type):
             # 403 — kalitda «Nutqdan matnga» ruxsati yo'q yoki faqat «Yozish» (natijani o'qib bo'lmaydi)
             logger.error("Ovozni tanish (VoiceLab): xato %s", e.code)
         raise SttError(FAILED_MESSAGE)
-    except (urllib.error.URLError, TimeoutError, OSError, ValueError, KeyError, TypeError):
+    except (urllib.error.URLError, http.client.HTTPException, TimeoutError, OSError, ValueError, KeyError, TypeError,
+            AttributeError):
         logger.warning("Ovozni tanish (VoiceLab): ulanib bo'lmadi yoki javob buzilgan")
         raise SttError(FAILED_MESSAGE)
 

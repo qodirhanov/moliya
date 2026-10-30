@@ -160,6 +160,9 @@ def _login_failed(identifier, request, user=None):
         log_event("login_lockout", request, logging.WARNING, username=identifier)
 
 
+CURRENT_PASSWORD_LOCKED_MESSAGE = "Juda ko'p noto'g'ri urinish. 15 daqiqadan keyin qayta urinib ko'ring."
+
+
 def verify_current_password(user, password):
     """Sozlamalarda joriy parolni tasdiqlash (parol/elektron pochta o'zgartirish, hisobni o'chirish).
     Sessiyani qo'lga kiritgan odam joriy parolni tanlab topa olmasligi uchun bu yerda ham
