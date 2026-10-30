@@ -1,5 +1,9 @@
 """Sozlamalar → Yordam (admin bilan chat), admin panelidagi javoblar va AI yordamchi.
 Claude API har doim mock: testlarda haqiqiy so'rov yuborilmaydi"""
+import http.client
+import io
+import json
+import urllib.error
 from types import SimpleNamespace
 from unittest import mock
 
@@ -116,7 +120,7 @@ def fake_response(text="Hamyonlar bo'limida qo'shish tugmasini bosing.", stop_re
 
 
 class AssistantTests(SupportBase):
-    @override_settings(ANTHROPIC_API_KEY="")
+    @override_settings(ANTHROPIC_API_KEY="", GEMINI_API_KEY="")
     def test_free_mode_answers_from_help_without_api(self):
         with mock.patch.object(assistant, "_client") as client:
             res = self.api.post(f"{API}/assistant/", {"messages": [
@@ -128,7 +132,7 @@ class AssistantTests(SupportBase):
         self.assertEqual(res.status_code, 200)
         self.assertTrue(res.json()["answer"].startswith("Hamyonlar: Hamyonni qanday o'chiraman?"))
 
-    @override_settings(ANTHROPIC_API_KEY="test-key")
+    @override_settings(ANTHROPIC_API_KEY="test-key", GEMINI_API_KEY="gemini-key")
     def test_answer_uses_grounded_system_prompt(self):
         with mock.patch.object(assistant, "_client") as client:
             client.return_value.beta.messages.create.return_value = fake_response()
@@ -158,6 +162,87 @@ class AssistantTests(SupportBase):
             self.assertEqual(res.status_code, 400, bad)
 
 
+class FakeHttpResponse:
+    def __init__(self, payload):
+        self.body = json.dumps(payload).encode("utf-8")
+
+    def read(self):
+        return self.body
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+
+def gemini_payload(text="Hamyonlar bo'limida «+ Qo'shish» ni bosing.", finish="STOP"):
+    return {"candidates": [{"content": {"role": "model", "parts": [{"text": text}]}, "finishReason": finish}]}
+
+
+@override_settings(ANTHROPIC_API_KEY="", GEMINI_API_KEY="gemini-test-key", GEMINI_MODEL="gemini-test-flash")
+class GeminiAssistantTests(SupportBase):
+    """Gemini REST API tarmoqsiz (urlopen mock) tekshiriladi"""
+
+    def post(self, messages):
+        return self.api.post(f"{API}/assistant/", {"messages": messages}, format="json")
+
+    def test_request_shape_and_answer(self):
+        with mock.patch("mainapp.assistant.urllib.request.urlopen", return_value=FakeHttpResponse(gemini_payload())) as urlopen:
+            res = self.post([
+                {"role": "user", "content": "Salom"},
+                {"role": "assistant", "content": "Salom! Qanday yordam beray?"},
+                {"role": "user", "content": "Hamyonni qanday qo'shaman?"},
+            ])
+        self.assertEqual(res.status_code, 200, res.content)
+        self.assertEqual(res.json(), {"answer": "Hamyonlar bo'limida «+ Qo'shish» ni bosing."})
+        request = urlopen.call_args.args[0]
+        self.assertIn("/models/gemini-test-flash:generateContent", request.full_url)
+        # Kalit URL da emas, sarlavhada
+        self.assertNotIn("gemini-test-key", request.full_url)
+        self.assertEqual(request.get_header("X-goog-api-key"), "gemini-test-key")
+        body = json.loads(request.data)
+        self.assertIn("Moliya yordamchisi", body["systemInstruction"]["parts"][0]["text"])
+        self.assertIn("Hamyon nima?", body["systemInstruction"]["parts"][0]["text"])
+        self.assertEqual([c["role"] for c in body["contents"]], ["user", "model", "user"])
+        self.assertEqual(body["contents"][-1]["parts"][0]["text"], "Hamyonni qanday qo'shaman?")
+
+    def test_thought_parts_are_hidden(self):
+        payload = {"candidates": [{"finishReason": "STOP", "content": {"parts": [
+            {"text": "ichki o'ylash", "thought": True}, {"text": "Tayyor javob"}]}}]}
+        with mock.patch("mainapp.assistant.urllib.request.urlopen", return_value=FakeHttpResponse(payload)):
+            res = self.post([{"role": "user", "content": "?"}])
+        self.assertEqual(res.json()["answer"], "Tayyor javob")
+
+    def test_blocked_answer_is_refusal(self):
+        for payload in (gemini_payload("", finish="SAFETY"), {"promptFeedback": {"blockReason": "SAFETY"}}):
+            with mock.patch("mainapp.assistant.urllib.request.urlopen", return_value=FakeHttpResponse(payload)):
+                res = self.post([{"role": "user", "content": "?"}])
+            self.assertEqual(res.json()["answer"], assistant.REFUSED_MESSAGE, payload)
+
+    def test_api_errors_give_friendly_502(self):
+        errors = [
+            urllib.error.HTTPError("u", 429, "Too Many Requests", {}, io.BytesIO(b"{}")),
+            urllib.error.HTTPError("u", 400, "API_KEY_INVALID", {}, io.BytesIO(b"{}")),
+            urllib.error.URLError("timeout"),
+            http.client.IncompleteRead(b"{"),
+        ]
+        for error in errors:
+            with mock.patch("mainapp.assistant.urllib.request.urlopen", side_effect=error):
+                res = self.post([{"role": "user", "content": "?"}])
+            self.assertEqual(res.status_code, 502, error)
+            self.assertEqual(res.json()["error"], assistant.FAILED_MESSAGE)
+        with mock.patch("mainapp.assistant.urllib.request.urlopen", return_value=FakeHttpResponse(["not", "dict"])):
+            self.assertEqual(self.post([{"role": "user", "content": "?"}]).status_code, 502)
+
+    @override_settings(ANTHROPIC_API_KEY="claude-key")
+    def test_claude_key_takes_priority(self):
+        self.assertEqual(assistant.provider(), "anthropic")
+        with override_settings(ANTHROPIC_API_KEY="", GEMINI_API_KEY=""):
+            self.assertIsNone(assistant.provider())
+            self.assertFalse(assistant.is_enabled())
+
+
 class FaqSearchTests(TestCase):
     """Bepul rejim: savolning turli shakllari (qo'shimcha, sinonim, kirill yozuv) to'g'ri javobga olib keladi"""
     def first_line(self, question):
@@ -166,12 +251,12 @@ class FaqSearchTests(TestCase):
     def test_word_forms_synonyms_and_cyrillic(self):
         cases = {
             "hamyonni qanday o'chiraman": "Hamyonni qanday o'chiraman?",
-            "chiqimni qanday yozaman": "Harajatni qanday yozaman?",
+            "chiqimni qanday yozaman": "Chiqimni qanday yozaman?",
             "qarzni qisman qaytarsa boladimi": "Qarzni qisman qaytarsa bo'ladimi?",
             "tilni o‘zgartirish": "Ilova tilini qanday almashtiraman?",
-            "takroriy to'lov qo'shish": "Qanday qo'shaman?",
-            "toifa qo'shish": "Toifalarni qayerda sozlayman?",
-            "балансни яшириш": "Balansni qanday yashiraman?",
+            "doimiy to'lov qo'shish": "Qanday qo'shaman?",
+            "turkum qo'shish": "Turkumlarni qayerda sozlayman?",
+            "балансни яшириш": "Qoldiqni qanday yashiraman?",
         }
         for question, expected in cases.items():
             self.assertIn(expected, self.first_line(question), question)
@@ -182,7 +267,7 @@ class FaqSearchTests(TestCase):
         self.assertEqual(faq.answer("rahmat!"), faq.THANKS_MESSAGE)
 
     def test_short_question_gets_topic_prefix(self):
-        self.assertEqual(self.first_line("takroriy to'lov qo'shish"), "Takroriy to'lovlar: Qanday qo'shaman?")
+        self.assertEqual(self.first_line("doimiy to'lov qo'shish"), "Doimiy to'lovlar: Qanday qo'shaman?")
 
 
 class SupportEmailTests(SupportBase):

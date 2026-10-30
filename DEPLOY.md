@@ -13,12 +13,13 @@ domen, Resend akkaunti. 1 GB RAM yetadi.
 
 ## 0. Kompyuteringizda: kodni git'ga yuborish
 
-Yangi migratsiyalar (0009–0013), `currency.py`, `throttles.py`, `theme-init.js` hali git'da yo'q —
-ularsiz serverda sayt ishlamaydi. Maxfiy fayllar (`.env`, baza, `*.bak`) `.gitignore` da, git'ga tushmaydi.
+Serverga faqat commit qilingan kod tushadi. Avval `git status` ni tekshiring: ro'yxatda fayl qolgan bo'lsa
+(ayniqsa yangi migratsiyalar), serverda sayt ishlamasligi mumkin. Maxfiy fayllar (`.env`, baza, `*.bak`) `.gitignore` da,
+git'ga tushmaydi.
 
 ```bash
 git add -A
-git commit -m "Xavfsizlik tuzatishlari va deploy sozlamalari"
+git commit -m "Serverga chiqarishdan oldingi o'zgarishlar"
 ```
 
 GitHub'da **Private** repozitoriy oching va yuboring:
@@ -75,6 +76,9 @@ CSRF_TRUSTED_ORIGINS=https://moliya.uz,https://www.moliya.uz
 ADMIN_URL=<taxmin qilib bo'lmaydigan nom, masalan boshqaruv-7x2k>
 PANEL_URL=<taxmin qilib bo'lmaydigan nom, masalan nazorat-4m9q>
 BEHIND_PROXY=True
+# Birinchi kunlar uchun 1 soat. Sayt bir necha kun HTTPS'da barqaror ishlagach 31536000 (1 yil) qiling:
+# brauzer HSTS'ni eslab qoladi va uni serverdan bekor qilib bo'lmaydi
+SECURE_HSTS_SECONDS=3600
 
 EMAIL_HOST=smtp.resend.com
 EMAIL_PORT=587
@@ -116,12 +120,15 @@ After=network.target
 [Service]
 User=moliya
 WorkingDirectory=/home/moliya/app
-ExecStart=/home/moliya/app/venv/bin/gunicorn config.wsgi:application --workers 3 --bind 127.0.0.1:8000 --access-logfile -
+ExecStart=/home/moliya/app/venv/bin/gunicorn config.wsgi:application --workers 3 --threads 4 --timeout 120 --bind 127.0.0.1:8000 --access-logfile -
 Restart=always
 
 [Install]
 WantedBy=multi-user.target
 ```
+
+`--threads` va `--timeout` shart: AI yordamchi javobi 60 soniyagacha kutishi mumkin. Standart 30 soniyada worker
+o'ldirilib foydalanuvchi 502 olardi, thread'larsiz esa 3 ta sekin so'rov butun saytni band qilardi.
 
 ```bash
 systemctl daemon-reload && systemctl enable --now moliya
@@ -135,16 +142,20 @@ systemctl daemon-reload && systemctl enable --now moliya
 server {
     listen 80;
     server_name moliya.uz www.moliya.uz;
-    client_max_body_size 1m;
+    client_max_body_size 6m;
 
     location / {
         proxy_pass http://127.0.0.1:8000;
+        proxy_read_timeout 120s;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
 ```
+
+`client_max_body_size` ovoz yozuvi limitidan (`stt.py`: 5 MB) katta bo'lishi kerak, aks holda uzun yozuv 413 xato
+beradi. `proxy_read_timeout` gunicorn `--timeout` ga mos: standart 60 soniya AI javobini kesib qo'yishi mumkin.
 
 `X-Forwarded-For` va `X-Forwarded-Proto` qatorlari shart: birinchisisiz so'rovlar cheklovi barcha
 foydalanuvchilarni bitta IP deb hisoblaydi (bir kishining ko'p urinishi hammani to'sib qo'yadi),

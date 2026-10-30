@@ -5,6 +5,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 from .models import (
@@ -29,7 +30,7 @@ AMOUNT_FIELD = {"max_value": MAX_AMOUNT, "error_messages": {
 
 
 class MoneyField(serializers.DecimalField):
-    """Summa maydoni: 12.5, "12.50", 100 qabul qilinadi; 2 tadan ko'p kasr xonasi rad etiladi (jimgina
+    """Miqdor maydoni: 12.5, "12.50", 100 qabul qilinadi; 2 tadan ko'p kasr xonasi rad etiladi (jimgina
     yaxlitlanmaydi). DRF'ning standart tekshiruvi "12.340" ni ham rad etardi, bu yerda nolga teng ortiqcha xona mumkin"""
 
     def validate_precision(self, value):
@@ -41,7 +42,7 @@ class MoneyField(serializers.DecimalField):
 
 
 class MoneyModelSerializer(serializers.ModelSerializer):
-    """summa / to_summa maydonlarini MoneyField qiladi (kurslar — rate, uzs_rate — oddiy DecimalField bo'lib qoladi)"""
+    """miqdor / to_miqdor maydonlarini MoneyField qiladi (kurslar — rate, uzs_rate — oddiy DecimalField bo'lib qoladi)"""
 
     def build_standard_field(self, field_name, model_field):
         field_class, field_kwargs = super().build_standard_field(field_name, model_field)
@@ -52,22 +53,22 @@ class MoneyModelSerializer(serializers.ModelSerializer):
 # Transfer.rate (max_digits=20, decimal_places=8) butun qismga atigi 12 xona beradi: undan katta kurs bazaga yozilganda
 # decimal.InvalidOperation (500 xato) berardi
 MAX_RATE = Decimal(10) ** 12
-MAX_RATE_MESSAGE = "Tushadigan summa chiqadigan summadan juda ko'p marta katta — kurs 1 000 000 000 000 dan oshmasligi kerak"
+MAX_RATE_MESSAGE = "Tushadigan miqdor chiqadigan miqdordan juda ko'p marta katta — kurs 1 000 000 000 000 dan oshmasligi kerak"
 # Pastki chegara: ustun saqlay oladigan eng kichik kurs. Undan kichik kurs 8 xonaga yaxlitlanganda 0 bo'lib saqlanardi
 # (keyin faqat summani tahrirlash "Summa juda kichik" xatosini berardi)
 MIN_RATE = Decimal("0.00000001")
-MIN_RATE_MESSAGE = "Tushadigan summa chiqadigan summadan juda ko'p marta kichik — kurs 0.00000001 dan kam bo'lmasligi kerak"
+MIN_RATE_MESSAGE = "Tushadigan miqdor chiqadigan miqdordan juda ko'p marta kichik — kurs 0.00000001 dan kam bo'lmasligi kerak"
 
 
 def check_date_range(value):
-    """Operatsiya sanasi / qarz muddati real yillar oralig'ida bo'lishi kerak (0001-yil sanasi 500 xato berardi)"""
+    """Amal sanasi / qarz muddati real yillar oralig'ida bo'lishi kerak (0001-yil sanasi 500 xato berardi)"""
     if value is not None and not (MIN_YEAR <= value.year <= MAX_YEAR):
         raise serializers.ValidationError(DATE_RANGE_MESSAGE)
     return value
 
 
 class BoundedDateTimeField(serializers.DateTimeField):
-    """Operatsiya sanasi. 0001-yil kabi sana DRF ichida (vaqt zonasini tekshirishda) OverflowError bilan
+    """Amal sanasi. 0001-yil kabi sana DRF ichida (vaqt zonasini tekshirishda) OverflowError bilan
     500 xato berardi (serializer validatsiyasiga yetib bormasdan). Shuning uchun chegara maydonning o'zida tekshiriladi"""
 
     def to_internal_value(self, value):
@@ -88,8 +89,8 @@ def _own_members(user):
 
 
 def _visible_categories(model, hidden_field):
-    """Yangi operatsiyaga tanlash mumkin bo'lgan toifalar: umumiy va foydalanuvchining o'zinikilari,
-    o'chirilgan va foydalanuvchi o'z ro'yxatidan yashirgan umumiy toifalarsiz"""
+    """Yangi amalga tanlash mumkin bo'lgan turkumlar: umumiy va foydalanuvchining o'zinikilari,
+    o'chirilgan va foydalanuvchi o'z ro'yxatidan yashirgan umumiy turkumlarsiz"""
     def queryset(user):
         hidden_ids = getattr(user, hidden_field).values_list("pk", flat=True)
         return model.objects.filter(Q(user__isnull=True) | Q(user=user), status=True).exclude(pk__in=hidden_ids)
@@ -97,8 +98,8 @@ def _visible_categories(model, hidden_field):
 
 
 class OwnedRelationsMixin:
-    """Hamyon / toifa / a'zo maydonlarida faqat joriy foydalanuvchiga tegishli yozuvlar qabul qilinadi.
-    Begona ID "topilmadi" deb rad etiladi — boshqa birovning hamyoni haqida (balansi, valyutasi)
+    """Hamyon / turkum / a'zo maydonlarida faqat joriy foydalanuvchiga tegishli yozuvlar qabul qilinadi.
+    Begona ID "topilmadi" deb rad etiladi — boshqa birovning hamyoni haqida (qoldig'i, valyutasi)
     xato xabarida ham hech narsa oshkor bo'lmaydi. Model.clean() dagi tekshiruv ikkinchi himoya bo'lib qoladi"""
     owned_relations = {}  # maydon nomi -> (queryset(user), "topilmadi" xabari)
     # Tahrirda bu maydonlarning JORIY qiymati o'chirilgan/yashirilgan bo'lsa ham qabul qilinadi: toifasi yoki a'zosi
@@ -167,7 +168,7 @@ class UserSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
         # Email bilan ham kirish mumkin — shuning uchun ikki akkauntda bir xil email bo'lmasin
         if value and User.email_taken(value, exclude_pk=getattr(self.instance, "pk", None)):
-            raise serializers.ValidationError("Bu email boshqa akkauntda ishlatilgan")
+            raise serializers.ValidationError("Bu elektron pochta boshqa hisobda ishlatilgan")
         return value
 
     def validate(self, attrs):
@@ -199,7 +200,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class CategoryBaseSerializer(serializers.ModelSerializer):
-    """Daromad va harajat toifalari uchun umumiy qismlar"""
+    """Kirim va xarajat turkumlari uchun umumiy qismlar"""
     hidden_field = ""  # User'dagi yashirilgan toifalar maydoni (har bir serializer o'zinikini beradi)
     is_custom = serializers.SerializerMethodField()
     hidden = serializers.SerializerMethodField()
@@ -226,18 +227,18 @@ class CategoryBaseSerializer(serializers.ModelSerializer):
         if self.context.get("replaces_pk"):
             qs = qs.exclude(pk=self.context["replaces_pk"])
         if qs.exists():
-            raise serializers.ValidationError("Bu nomli toifa allaqachon mavjud")
+            raise serializers.ValidationError("Bu nomli turkum allaqachon mavjud")
         return value
 
 
 _CATEGORY_NAME_ERRORS = {"name": {"error_messages": {
-    "blank": "Toifa nomi bo'sh bo'lishi mumkin emas",
-    "max_length": "Toifa nomi 255 belgidan oshmasligi kerak",
+    "blank": "Turkum nomi bo'sh bo'lishi mumkin emas",
+    "max_length": "Turkum nomi 255 belgidan oshmasligi kerak",
 }}}
 
 
 class CategorySerializer(CategoryBaseSerializer):
-    """Daromad turlari serializeri"""
+    """Kirim turkumlari serializeri"""
     hidden_field = "hidden_income_categories"
 
     class Meta:
@@ -248,7 +249,7 @@ class CategorySerializer(CategoryBaseSerializer):
 
 
 class ExpenseCategorySerializer(CategoryBaseSerializer):
-    """Harajat turlari serializeri"""
+    """Chiqim turlari serializeri"""
     hidden_field = "hidden_expense_categories"
 
     class Meta:
@@ -268,13 +269,14 @@ class WalletSerializer(MoneyModelSerializer):
             "name",
             "summa",
             "currency",
+            "is_goal",
             "user",
             "user_name",
             "status",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "user", "status", "created_at", "updated_at"]
+        read_only_fields = ["id", "is_goal", "user", "status", "created_at", "updated_at"]
         extra_kwargs = {
             "name": {"error_messages": {
                 "blank": "Hamyon nomi bo'sh bo'lishi mumkin emas",
@@ -296,24 +298,23 @@ class WalletSerializer(MoneyModelSerializer):
 
     def validate_summa(self, value):
         if value < 0:
-            raise serializers.ValidationError("Hamyon boshlang'ich balansi manfiy bo'lishi mumkin emas")
+            raise serializers.ValidationError("Hamyon boshlang'ich qoldig'i manfiy bo'lishi mumkin emas")
         return value
 
     def validate(self, attrs):
-        # Balansni faqat Daromad/Harajat/O'tkazma orqali o'zgartirish mumkin —
-        # mavjud hamyonning summasini to'g'ridan-to'g'ri tahrirlashga yo'l qo'yilmaydi
-        if self.instance is not None and "summa" in attrs and attrs["summa"] != self.instance.summa:
-            raise serializers.ValidationError({
-                "summa": "Hamyon balansini to'g'ridan-to'g'ri o'zgartirib bo'lmaydi. "
-                         "Daromad, Harajat yoki O'tkazma orqali o'zgartiring."
-            })
+        # Maqsad hamyonining nomi maqsad nomi bilan birga o'zgaradi (SavingsGoalSerializer), boshqa tahriri yo'q
+        if self.instance is not None and self.instance.is_goal:
+            raise serializers.ValidationError("Bu maqsad hamyoni — uni Maqsadlar bo'limida tahrirlang")
+        # Qoldiqni tahrirda to'g'ridan-to'g'ri o'zgartirish mumkin (foydalanuvchi qarori, 2026-10-28): yangi summa
+        # shunchaki yoziladi, hech qanday kirim/chiqim yozuvi qolmaydi — tarixdagi amallar yig'indisi qoldiqqa mos
+        # kelmasligi mumkin. Manfiy va MAX_AMOUNT dan katta summa validate_summa / AMOUNT_FIELD da rad etiladi
         # Valyutani faqat operatsiyasi yo'q hamyonda (boshlang'ich balans xatosini tuzatish uchun) o'zgartirish mumkin.
         # Aks holda 1 000 000 UZS bir zumda 1 000 000 USD bo'lib, eski operatsiyalar boshqa valyutada hisoblanib qolardi
         if (self.instance is not None and "currency" in attrs
                 and attrs["currency"] != normalize_currency(self.instance.currency)
                 and self.instance.has_operations()):
             raise serializers.ValidationError({
-                "currency": "Bu hamyonda operatsiyalar bor — valyutasini o'zgartirib bo'lmaydi. "
+                "currency": "Bu hamyonda amallar bor — valyutasini o'zgartirib bo'lmaydi. "
                             "Boshqa valyuta uchun yangi hamyon oching va pulni O'tkazma orqali o'tkazing."
             })
         return attrs
@@ -328,10 +329,10 @@ class MemberSerializer(serializers.ModelSerializer):
 
 
 class IncomeSerializer(OwnedRelationsMixin, MoneyModelSerializer):
-    """Daromad serializeri"""
+    """Kirim serializeri"""
     owned_relations = {
         "wallet": (_own_wallets, "Hamyon topilmadi"),
-        "category": (_visible_categories(Category, "hidden_income_categories"), "Toifa topilmadi"),
+        "category": (_visible_categories(Category, "hidden_income_categories"), "Turkum topilmadi"),
     }
     keep_current_relations = ("category",)
     date = BoundedDateTimeField(required=False)
@@ -363,7 +364,7 @@ class IncomeSerializer(OwnedRelationsMixin, MoneyModelSerializer):
 
     def validate_summa(self, value):
         if value <= 0:
-            raise serializers.ValidationError("Daromad summasi 0 dan katta bo'lishi shart")
+            raise serializers.ValidationError("Kirim miqdori 0 dan katta bo'lishi shart")
         return value
 
     def validate(self, attrs):
@@ -377,23 +378,23 @@ class IncomeSerializer(OwnedRelationsMixin, MoneyModelSerializer):
 
         category = attrs.get("category") or getattr(self.instance, "category", None)
         if category and user and category.user_id not in (None, user.id):
-            raise serializers.ValidationError({"category": "Tanlangan kategoriya sizga tegishli emas"})
+            raise serializers.ValidationError({"category": "Tanlangan turkum sizga tegishli emas"})
 
         if self.instance and wallet and summa:
             if self.instance.wallet_id == wallet.id and self.instance.summa > summa:
                 diff = self.instance.summa - summa
                 if wallet.summa < diff:
                     raise serializers.ValidationError({
-                        "summa": f"Daromadni kamaytirish uchun hamyonda yetarli mablag' qolmagan (Hamyon balansi: {format_money(wallet.summa)} {wallet.currency})"
+                        "summa": f"Kirimni kamaytirish uchun hamyonda yetarli mablag' qolmagan (Hamyon qoldig'i: {format_money(wallet.summa)} {wallet.currency})"
                     })
         return attrs
 
 
 class ExpenseSerializer(OwnedRelationsMixin, MoneyModelSerializer):
-    """Harajat serializeri — nima narsaga, qayerda, qachon"""
+    """Chiqim serializeri — nima narsaga, qayerda, qachon"""
     owned_relations = {
         "wallet": (_own_wallets, "Hamyon topilmadi"),
-        "category": (_visible_categories(ExpenseCategory, "hidden_expense_categories"), "Toifa topilmadi"),
+        "category": (_visible_categories(ExpenseCategory, "hidden_expense_categories"), "Turkum topilmadi"),
         "member": (_own_members, "A'zo topilmadi"),
     }
     keep_current_relations = ("category", "member")
@@ -432,7 +433,7 @@ class ExpenseSerializer(OwnedRelationsMixin, MoneyModelSerializer):
 
     def validate_summa(self, value):
         if value <= 0:
-            raise serializers.ValidationError("Harajat summasi 0 dan katta bo'lishi shart")
+            raise serializers.ValidationError("Chiqim miqdori 0 dan katta bo'lishi shart")
         return value
 
     def validate(self, attrs):
@@ -446,7 +447,7 @@ class ExpenseSerializer(OwnedRelationsMixin, MoneyModelSerializer):
 
         category = attrs.get("category") or getattr(self.instance, "category", None)
         if category and user and category.user_id not in (None, user.id):
-            raise serializers.ValidationError({"category": "Tanlangan kategoriya sizga tegishli emas"})
+            raise serializers.ValidationError({"category": "Tanlangan turkum sizga tegishli emas"})
 
         member = attrs.get("member") or getattr(self.instance, "member", None)
         if member and user and member.user_id != user.id:
@@ -456,7 +457,7 @@ class ExpenseSerializer(OwnedRelationsMixin, MoneyModelSerializer):
             if self.instance is None:
                 if wallet.summa < summa:
                     raise serializers.ValidationError({
-                        "summa": f"Hamyonda mablag' yetarli emas! Mavjud balans: {format_money(wallet.summa)} {wallet.currency}"
+                        "summa": f"Hamyonda mablag' yetarli emas! Mavjud qoldiq: {format_money(wallet.summa)} {wallet.currency}"
                     })
             else:
                 old_summa = self.instance.summa if self.instance.wallet_id == wallet.id else 0
@@ -469,7 +470,7 @@ class ExpenseSerializer(OwnedRelationsMixin, MoneyModelSerializer):
 
 
 class TransferSerializer(OwnedRelationsMixin, MoneyModelSerializer):
-    """Hamyonlararo o'tkazma serializeri"""
+    """Hamyondan hamyonga o'tkazma serializeri"""
     owned_relations = {
         "from_wallet": (_own_wallets, "Chiqim hamyoni topilmadi"),
         "to_wallet": (_own_wallets, "Kirim hamyoni topilmadi"),
@@ -508,16 +509,16 @@ class TransferSerializer(OwnedRelationsMixin, MoneyModelSerializer):
 
     def validate_summa(self, value):
         if value <= 0:
-            raise serializers.ValidationError("O'tkazma summasi 0 dan katta bo'lishi kerak")
+            raise serializers.ValidationError("O'tkazma miqdori 0 dan katta bo'lishi kerak")
         return value
 
     def validate_to_summa(self, value):
         if value is not None and value <= 0:
-            raise serializers.ValidationError("Tushadigan summa 0 dan katta bo'lishi kerak")
+            raise serializers.ValidationError("Tushadigan miqdor 0 dan katta bo'lishi kerak")
         return value
 
     def _fill_to_summa(self, attrs, from_wallet, to_wallet, summa):
-        """Tushadigan hamyonga qo'shiladigan summani (to_summa) va kursni aniqlaydi"""
+        """Tushadigan hamyonga qo'shiladigan miqdorni (to_miqdor) va kursni aniqlaydi"""
         if from_wallet.currency == to_wallet.currency:
             attrs["to_summa"] = summa
             attrs["rate"] = 1
@@ -538,7 +539,7 @@ class TransferSerializer(OwnedRelationsMixin, MoneyModelSerializer):
             # Eski o'tkazmaning faqat summasi tahrirlanmoqda — o'sha kunning kursi saqlanadi
             to_summa = quantize_money(Decimal(summa) * self.instance.rate)
             if to_summa <= 0:
-                raise serializers.ValidationError({"summa": f"Summa juda kichik: kurs bo'yicha 0 {to_wallet.currency} bo'ladi"})
+                raise serializers.ValidationError({"summa": f"Miqdor juda kichik: kurs bo'yicha 0 {to_wallet.currency} bo'ladi"})
             if to_summa > MAX_AMOUNT:
                 raise serializers.ValidationError({"summa": MAX_AMOUNT_MESSAGE})
             attrs["to_summa"] = to_summa
@@ -548,11 +549,11 @@ class TransferSerializer(OwnedRelationsMixin, MoneyModelSerializer):
         except CurrencyRateError:
             raise serializers.ValidationError({
                 "to_summa": f"{from_wallet.currency} → {to_wallet.currency} kursini aniqlab bo'lmadi. "
-                            "Tushadigan summani qo'lda kiriting."
+                            "Tushadigan miqdorni qo'lda kiriting."
             })
         if to_summa <= 0:
             raise serializers.ValidationError({
-                "summa": f"Summa juda kichik: kurs bo'yicha 0 {to_wallet.currency} bo'ladi"
+                "summa": f"Miqdor juda kichik: kurs bo'yicha 0 {to_wallet.currency} bo'ladi"
             })
         if to_summa > MAX_AMOUNT:
             raise serializers.ValidationError({"summa": MAX_AMOUNT_MESSAGE})
@@ -564,7 +565,7 @@ class TransferSerializer(OwnedRelationsMixin, MoneyModelSerializer):
         attrs["rate"] = rate
 
     def _amounts_changed(self, attrs, from_wallet, to_wallet, summa):
-        """Yangi o'tkazma yoki summa / hamyon / tushadigan summa haqiqatan o'zgargan tahrirmi. PUT da maydonlar
+        """Yangi o'tkazma yoki miqdor / hamyon / tushadigan miqdor haqiqatan o'zgargan tahrirmi. PUT da maydonlar
         o'zgarmagan qiymat bilan ham yuboriladi — ularni "o'zgargan" deb hisoblash kursni qayta hisoblatardi"""
         old = self.instance
         if old is None:
@@ -657,9 +658,9 @@ class DebtSerializer(OwnedRelationsMixin, MoneyModelSerializer):
         summa = attrs.get("summa", getattr(self.instance, "summa", 0))
         paid_summa = attrs.get("paid_summa", getattr(self.instance, "paid_summa", 0))
         if summa <= 0:
-            raise serializers.ValidationError({"summa": "Qarz summasi musbat bo'lishi kerak"})
+            raise serializers.ValidationError({"summa": "Qarz miqdori musbat bo'lishi kerak"})
         if paid_summa > summa:
-            raise serializers.ValidationError({"paid_summa": "Qaytarilgan summa umumiy qarzdan ko'p bo'lishi mumkin emas"})
+            raise serializers.ValidationError({"paid_summa": "Qaytarilgan miqdor umumiy qarzdan ko'p bo'lishi mumkin emas"})
         attrs["is_settled"] = paid_summa >= summa
 
         if "currency" in attrs:
@@ -692,12 +693,12 @@ class DebtSerializer(OwnedRelationsMixin, MoneyModelSerializer):
 
 
 class RecurringPaymentSerializer(OwnedRelationsMixin, MoneyModelSerializer):
-    """Takroriy to'lov / tushum. next_date server tomonida hisoblanadi: o'tib ketgan sanalar orqaga qarab
+    """Doimiy to'lov / tushum. next_date server tomonida hisoblanadi: o'tib ketgan sanalar orqaga qarab
     yozilmaydi — birinchi to'lov bugun yoki undan keyingi eng yaqin jadval sanasida bo'ladi"""
     owned_relations = {
         "wallet": (_own_wallets, "Hamyon topilmadi"),
-        "expense_category": (_visible_categories(ExpenseCategory, "hidden_expense_categories"), "Toifa topilmadi"),
-        "income_category": (_visible_categories(Category, "hidden_income_categories"), "Toifa topilmadi"),
+        "expense_category": (_visible_categories(ExpenseCategory, "hidden_expense_categories"), "Turkum topilmadi"),
+        "income_category": (_visible_categories(Category, "hidden_income_categories"), "Turkum topilmadi"),
         "member": (_own_members, "A'zo topilmadi"),
     }
     keep_current_relations = ("expense_category", "income_category", "member")
@@ -726,7 +727,7 @@ class RecurringPaymentSerializer(OwnedRelationsMixin, MoneyModelSerializer):
 
     def validate_summa(self, value):
         if value <= 0:
-            raise serializers.ValidationError("Summa 0 dan katta bo'lishi kerak")
+            raise serializers.ValidationError("Miqdor 0 dan katta bo'lishi kerak")
         return value
 
     def validate_start_date(self, value):
@@ -739,15 +740,18 @@ class RecurringPaymentSerializer(OwnedRelationsMixin, MoneyModelSerializer):
         def current(name):
             return attrs.get(name, getattr(self.instance, name, None))
 
+        wallet = current("wallet")
+        if wallet is not None and wallet.is_goal:
+            raise serializers.ValidationError({"wallet": "Maqsad hamyoniga takroriy to'lov bog'lab bo'lmaydi — pul unga faqat O'tkazma bilan qo'shiladi"})
         kind = current("kind")
         if kind == RecurringPayment.KIND_INCOME:
             if not current("income_category"):
-                raise serializers.ValidationError({"income_category": "Daromad manbayini tanlang"})
+                raise serializers.ValidationError({"income_category": "Kirim manbayini tanlang"})
             attrs["expense_category"] = None
             attrs["member"] = None
         else:
             if not current("expense_category"):
-                raise serializers.ValidationError({"expense_category": "Harajat toifasini tanlang"})
+                raise serializers.ValidationError({"expense_category": "Chiqim turkumini tanlang"})
             attrs["income_category"] = None
         start, end = current("start_date"), current("end_date")
         if start and end and end < start:
@@ -764,23 +768,29 @@ class RecurringPaymentSerializer(OwnedRelationsMixin, MoneyModelSerializer):
             if day < today and probe.frequency in ("daily", "weekly"):
                 step = 1 if probe.frequency == "daily" else 7
                 day = day + timedelta(days=((today - day).days // step) * step)
-            while day < today:
+            # Eski sana bugundan keyin bo'lsa, bugungi to'lov yozilgan yoki hali kelmagan: yangi sana ham bugundan
+            # keyin bo'ladi, aks holda jadval o'zgarishi bilan bugungi chiqim yana yozilardi
+            already_past_today = self.instance is not None and self.instance.next_date > today
+            while day < today or (already_past_today and day == today):
                 day = probe.date_after(day)
             attrs["next_date"] = day
         return attrs
 
 
-class SavingsGoalSerializer(OwnedRelationsMixin, MoneyModelSerializer):
-    """Jamg'arma maqsadi: yig'ilgan summa — bog'langan hamyon balansi (saved)"""
-    owned_relations = {"wallet": (_own_wallets, "Hamyon topilmadi")}
+class SavingsGoalSerializer(MoneyModelSerializer):
+    """Jamg'arma maqsadi: yig'ilgan miqdor — bog'langan hamyon qoldig'i (saved). Yangi maqsadga o'z hamyoni ochiladi
+    (faqat valyutasi so'raladi); pul tushadigan hamyonni keyin almashtirib bo'lmaydi"""
+    currency = serializers.CharField(write_only=True, required=False, max_length=10)
     wallet_name = serializers.CharField(source="wallet.name", read_only=True)
     wallet_currency = serializers.CharField(source="wallet.currency", read_only=True)
+    wallet_is_goal = serializers.BooleanField(source="wallet.is_goal", read_only=True)
     saved = serializers.DecimalField(source="wallet.summa", max_digits=15, decimal_places=2, read_only=True)
 
     class Meta:
         model = SavingsGoal
-        fields = ["id", "name", "target", "wallet", "wallet_name", "wallet_currency", "saved", "deadline", "status", "created_at"]
-        read_only_fields = ["id", "status", "created_at"]
+        fields = ["id", "name", "target", "wallet", "wallet_name", "wallet_currency", "wallet_is_goal", "saved",
+                  "currency", "deadline", "status", "created_at"]
+        read_only_fields = ["id", "wallet", "status", "created_at"]
         extra_kwargs = {
             "target": AMOUNT_FIELD,
             "name": {"error_messages": {"blank": "Maqsad nomini kiriting", "max_length": "Nomi 255 belgidan oshmasligi kerak"}},
@@ -788,8 +798,31 @@ class SavingsGoalSerializer(OwnedRelationsMixin, MoneyModelSerializer):
 
     def validate_target(self, value):
         if value <= 0:
-            raise serializers.ValidationError("Maqsad summasi 0 dan katta bo'lishi kerak")
+            raise serializers.ValidationError("Maqsad miqdori 0 dan katta bo'lishi kerak")
         return value
 
     def validate_deadline(self, value):
         return check_date_range(value)
+
+    def validate_currency(self, value):
+        code = normalize_currency(value)
+        if not is_valid_currency_code(code):
+            raise serializers.ValidationError("Valyuta 3 harfli kod bo'lishi kerak: UZS, USD, EUR, RUB va h.k.")
+        return code
+
+    def create(self, validated_data):
+        currency = validated_data.pop("currency", None) or "UZS"
+        with transaction.atomic():
+            validated_data["wallet"] = Wallet.objects.create(
+                user=validated_data["user"], name=validated_data["name"], currency=currency, is_goal=True)
+            return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data.pop("currency", None)  # valyuta hamyon bilan birga ochilganda tanlanadi
+        with transaction.atomic():
+            goal = super().update(instance, validated_data)
+            # Maqsad hamyoni maqsad nomi bilan ataladi — nom o'zgarsa hamyon ham qayta nomlanadi
+            if goal.wallet.is_goal and goal.wallet.name != goal.name:
+                goal.wallet.name = goal.name
+                goal.wallet.save(update_fields=["name", "updated_at"])
+        return goal

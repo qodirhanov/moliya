@@ -29,7 +29,7 @@ LOGIN_LOCK_SECONDS = 15 * 60
 
 
 def find_user_by_login(identifier):
-    """Foydalanuvchini nomi yoki emaili bo'yicha topadi (kirish va parolni tiklashda ishlatiladi)"""
+    """Foydalanuvchini nomi yoki elektron pochtasi bo'yicha topadi (kirish va parolni tiklashda ishlatiladi)"""
     identifier = (identifier or "").strip()
     normalized = normalize_login(identifier)
     if not normalized:
@@ -46,8 +46,8 @@ def find_user_by_login(identifier):
 
 
 def _lock_owner_id(identifier):
-    """Hisoblagich egasi bo'lgan akkaunt (topilmasa None). Login va email, katta-kichik harfdan qat'i nazar,
-    bitta akkauntga olib keladi — aks holda login bilan 5 ta, email bilan yana 5 ta urinish qilish mumkin edi"""
+    """Hisoblagich egasi bo'lgan hisob (topilmasa None). Login va elektron pochta, katta-kichik harfdan qat'i nazar,
+    bitta hisobga olib keladi — aks holda login bilan 5 ta, elektron pochta bilan yana 5 ta urinish qilish mumkin edi"""
     identifier = normalize_login(identifier)
     if not identifier:
         return None
@@ -66,7 +66,7 @@ def _account_key(identifier):
 
 
 def _login_keys(identifier, request):
-    """(akkaunt + IP) juftligi va akkaunt bo'yicha umumiy hisoblagich kalitlari"""
+    """(hisob + IP) juftligi va hisob bo'yicha umumiy hisoblagich kalitlari"""
     account_key = _account_key(identifier)
     return f"{account_key}:ip:{client_ip(request) or 'noip'}", account_key
 
@@ -79,7 +79,7 @@ def _ip_fail_key(request):
 
 
 def login_attempts_left(identifier, request=None):
-    """Bloklanishgacha qolgan urinishlar: juftlik, akkaunt va IP chegaralarining kichigi (0 — bloklangan)"""
+    """Bloklanishgacha qolgan urinishlar: juftlik, hisob va IP chegaralarining kichigi (0 — bloklangan)"""
     pair_key, account_key = _login_keys(identifier, request)
     ip_key = _ip_fail_key(request)
     counts = cache.get_many([key for key in (pair_key, account_key, ip_key) if key])
@@ -161,7 +161,7 @@ def _login_failed(identifier, request, user=None):
 
 
 def verify_current_password(user, password):
-    """Sozlamalarda joriy parolni tasdiqlash (parol/email o'zgartirish, akkauntni o'chirish).
+    """Sozlamalarda joriy parolni tasdiqlash (parol/elektron pochta o'zgartirish, hisobni o'chirish).
     Sessiyani qo'lga kiritgan odam joriy parolni tanlab topa olmasligi uchun bu yerda ham
     15 daqiqada 5 ta urinish. Natija: "ok", "wrong" yoki "locked" """
     key = f"pwcheck_fail:{user.pk}"
@@ -174,7 +174,7 @@ def verify_current_password(user, password):
 
 
 def clear_login_fails(*identifiers, request=None, account=True):
-    """Hisoblagichlarni nollaydi: shu so'rovning (akkaunt + IP) juftligini va (account=True bo'lsa) akkaunt bo'yicha
+    """Hisoblagichlarni nollaydi: shu so'rovning (hisob + IP) juftligini va (account=True bo'lsa) hisob bo'yicha
     umumiy hisoblagichni. Boshqa IP'lar juftliklarini o'chirib bo'lmaydi — ular 15 daqiqada o'zi tugaydi"""
     keys = []
     for identifier in identifiers:
@@ -187,7 +187,7 @@ def clear_login_fails(*identifiers, request=None, account=True):
 
 
 class UsernameOrEmailBackend(ModelBackend):
-    """Foydalanuvchi nomi YOKI email + parol bilan kirish"""
+    """Foydalanuvchi nomi YOKI elektron pochta + parol bilan kirish"""
 
     def authenticate(self, request, username=None, password=None, email=None, **kwargs):
         identifier = email or username or kwargs.get(User.USERNAME_FIELD)

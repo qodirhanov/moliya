@@ -3,7 +3,7 @@ from rest_framework.throttling import SimpleRateThrottle
 
 class AuthRateThrottle(SimpleRateThrottle):
     """Kirish, ro'yxatdan o'tish va parol tiklash uchun IP bo'yicha qattiqroq cheklov
-    (settings: DEFAULT_THROTTLE_RATES["auth"]) — parol tanlash, akkaunt spami va email-bombaga qarshi"""
+    (settings: DEFAULT_THROTTLE_RATES["auth"]) — parol tanlash, hisob spami va elektron pochta-bombaga qarshi"""
     scope = "auth"
 
     def get_cache_key(self, request, view):

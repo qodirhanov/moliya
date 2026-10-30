@@ -1,4 +1,4 @@
-"""plans.md №26: daromad/harajat yozilgan paytdagi kurs (uzs_rate) qatorning o'zida saqlanadi va statistika shundan foydalanadi."""
+"""plans.md №26: daromad/xarajat yozilgan paytdagi kurs (uzs_rate) qatorning o'zida saqlanadi va hisobot shundan foydalanadi."""
 import importlib
 from decimal import Decimal
 from unittest import mock

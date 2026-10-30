@@ -3,7 +3,7 @@ from mainapp.models import Category, ExpenseCategory
 
 
 class Command(BaseCommand):
-    help = "Boshlang'ich (umumiy) daromad va harajat toifalarini yaratish"
+    help = "Boshlang'ich (umumiy) kirim va chiqim turkumlarini yaratish"
 
     def handle(self, *args, **options):
         # Admin akkaunt bu yerda yaratilmaydi: oldin "admin / admin123" yaratilardi va serverda
@@ -29,7 +29,7 @@ class Command(BaseCommand):
             ("Ko'ngilochar va dam olish", "coffee", "Kafe, restoran, kinoteatr"),
             ("Salomatlik va dorixona", "activity", "Shifokor, dorilar, tibbiy xizmat"),
             ("Ta'lim va kitoblar", "book", "Kurslar, repetitor, kitob"),
-            ("Kutilmagan harajatlar", "alert-circle", "Favqulodda va kutilmagan harajatlar"),
+            ("Kutilmagan xarajatlar", "alert-circle", "Favqulodda va kutilmagan xarajatlar"),
         ]
         for name, icon, desc in expense_cats:
             ExpenseCategory.objects.get_or_create(name=name, user=None, defaults={"icon": icon, "description": desc})

@@ -65,6 +65,7 @@ const ICONS = {
   bell:           '<path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216ZM48,184c7.7-13.24,16-43.92,16-80a64,64,0,1,1,128,0c0,36.05,8.28,66.73,16,80Z"/>',
   eye:            '<path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.46,133.46,0,0,1,231.05,128C223.84,141.46,192.43,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z"/>',
   megaphone:      '<path d="M248,120a48.05,48.05,0,0,0-48-48H160.2c-2.91-.17-53.62-3.74-101.91-44.24A16,16,0,0,0,32,40V200a16,16,0,0,0,26.29,12.25c37.77-31.68,77-40.76,93.71-43.3v31.72A16,16,0,0,0,159.12,214l11,7.33A16,16,0,0,0,194.5,212l11.77-44.36A48.07,48.07,0,0,0,248,120ZM48,199.93V40h0c42.81,35.91,86.63,45,104,47.24v65.48C134.65,155,90.84,164.07,48,199.93Zm131,8,0,.11-11-7.33V168h21.6ZM200,152H168V88h32a32,32,0,1,1,0,64Z"/>',
+  microphone:     '<path d="M128,176a48.05,48.05,0,0,0,48-48V64a48,48,0,0,0-96,0v64A48.05,48.05,0,0,0,128,176ZM96,64a32,32,0,0,1,64,0v64a32,32,0,0,1-64,0Zm40,143.6V240a8,8,0,0,1-16,0V207.6A80.11,80.11,0,0,1,48,128a8,8,0,0,1,16,0,64,64,0,0,0,128,0,8,8,0,0,1,16,0A80.11,80.11,0,0,1,136,207.6Z"/>',
   eyeSlash:       '<path d="M53.92,34.62A8,8,0,1,0,42.08,45.38L61.32,66.55C25,88.84,9.38,123.2,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208a127.11,127.11,0,0,0,52.07-10.83l22,24.21a8,8,0,1,0,11.84-10.76Zm47.33,75.84,41.67,45.85a32,32,0,0,1-41.67-45.85ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.16,133.16,0,0,1,25,128c4.69-8.79,19.66-33.39,47.35-49.38l18,19.75a48,48,0,0,0,63.66,70l14.73,16.2A112,112,0,0,1,128,192Zm6-95.43a8,8,0,0,1,3-15.72,48.16,48.16,0,0,1,38.77,42.64,8,8,0,0,1-7.22,8.71,6.39,6.39,0,0,1-.75,0,8,8,0,0,1-8-7.26A32.09,32.09,0,0,0,134,96.57Zm113.28,34.69c-.42.94-10.55,23.37-33.36,43.8a8,8,0,1,1-10.67-11.92A132.77,132.77,0,0,0,231.05,128a133.15,133.15,0,0,0-23.12-30.77C185.67,75.19,158.78,64,128,64a118.37,118.37,0,0,0-19.36,1.57A8,8,0,1,1,106,49.79,134,134,0,0,1,128,48c34.88,0,66.57,13.26,91.66,38.35,18.83,18.83,27.3,37.62,27.65,38.41A8,8,0,0,1,247.31,131.26Z"/>',
 };
 
@@ -139,7 +140,7 @@ window.fetch = async function(url, options = {}) {
 // data-stop — bosish ota elementlarga o'tmaydi (oldingi event.stopPropagation() o'rniga).
 // Capture bosqichida ushlanadi: ota elementlarning o'z click listenerlaridan oldin ishlaydi
 const CLICK_ACTIONS = {
-  openTxPage, openDebtsPage, openRatesPage, openWalletsPage, openHomeListPage, loadRatesPage, closeTxPage, openTxDetail, closeTxDetail,
+  openTxPage, openDebtsPage, openRatesPage, openWalletsPage, openHomeListPage, loadRatesPage, closeTxPage, goHome, openTxDetail, closeTxDetail,
   openModal, closeModal, openCategoryManager, openWeekdayTxFilter,
   openRepayModal, deleteDebt, deleteWallet, deleteMember, openEditWallet, loadWalletPageData,
   openRecurringModal, deleteRecurring, openGoalModal, deleteGoal, fundGoal,
@@ -270,6 +271,86 @@ function readAmount(id) {
   return Number.isFinite(n) ? Math.round(n * 100) / 100 : NaN;
 }
 
+// Miqdor maydonlari (data-amount): yozilayotganda xonalarga ajraladi — 10 000, 1 000 000, 12 650,45.
+// type="number" bo'sh joy ko'rsatolmaydi, shuning uchun maydon matnli; lekin el.value o'qilganda toza son ("1000000"),
+// yozilganda (el.value = 35000.00) o'zi formatlanadi — readAmount() va qolgan kod o'zgarmaydi
+const _nativeValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+const AMOUNT_MAX_DIGITS = 13;  // server chegarasi 10^12
+
+function amountRaw(text) {
+  return String(text ?? '').replace(/\s/g, '').replace(',', '.');
+}
+
+// Yozilgan matn -> ko'rinish: faqat raqam va bitta kasr belgisi (2 xonagacha), butun qismi uchtadan ajratiladi
+function formatAmountText(text) {
+  let s = String(text ?? '').replace(/[^\d.,]/g, '');
+  const sep = s.search(/[.,]/);
+  let whole = sep < 0 ? s : s.slice(0, sep);
+  const frac = sep < 0 ? null : s.slice(sep + 1).replace(/[.,]/g, '').slice(0, 2);
+  whole = whole.replace(/^0+(?=\d)/, '').slice(0, AMOUNT_MAX_DIGITS);
+  if (frac !== null && !whole) whole = '0';
+  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return frac === null ? grouped : `${grouped},${frac}`;
+}
+
+// Dasturdan berilgan son (serverdan "35000.00") — ortiqcha nollarsiz
+function formatAmountValue(value) {
+  const raw = amountRaw(value);
+  if (raw === '') return '';
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return formatAmountText(raw);
+  const fixed = Math.round(n * 100) % 100 === 0 ? String(Math.trunc(n)) : n.toFixed(2);
+  return formatAmountText(fixed);
+}
+
+// type="number" dagi min/max tekshiruvi o'rniga: noto'g'ri bo'lsa forma yuborilmaydi va brauzer xabar ko'rsatadi
+function validateAmountInput(el) {
+  const raw = el.value;
+  const n = Number(raw);
+  let msg = '';
+  if (raw && !Number.isFinite(n)) msg = 'Faqat son kiriting';
+  else if (raw && el.min !== '' && n < Number(el.min)) msg = Number(el.min) > 0 ? "Miqdor 0 dan katta bo'lsin" : "Miqdor manfiy bo'lmasin";
+  else if (raw && el.max !== '' && n > Number(el.max)) msg = `Miqdor ${formatNumber(el.max)} dan oshmasin`;
+  el.setCustomValidity(msg && (window.i18n?.t(msg) || msg));
+}
+
+function enhanceAmountInput(el) {
+  Object.defineProperty(el, 'value', {
+    configurable: true,
+    get() { return amountRaw(_nativeValue.get.call(el)); },
+    set(v) {
+      _nativeValue.set.call(el, formatAmountValue(v));
+      validateAmountInput(el);
+    },
+  });
+  // Xona orasidagi bo'sh joyni o'chirish befoyda (darhol qaytadi) — Backspace/Delete undan keyingi raqamni o'chiradi
+  el.addEventListener('keydown', (e) => {
+    if ((e.key !== 'Backspace' && e.key !== 'Delete') || el.selectionStart !== el.selectionEnd) return;
+    const shown = _nativeValue.get.call(el);
+    const pos = el.selectionStart;
+    if (e.key === 'Backspace' && shown[pos - 1] === ' ') el.setSelectionRange(pos - 1, pos - 1);
+    if (e.key === 'Delete' && shown[pos] === ' ') el.setSelectionRange(pos + 1, pos + 1);
+  });
+  el.addEventListener('input', () => {
+    const shown = _nativeValue.get.call(el);
+    // Kursor joyi: undan chapdagi raqam/kasr belgilari soni saqlanadi (bo'sh joylar qo'shilsa ham siljimaydi)
+    const caret = el.selectionStart ?? shown.length;
+    const keep = shown.slice(0, caret).replace(/[^\d.,]/g, '').length;
+    const formatted = formatAmountText(shown);
+    if (formatted !== shown) {
+      _nativeValue.set.call(el, formatted);
+      let pos = 0;
+      for (let seen = 0; pos < formatted.length && seen < keep; pos++) {
+        if (/[\d,]/.test(formatted[pos])) seen++;
+      }
+      try { el.setSelectionRange(pos, pos); } catch (e) { /* fokussiz maydon */ }
+    }
+    validateAmountInput(el);
+  });
+  el.value = _nativeValue.get.call(el);  // HTML dagi boshlang'ich qiymat (value="100") ham formatlansin
+}
+document.querySelectorAll('input[data-amount]').forEach(enhanceAmountInput);
+
 // Har xil valyutadagi summalarni qo'shib bo'lmaydi: { UZS: 1000, USD: 5 } -> "1 000 UZS + 5 USD"
 function sumByCurrency(items, amountOf, currencyOf) {
   const totals = {};
@@ -317,7 +398,7 @@ function warnMissingRates(codes) {
   const fresh = (codes || []).filter(c => !_warnedMissingRates.has(c));
   if (!fresh.length) return;
   fresh.forEach(c => _warnedMissingRates.add(c));
-  showToast(`${fresh.join(', ')} kursini aniqlab bo'lmadi — bu valyutadagi summalar statistikaga qo'shilmadi`, 'error');
+  showToast(`${fresh.join(', ')} kursini aniqlab bo'lmadi — bu valyutadagi miqdorlar hisobotga qo'shilmadi`, 'error');
 }
 
 function debtCurrency(d) {
@@ -517,7 +598,7 @@ function applyBalanceVisibility() {
     eyeShow.style.display = hidden ? 'none' : 'block';
     eyeHide.style.display = hidden ? 'block' : 'none';
   }
-  btn.title = hidden ? "Balansni ko'rsatish" : 'Balansni yashirish';
+  btn.title = hidden ? "Qoldiqni ko'rsatish" : 'Qoldiqni yashirish';
 }
 document.getElementById('btnToggleBalance')?.addEventListener('click', () => {
   balanceHidden = !balanceHidden;
@@ -611,6 +692,7 @@ function closeModal(id) {
   if (!el) return;
   const hadFocus = el.contains(document.activeElement);
   el.classList.remove('active');
+  if (id === 'modalTransfer') unlockTransferTarget();
   if (el._onClose) el._onClose();
   if (hadFocus && el._returnFocus && document.contains(el._returnFocus)) el._returnFocus.focus();
   el._returnFocus = null;
@@ -1236,7 +1318,7 @@ function renderHeroWallets() {
   // Hamyon bitta bo'lsa umumiy balans bilan bir xil bo'ladi: ko'rsatilmaydi
   if (state.wallets.length < 2) { box.innerHTML = ''; return; }
   box.innerHTML = state.wallets.map(w => `
-    <button type="button" class="hero-wallet-cell" data-wallet-id="${w.id}" title="${escapeHtml(w.name)}: operatsiyalarni ko'rish">
+    <button type="button" class="hero-wallet-cell" data-wallet-id="${w.id}" title="${escapeHtml(w.name)}: amallarni ko'rish">
       <span class="hero-wallet-name">${icon('card')}<span>${escapeHtml(w.name)}</span></span>
       <span class="hero-wallet-amount">${formatNumber(w.summa)} <small>${escapeHtml(w.currency)}</small></span>
     </button>`).join('');
@@ -1244,7 +1326,7 @@ function renderHeroWallets() {
   renderBalanceExtra();
 }
 
-// Bosh sahifadagi "Hamyonlarim" kartochkasida nechta hamyon ko'rinadi; qolganlari "Barcha hamyonlar" sahifasida
+// Bosh sahifadagi "Hamyonlar" kartochkasida nechta hamyon ko'rinadi; qolganlari "Barcha hamyonlar" sahifasida
 const HOME_WALLETS_LIMIT = 2;
 
 function renderWallets() {
@@ -1259,7 +1341,7 @@ function renderWallets() {
     return;
   }
 
-  // Qolgan hamyonlar — sarlavha ("Hamyonlarim ›") bosilganda ochiladigan sahifada
+  // Qolgan hamyonlar — sarlavha ("Hamyonlar ›") bosilganda ochiladigan sahifada
   container.innerHTML = state.wallets.slice(0, HOME_WALLETS_LIMIT).map(walletCardHtml).join('');
 }
 
@@ -1274,16 +1356,16 @@ function renderAllWalletsPage() {
 
 function walletCardHtml(w) {
   return `
-    <div class="wallet-compact-card is-clickable" data-wallet-id="${w.id}" role="button" tabindex="0" title="${escapeHtml(w.name)}: operatsiyalarni ko'rish va tahrirlash">
+    <div class="wallet-compact-card is-clickable" data-wallet-id="${w.id}" role="button" tabindex="0" title="${escapeHtml(w.name)}: amallarni ko'rish va tahrirlash">
       <div class="wallet-compact-info">
-        <div class="wallet-compact-name" style="font-weight: 500; font-size: 0.95rem; color: var(--text-main);">${icon('card')} ${escapeHtml(w.name)}</div>
-        <div style="font-size: 0.75rem; color: var(--text-subtle);">${escapeHtml(w.currency)}</div>
+        <div class="wallet-compact-name" style="font-weight: 500; font-size: 0.95rem; color: var(--text-main);">${icon(w.is_goal ? 'target' : 'card')} ${escapeHtml(w.name)}</div>
+        <div style="font-size: 0.75rem; color: var(--text-subtle);">${w.is_goal ? '<span>Maqsad hamyoni</span> · ' : ''}${escapeHtml(w.currency)}</div>
       </div>
       <div class="wallet-compact-side" style="display: flex; align-items: center; gap: 10px;">
         <div style="font-weight: 600; font-size: 1.05rem; color: var(--text-main);">
           ${formatNumber(w.summa)} <span style="font-size: 0.8rem; color: var(--text-muted);">${escapeHtml(w.currency)}</span>
         </div>
-        ${state.wallets.length > 1 ? `
+        ${state.wallets.length > 1 && !w.is_goal ? `
           <button class="btn-icon" style="width: 24px; height: 24px; font-size: 0.72rem; opacity: 0.6;" title="Hamyonni o'chirish" data-action="deleteWallet" data-stop data-args="${actionArgs(w.id)}">${icon('trash')}</button>
         ` : ''}
       </div>
@@ -1296,12 +1378,12 @@ function renderMembers() {
   if (!container) return;
 
   if (state.members.length === 0) {
-    container.innerHTML = `<p style="color: var(--text-subtle); font-size: 0.85rem; padding: 6px 0;">A'zo qo'shilmagan — harajat qilganda "Kimga?" savoli ko'rinmaydi</p>`;
+    container.innerHTML = `<p style="color: var(--text-subtle); font-size: 0.85rem; padding: 6px 0;">A'zo qo'shilmagan — xarajat qilganda "Kimga?" savoli ko'rinmaydi</p>`;
     return;
   }
 
   container.innerHTML = state.members.map(m => `
-    <div class="member-compact-card is-clickable" data-member-id="${m.id}" data-member-name="${escapeHtml(m.name)}" title="${escapeHtml(m.name)}ga sarflangan harajatlarni ko'rish">
+    <div class="member-compact-card is-clickable" data-member-id="${m.id}" data-member-name="${escapeHtml(m.name)}" title="${escapeHtml(m.name)}ga sarflangan xarajatlarni ko'rish">
       <div style="font-weight: 500; font-size: 0.95rem; color: var(--text-main);">${memberIcon(m.kind)} ${escapeHtml(m.name)}</div>
       <button class="btn-icon" style="width: 24px; height: 24px; font-size: 0.72rem; opacity: 0.6;" title="A'zoni o'chirish" data-action="deleteMember" data-stop data-args="${actionArgs(m.id)}">${icon('trash')}</button>
     </div>
@@ -1347,14 +1429,14 @@ function _buildTxList(filter = 'all', source = state) {
     source.expenses.forEach(e => {
       const key = `expense_${e.id}`;
       _txDetailMap[key] = e;
-      list.push({ type: 'expense', key, id: e.id, title: e.category_name || 'Harajat', amount: e.summa, currency: e.wallet_currency, wallet: e.wallet_name || 'Hamyon', date: e.date, icon: 'expenseArrow' });
+      list.push({ type: 'expense', key, id: e.id, title: e.category_name || 'Chiqim', amount: e.summa, currency: e.wallet_currency, wallet: e.wallet_name || 'Hamyon', date: e.date, icon: 'expenseArrow' });
     });
   }
   if (filter === 'all' || filter === 'incomes') {
     source.incomes.forEach(i => {
       const key = `income_${i.id}`;
       _txDetailMap[key] = i;
-      list.push({ type: 'income', key, id: i.id, title: i.category_name || 'Daromad', amount: i.summa, currency: i.wallet_currency, wallet: i.wallet_name || 'Hamyon', date: i.date, icon: 'incomeArrow' });
+      list.push({ type: 'income', key, id: i.id, title: i.category_name || 'Kirim', amount: i.summa, currency: i.wallet_currency, wallet: i.wallet_name || 'Hamyon', date: i.date, icon: 'incomeArrow' });
     });
   }
   if (filter === 'all' || filter === 'transfers') {
@@ -1387,7 +1469,7 @@ function openWeekdayTxFilter(weekdayCode, weekdayFullName) {
   _loadTxFilterModal({
     title: `${weekdayFullName} kuni`,
     url: `${API_BASE}/expenses/?weekday=${weekdayCode}`,
-    emptyText: `${weekdayFullName} kuni harajat topilmadi`
+    emptyText: `${weekdayFullName} kuni xarajat topilmadi`
   });
 }
 
@@ -1395,7 +1477,7 @@ function openMemberTxFilter(memberId, memberName) {
   _loadTxFilterModal({
     title: memberName,
     url: `${API_BASE}/expenses/?member=${memberId}`,
-    emptyText: `${memberName} uchun harajat topilmadi`
+    emptyText: `${memberName} uchun xarajat topilmadi`
   });
 }
 
@@ -1435,7 +1517,7 @@ async function _loadTxFilterModal({ title, url, emptyText }) {
     .map(e => {
       const key = `expense_${e.id}`;
       _txDetailMap[key] = e;
-      return { type: 'expense', key, id: e.id, title: e.category_name || 'Harajat', amount: e.summa, currency: e.wallet_currency, wallet: e.wallet_name || 'Hamyon', date: e.date, icon: 'expenseArrow' };
+      return { type: 'expense', key, id: e.id, title: e.category_name || 'Chiqim', amount: e.summa, currency: e.wallet_currency, wallet: e.wallet_name || 'Hamyon', date: e.date, icon: 'expenseArrow' };
     })
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
@@ -1459,7 +1541,7 @@ function renderTransactions() {
   const list = _buildTxList('all').slice(0, 3);
 
   if (list.length === 0) {
-    container.innerHTML = `<div style="text-align:center;padding:18px 0;color:var(--text-subtle);font-size:0.85rem;">Hozircha operatsiyalar yo'q</div>`;
+    container.innerHTML = `<div style="text-align:center;padding:18px 0;color:var(--text-subtle);font-size:0.85rem;">Hozircha amallar yo'q</div>`;
     return;
   }
   container.innerHTML = list.map(_txItemHtml).join('');
@@ -1484,10 +1566,10 @@ let _monthLoadSeq = 0;
 
 // Navbar bo'limlari uchun sarlavhalar
 const TX_FILTER_TITLES = {
-  all: 'Barcha Operatsiyalar',
-  incomes: 'Barcha Kirimlar',
-  expenses: 'Barcha Chiqimlar',
-  transfers: "Barcha O'tkazmalar",
+  all: 'Barcha amallar',
+  incomes: 'Barcha kirimlar',
+  expenses: 'Barcha chiqimlar',
+  transfers: "Barcha o'tkazmalar",
 };
 
 // Navbarda ochiq bo'lim (Moliya / Kirim / Chiqim / Qarz / Kurs) belgilanadi. null — bosh sahifa va undan ochiladigan
@@ -1526,7 +1608,7 @@ function openTxPage(mode = 'transactions', filter = 'all') {
   _showTxPageSection(isStats ? 'statsOverviewSection' : 'statsOperationsSection');
   _walletPageId = null;
   _setTxPageMonthNav(true);
-  document.getElementById('txPageTitleText').textContent = isStats ? 'Oylik Statistika' : (TX_FILTER_TITLES[filter] || TX_FILTER_TITLES.all);
+  document.getElementById('txPageTitleText').textContent = isStats ? 'Oylik hisobot' : (TX_FILTER_TITLES[filter] || TX_FILTER_TITLES.all);
   document.getElementById('txPageTitleIcon').innerHTML = icon(isStats ? 'chart' : 'receipt');
 
   document.getElementById('txPageOverlay').classList.add('open');
@@ -1562,9 +1644,9 @@ function openDebtsPage() {
 // Bosh sahifada bu bo'limlar faqat sarlavha (kartochka bosilsa shu sahifa ochiladi). Ro'yxat konteynerlari
 // (#recurringList, #goalsList, #membersList) sahifa ichida turadi — render va bosish logikasi o'zgarmagan
 const HOME_LIST_PAGES = {
-  recurring: { title: "Takroriy to'lovlar", icon: 'repeat', items: () => state.recurring },
-  goals:     { title: 'Maqsadlarim',        icon: 'target', items: () => state.goals },
-  members:   { title: "A'zolarim",          icon: 'members', items: () => state.members },
+  recurring: { title: "Doimiy to'lovlar", icon: 'repeat', items: () => state.recurring },
+  goals:     { title: 'Maqsadlar',        icon: 'target', items: () => state.goals },
+  members:   { title: "A'zolar",          icon: 'members', items: () => state.members },
 };
 let _homeListKind = null;
 
@@ -1594,9 +1676,9 @@ function updateHomeListCount() {
   document.getElementById('txPageMonth').textContent = `${(HOME_LIST_PAGES[_homeListKind].items() || []).length} ta`;
 }
 
-// Faqat sarlavhali kartochkalar (Takroriy to'lovlar, Maqsadlarim, A'zolarim) klaviaturada ham ochiladi
+// Faqat sarlavhali kartochkalar (Takroriy to'lovlar, Maqsadlarim, A'zolarim) va Hamyonlar kartochkasi klaviaturada ham ochiladi
 document.addEventListener('keydown', (e) => {
-  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches?.('.card-header-only, .card-title-link')) {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches?.('.card-header-only, #walletsCard')) {
     e.preventDefault();
     e.target.click();
   }
@@ -1609,7 +1691,7 @@ function openWalletsPage() {
   _showTxPageSection('statsWalletsSection');
   _walletPageId = null;
   _setTxPageMonthNav(false);
-  document.getElementById('txPageTitleText').textContent = 'Hamyonlarim';
+  document.getElementById('txPageTitleText').textContent = 'Hamyonlar';
   document.getElementById('txPageTitleIcon').innerHTML = icon('wallet');
 
   document.getElementById('txPageOverlay').classList.add('open');
@@ -1856,7 +1938,7 @@ function renderDebtPageList() {
 
   container.innerHTML = pageSlice('debts', sorted).map(d => {
     const isGive = d.debt_type === 'give';
-    const typeLabel = isGive ? 'Berdim' : 'Oldim';
+    const typeLabel = isGive ? 'Qarz berdim' : 'Qarz oldim';
     const typeColor = isGive ? 'var(--emerald)' : 'var(--amber)';
     const paidPercent = d.summa > 0 ? Math.min(100, Math.round((d.paid_summa || 0) / d.summa * 100)) : 0;
 
@@ -1972,14 +2054,14 @@ function _walletPageItems(filter) {
     d.incomes.forEach(i => {
       const key = `income_${i.id}`;
       _txDetailMap[key] = i;
-      list.push({ type: 'income', key, id: i.id, title: i.category_name || 'Daromad', amount: i.summa, currency: i.wallet_currency, wallet: i.wallet_name || 'Hamyon', date: i.date, icon: 'incomeArrow' });
+      list.push({ type: 'income', key, id: i.id, title: i.category_name || 'Kirim', amount: i.summa, currency: i.wallet_currency, wallet: i.wallet_name || 'Hamyon', date: i.date, icon: 'incomeArrow' });
     });
   }
   if (filter === 'all' || filter === 'expenses') {
     d.expenses.forEach(e => {
       const key = `expense_${e.id}`;
       _txDetailMap[key] = e;
-      list.push({ type: 'expense', key, id: e.id, title: e.category_name || 'Harajat', amount: e.summa, currency: e.wallet_currency, wallet: e.wallet_name || 'Hamyon', date: e.date, icon: 'expenseArrow' });
+      list.push({ type: 'expense', key, id: e.id, title: e.category_name || 'Chiqim', amount: e.summa, currency: e.wallet_currency, wallet: e.wallet_name || 'Hamyon', date: e.date, icon: 'expenseArrow' });
     });
   }
   if (filter === 'all' || filter === 'transfers') {
@@ -2024,18 +2106,18 @@ function renderWalletPage() {
   const created = formatUzDate(wallet.created_at, { year: true });
   document.getElementById('walletInfoCard').innerHTML = `
     <div class="wallet-info-main">
-      <div class="wallet-info-icon">${icon('wallet')}</div>
+      <div class="wallet-info-icon">${icon(wallet.is_goal ? 'target' : 'wallet')}</div>
       <div>
         <div class="wallet-info-name">${escapeHtml(wallet.name)}</div>
-        <div class="wallet-info-sub">Valyuta: ${cur}${created ? ` · Yaratilgan: ${created}` : ''}</div>
+        <div class="wallet-info-sub">${wallet.is_goal ? '<span>Maqsad hamyoni</span> · ' : ''}Valyuta: ${cur}${created ? ` · Yaratilgan: ${created}` : ''}</div>
       </div>
     </div>
     <div class="wallet-info-side">
       <div class="wallet-info-balance">
-        <span class="debt-stat-label">Joriy balans</span>
+        <span class="debt-stat-label">Joriy qoldiq</span>
         <b>${formatNumber(wallet.summa)} ${cur}</b>
       </div>
-      <button type="button" class="btn btn-subtle" data-action="openEditWallet">${icon('edit')} Tahrirlash</button>
+      ${wallet.is_goal ? '' : `<button type="button" class="btn btn-subtle" data-action="openEditWallet">${icon('edit')} Tahrirlash</button>`}
     </div>`;
 
   const statRow = document.getElementById('walletStatRow');
@@ -2052,7 +2134,7 @@ function renderWalletPage() {
     statRow.innerHTML = '';
     clearListPager('wallet');
     listEl.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-subtle);font-size:0.88rem;">
-      Operatsiyalarni yuklab bo'lmadi. <button type="button" class="btn btn-subtle btn-xs" data-action="loadWalletPageData">Qayta urinish</button></div>`;
+      Amallarni yuklab bo'lmadi. <button type="button" class="btn btn-subtle btn-xs" data-action="loadWalletPageData">Qayta urinish</button></div>`;
     return;
   }
 
@@ -2060,22 +2142,22 @@ function renderWalletPage() {
   const count = d.incomes.length + d.expenses.length + d.transfersOut.length + d.transfersIn.length + d.debts.length;
   statRow.innerHTML = `
     <div class="debt-stat-box">
-      <span class="debt-stat-label">Daromadlar</span>
+      <span class="debt-stat-label">Kirimlar</span>
       <span class="debt-stat-value" style="color:var(--emerald);">+${formatNumber(sum(d.incomes))} ${cur}</span>
     </div>
     <div class="debt-stat-box">
-      <span class="debt-stat-label">Harajatlar</span>
+      <span class="debt-stat-label">Chiqimlar</span>
       <span class="debt-stat-value" style="color:var(--rose);">-${formatNumber(sum(d.expenses))} ${cur}</span>
     </div>
     <div class="debt-stat-box">
-      <span class="debt-stat-label">Operatsiyalar soni</span>
+      <span class="debt-stat-label">Amallar soni</span>
       <span class="debt-stat-value">${count} ta</span>
     </div>`;
 
   const items = _walletPageItems(_walletPageFilter);
   if (!items.length) {
     clearListPager('wallet');
-    const text = _walletPageFilter === 'all' ? "Bu hamyon bilan hali operatsiyalar yo'q" : "Bu bo'limda operatsiyalar yo'q";
+    const text = _walletPageFilter === 'all' ? "Bu hamyon bilan hali amallar yo'q" : "Bu bo'limda amallar yo'q";
     listEl.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-subtle);font-size:0.88rem;">${text}</div>`;
     return;
   }
@@ -2087,6 +2169,7 @@ function openEditWallet() {
   if (!wallet) return;
   document.getElementById('editWalletName').value = wallet.name;
   document.getElementById('editWalletCurrency').value = wallet.currency;
+  document.getElementById('editWalletSumma').value = wallet.summa;
   openModal('modalEditWallet');
   document.getElementById('editWalletName').focus();
 }
@@ -2098,6 +2181,7 @@ onSubmitOnce('formEditWallet', async (e) => {
   const payload = {
     name: document.getElementById('editWalletName').value.trim(),
     currency: document.getElementById('editWalletCurrency').value.trim().toUpperCase(),
+    summa: readAmount('editWalletSumma'),
   };
 
   try {
@@ -2171,6 +2255,15 @@ function closeTxPage() {
     return;
   }
   _hideTxPage();
+}
+
+// Navbardagi "Moliya": ochiq bo'lim sahifasi yopiladi, bosh sahifa eng tepaga chiqadi va ma'lumotlar serverdan
+// yangilanadi — pastga tortib yangilashdagi logotip kapsulasi aylanib turadi (_ptrRefresh)
+function goHome() {
+  if (document.getElementById('txPageOverlay')?.classList.contains('open')) closeTxPage();
+  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+  _ptrRefresh();
 }
 
 function _hideTxPage() {
@@ -2254,7 +2347,7 @@ function _updatePeriodLabel() {
   const next = document.getElementById('btnNextMonth');
   if (next) next.disabled = _isPeriodAtPresent();
   if (_txPageMode === 'stats') {
-    document.getElementById('txPageTitleText').textContent = _statsRange ? 'Statistika' : 'Oylik Statistika';
+    document.getElementById('txPageTitleText').textContent = _statsRange ? 'Hisobot' : 'Oylik hisobot';
   }
 }
 
@@ -2520,7 +2613,7 @@ function renderTxPageList() {
   if (_monthOps.error) {
     clearListPager('tx');
     container.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-subtle);font-size:0.88rem;">
-      Operatsiyalarni yuklab bo'lmadi. <button type="button" class="btn btn-subtle btn-xs" data-action="loadMonthlyStats">Qayta urinish</button></div>`;
+      Amallarni yuklab bo'lmadi. <button type="button" class="btn btn-subtle btn-xs" data-action="loadMonthlyStats">Qayta urinish</button></div>`;
     return;
   }
 
@@ -2528,7 +2621,7 @@ function renderTxPageList() {
 
   if (list.length === 0) {
     clearListPager('tx');
-    container.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-subtle);font-size:0.88rem;">Bu filtr bo'yicha operatsiyalar yo'q</div>`;
+    container.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-subtle);font-size:0.88rem;">Bu filtr bo'yicha amallar yo'q</div>`;
     return;
   }
 
@@ -2579,7 +2672,7 @@ function openTxDetail(key, type, id) {
   const raw = _txDetailMap[key];
   if (!raw) return;
 
-  const typeLabels = { expense: 'Harajat', income: 'Daromad', transfer: "O'tkazma" };
+  const typeLabels = { expense: 'Chiqim', income: 'Kirim', transfer: "O'tkazma" };
   const icons      = { expense: 'expense', income: 'income', transfer: 'transfer' };
   const sign       = type === 'income' ? '+' : type === 'transfer' ? '' : '-';
 
@@ -2589,8 +2682,8 @@ function openTxDetail(key, type, id) {
   badge.className = `detail-type-badge ${type}`;
 
   const titleEl = document.getElementById('detailTitle');
-  if (type === 'expense')  titleEl.textContent = raw.category_name || 'Harajat';
-  if (type === 'income')   titleEl.textContent = raw.category_name || 'Daromad';
+  if (type === 'expense')  titleEl.textContent = raw.category_name || 'Chiqim';
+  if (type === 'income')   titleEl.textContent = raw.category_name || 'Kirim';
   if (type === 'transfer') titleEl.textContent = `${raw.from_wallet_name} → ${raw.to_wallet_name}`;
 
   // Amount
@@ -2616,7 +2709,7 @@ function openTxDetail(key, type, id) {
   const fullDate = formatUzDate(raw.date, { year: true });
 
   if (type === 'expense') {
-    addRow(icon('tag'), 'Kategoriya', raw.category_name);
+    addRow(icon('tag'), 'Turkum', raw.category_name);
     addRow(icon('wallet'), 'Hamyon', raw.wallet_name);
     addRow(memberIcon(raw.member_kind), 'Kimga', raw.member_name);
     addRow(icon('note'), 'Izoh', raw.description);
@@ -2694,7 +2787,7 @@ function renderDebts() {
     return;
   }
 
-  // Bosh sahifada nechta hamyon bo'lsa, shuncha qarz (yonidagi "Hamyonlarim" kartochkasi bilan bo'yi teng turadi).
+  // Bosh sahifada nechta hamyon bo'lsa, shuncha qarz (yonidagi "Hamyonlar" kartochkasi bilan bo'yi teng turadi).
   // Avval to'lanmaganlar (shoshilinchi tepada, keyin yangi yozilgani), joy qolsa — yopilganlar, oxirgi
   // harakati (to'lov) bo'yicha yangisi birinchi. Hammasi "Qarzlar tarixi"da
   const limit = Math.max(1, Math.min(state.wallets.length, HOME_WALLETS_LIMIT));
@@ -2707,7 +2800,7 @@ function renderDebts() {
 
   container.innerHTML = latest.map(d => {
     const isGive = d.debt_type === 'give';
-    const typeLabel = isGive ? 'Berdim' : 'Oldim';
+    const typeLabel = isGive ? 'Qarz berdim' : 'Qarz oldim';
     const typeColor = isGive ? 'var(--emerald)' : 'var(--amber)';
 
     return `
@@ -2738,6 +2831,13 @@ document.getElementById('debtsCard')?.addEventListener('click', (e) => {
   openDebtsPage();
 });
 
+// Hamyonlar kartochkasining istalgan joyiga bosilsa barcha hamyonlar ochiladi. Tugmalar va hamyon qatorlari
+// o'z handleriga ega — ularni o'tkazib yuboramiz
+document.getElementById('walletsCard')?.addEventListener('click', (e) => {
+  if (e.target.closest('button, a, input, select, [data-action], .wallet-compact-card')) return;
+  openWalletsPage();
+});
+
 // ==========================================
 // DROPDOWN POPULATORS
 // ==========================================
@@ -2752,21 +2852,21 @@ function populateWalletDropdowns() {
     'repayWalletSelect'
   ];
 
+  // Maqsad hamyonidan pul chiqmaydi va unga faqat O'tkazma tushadi — u faqat "Qaysi hamyonga" ro'yxatida
+  const spendable = spendableWallets();
   dropdownIds.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
+    // "Qaysi hamyonga" ro'yxati "Qaysi hamyondan" dan keyin quriladi — tanlangan chiqim hamyoni unda bo'lmaydi
+    if (id === 'transferToWallet') {
+      syncTransferTargets();
+      return;
+    }
 
     const currentVal = el.value;
-    const optionsHtml = state.wallets.map(w => `
-      <option value="${w.id}">${escapeHtml(w.name)} (${formatMoney(w.summa, w.currency)})</option>
-    `).join('');
-
-    el.innerHTML = optionsHtml;
-
+    el.innerHTML = spendable.map(walletOptionHtml).join('');
     if (currentVal && Array.from(el.options).some(o => o.value === currentVal)) {
       el.value = currentVal;
-    } else if (id === 'transferToWallet' && state.wallets.length > 1) {
-      el.value = state.wallets[1].id;
     }
   });
 
@@ -2778,8 +2878,8 @@ function populateWalletDropdowns() {
 
 // Summa yorlig'iga tanlangan hamyon valyutasi qo'shiladi: "Summa (USD) *"
 const AMOUNT_LABELS = [
-  { selectId: 'expenseWalletSelect', labelId: 'expenseSummaLabel', text: 'Summa' },
-  { selectId: 'incomeWalletSelect', labelId: 'incomeSummaLabel', text: 'Kirim Summasi' },
+  { selectId: 'expenseWalletSelect', labelId: 'expenseSummaLabel', text: 'Miqdor' },
+  { selectId: 'incomeWalletSelect', labelId: 'incomeSummaLabel', text: 'Kirim miqdori' },
 ];
 function updateAmountLabels() {
   AMOUNT_LABELS.forEach(({ selectId, labelId, text }) => {
@@ -2796,8 +2896,30 @@ AMOUNT_LABELS.forEach(({ selectId }) => {
 
 // Hamyon bitta bo'lsa, "Qaysi hamyondan/ga?" savolini yashiramiz — tanlov qilib
 // o'tirishning hojati yo'q, yagona hamyon avtomatik tanlanadi.
+function walletOptionHtml(w) {
+  return `<option value="${w.id}">${escapeHtml(w.name)} (${formatMoney(w.summa, w.currency)})</option>`;
+}
+
+// "Qaysi hamyonga" ro'yxati: "Qaysi hamyondan" da tanlangan hamyondan boshqa barcha hamyonlar (maqsad hamyonlari ham).
+// Bank → Bank kabi o'zidan o'ziga o'tkazmani tanlab bo'lmaydi; avvalgi tanlov iloji bo'lsa saqlanadi
+function syncTransferTargets() {
+  const from = document.getElementById('transferFromWallet');
+  const to = document.getElementById('transferToWallet');
+  if (!from || !to) return;
+  const keep = to.value;
+  to.innerHTML = state.wallets.filter(w => String(w.id) !== from.value).map(walletOptionHtml).join('');
+  if (keep && [...to.options].some(o => o.value === keep)) to.value = keep;
+  to._csSync?.();
+}
+
+// Xarajat, kirim, qarz va chiqim o'tkazmasi uchun tanlanadigan hamyonlar (maqsad hamyonlarisiz)
+function spendableWallets() {
+  return state.wallets.filter(w => !w.is_goal);
+}
+
 function updateSingleWalletFieldVisibility() {
-  const singleWallet = state.wallets.length === 1;
+  const spendable = spendableWallets();
+  const singleWallet = spendable.length === 1;
   [
     { groupId: 'expenseWalletGroup', selectId: 'expenseWalletSelect' },
     { groupId: 'incomeWalletGroup', selectId: 'incomeWalletSelect' },
@@ -2807,8 +2929,8 @@ function updateSingleWalletFieldVisibility() {
     if (!group || !select) return;
     group.style.display = singleWallet ? 'none' : '';
     select.required = !singleWallet;
-    if (singleWallet && state.wallets[0]) {
-      select.value = String(state.wallets[0].id);
+    if (singleWallet) {
+      select.value = String(spendable[0].id);
     }
   });
 }
@@ -2819,7 +2941,7 @@ function updateTransferButtonVisibility() {
   const btn = document.getElementById('btnOpenTransferModal');
   const grid = document.querySelector('.action-grid-row');
   if (!btn || !grid) return;
-  const hasEnoughWallets = state.wallets.length >= 2;
+  const hasEnoughWallets = state.wallets.length >= 2 && spendableWallets().length >= 1;
   btn.style.display = hasEnoughWallets ? '' : 'none';
   grid.classList.toggle('cols-3', !hasEnoughWallets);
 }
@@ -2847,7 +2969,7 @@ async function loadCategoryManager() {
     items = data.results || data;
   } catch (err) {
     console.error('Category manager fetch error:', err);
-    showToast("Toifalarni yuklab bo'lmadi", 'error');
+    showToast("Turkumlarni yuklab bo'lmadi", 'error');
   }
   if (kind !== _catKind) return; // foydalanuvchi boshqa tabga o'tib ketgan
   _catItems = items;
@@ -2863,11 +2985,11 @@ function renderCategoryManager() {
     ? visible.map(c => `
       <div class="cat-row">
         <input type="text" class="cat-name-input" data-cat-name="${c.id}" value="${escapeHtml(c.name)}"
-               maxlength="255" spellcheck="false" autocomplete="off" aria-label="Toifa nomi" title="Nomini o'zgartirish uchun bosing">
-        ${c.is_custom ? '<span class="cat-badge">Mening toifam</span>' : ''}
+               maxlength="255" spellcheck="false" autocomplete="off" aria-label="Turkum nomi" title="Nomini o'zgartirish uchun bosing">
+        ${c.is_custom ? '<span class="cat-badge">Mening turkumim</span>' : ''}
         <button type="button" class="btn-icon" title="O'chirish" data-cat-delete="${c.id}">${icon('trash')}</button>
       </div>`).join('')
-    : `<div class="cat-empty">Toifalar yo'q. Yuqoridan yangisini qo'shing.</div>`;
+    : `<div class="cat-empty">Turkumlar yo'q. Yuqoridan yangisini qo'shing.</div>`;
 
   document.getElementById('hiddenCategoriesBox').hidden = hidden.length === 0;
   document.getElementById('hiddenCatCount').textContent = hidden.length;
@@ -2905,10 +3027,10 @@ onSubmitOnce('formAddCategory', async (e) => {
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
       input.value = '';
-      showToast(`«${name}» toifasi qo'shildi`);
+      showToast(`«${name}» turkumi qo'shildi`);
       await refreshCategoryViews();
     } else {
-      showToast(extractErrorMessage(data, "Toifa qo'shishda xatolik"), 'error');
+      showToast(extractErrorMessage(data, "Turkum qo'shishda xatolik"), 'error');
     }
   } catch (err) {
     showToast(NETWORK_ERROR_MESSAGE, 'error');
@@ -2923,16 +3045,16 @@ document.getElementById('modalCategories')?.addEventListener('click', async (e) 
     const cat = _catItems.find(c => c.id === Number(delBtn.dataset.catDelete));
     if (!cat) return;
     const message = cat.is_custom
-      ? `«${cat.name}» toifasi o'chiriladi. Oldingi operatsiyalaringizda nomi saqlanib qoladi.`
-      : `«${cat.name}» umumiy toifa faqat sizning ro'yxatingizdan olib tashlanadi. Boshqa foydalanuvchilarga ta'sir qilmaydi, keyin qaytarishingiz mumkin.`;
+      ? `«${cat.name}» turkumi o'chiriladi. Oldingi amallaringizda nomi saqlanib qoladi.`
+      : `«${cat.name}» umumiy turkum faqat sizning ro'yxatingizdan olib tashlanadi. Boshqa foydalanuvchilarga ta'sir qilmaydi, keyin qaytarishingiz mumkin.`;
     if (!(await confirmDelete(message))) return;
     try {
       const res = await fetch(`${API_BASE}/${CATEGORY_API[_catKind]}/${cat.id}/`, { method: 'DELETE' });
       if (res.ok) {
-        showToast("Toifa o'chirildi");
+        showToast("Turkum o'chirildi");
         await refreshCategoryViews();
       } else {
-        showToast(extractErrorMessage(await res.json().catch(() => ({})), "Toifani o'chirishda xatolik"), 'error');
+        showToast(extractErrorMessage(await res.json().catch(() => ({})), "Turkumni o'chirishda xatolik"), 'error');
       }
     } catch (err) {
       showToast(NETWORK_ERROR_MESSAGE, 'error');
@@ -2943,10 +3065,10 @@ document.getElementById('modalCategories')?.addEventListener('click', async (e) 
     try {
       const res = await fetch(`${API_BASE}/${CATEGORY_API[_catKind]}/${Number(restoreBtn.dataset.catRestore)}/restore/`, { method: 'POST' });
       if (res.ok) {
-        showToast('Toifa qaytarildi');
+        showToast('Turkum qaytarildi');
         await refreshCategoryViews();
       } else {
-        showToast(extractErrorMessage(await res.json().catch(() => ({})), 'Toifani qaytarishda xatolik'), 'error');
+        showToast(extractErrorMessage(await res.json().catch(() => ({})), 'Turkumni qaytarishda xatolik'), 'error');
       }
     } catch (err) {
       showToast(NETWORK_ERROR_MESSAGE, 'error');
@@ -2977,11 +3099,11 @@ async function saveCategoryName(input) {
     });
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
-      showToast(`Toifa nomi «${name}» ga o'zgartirildi`);
+      showToast(`Turkum nomi «${name}» ga o'zgartirildi`);
       // Eski operatsiyalar va formalardagi tanlagichlarda ham yangi nom ko'rinishi uchun hammasi yangilanadi
       await Promise.all([loadCategoryManager(), refreshAll()]);
     } else {
-      showToast(extractErrorMessage(data, "Toifa nomini o'zgartirishda xatolik"), 'error');
+      showToast(extractErrorMessage(data, "Turkum nomini o'zgartirishda xatolik"), 'error');
       input.value = cat.name;
     }
   } catch (err) {
@@ -3017,7 +3139,7 @@ function populateExpenseCategoryDropdown() {
   if (!el) return;
   const previous = el.value;
   const options = [
-    '<option value="" disabled selected>-- Harajat toifasini tanlang --</option>',
+    '<option value="" disabled selected>-- Chiqim turkumini tanlang --</option>',
     ...state.expenseCategories.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`),
     '<option value="__custom__">Boshqa (o\'zingiz yozing...)</option>'
   ];
@@ -3031,7 +3153,7 @@ function populateIncomeCategoryDropdown() {
   if (!el) return;
   const previous = el.value;
   const options = [
-    '<option value="" disabled selected>-- Daromad manbayini tanlang --</option>',
+    '<option value="" disabled selected>-- Kirim manbayini tanlang --</option>',
     ...state.incomeCategories.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`),
     '<option value="__custom__">Boshqa (o\'zingiz yozing...)</option>'
   ];
@@ -3107,11 +3229,11 @@ function selectCreatedCategory(selectId, categoryId) {
 // Balans server tomonida sof farq bilan to'g'rilanadi (models.py: apply_wallet_changes)
 const TX_FORMS = {
   expense:  { modal: 'modalExpense',  form: 'formAddExpense',  api: 'expenses',
-              addTitle: 'Harajat Kiritish', editTitle: 'Harajatni tahrirlash', addSubmit: 'Saqlash' },
+              addTitle: 'Chiqim yozish', editTitle: 'Chiqimni tahrirlash', addSubmit: 'Saqlash' },
   income:   { modal: 'modalIncome',   form: 'formAddIncome',   api: 'incomes',
-              addTitle: 'Daromad Kiritish', editTitle: 'Daromadni tahrirlash', addSubmit: 'Kirimni Saqlash' },
+              addTitle: 'Kirim yozish', editTitle: 'Kirimni tahrirlash', addSubmit: 'Kirimni saqlash' },
   transfer: { modal: 'modalTransfer', form: 'formAddTransfer', api: 'transfers',
-              addTitle: "Hamyonlararo O'tkazma", editTitle: "O'tkazmani tahrirlash", addSubmit: "O'tkazish" },
+              addTitle: "Hamyondan hamyonga o'tkazma", editTitle: "O'tkazmani tahrirlash", addSubmit: "O'tkazish" },
 };
 // Tahrirlanayotgan yozuv: { type, id, raw } yoki null (yangi qo'shish)
 let _txEdit = null;
@@ -3215,7 +3337,7 @@ onSubmitOnce('formAddExpense', async (e) => {
   let categoryId = document.getElementById('expenseCategorySelect').value;
 
   if (!categoryId) {
-    showToast('Iltimos, harajat toifasini tanlang', 'error');
+    showToast('Iltimos, xarajat turkumini tanlang', 'error');
     return;
   }
 
@@ -3223,7 +3345,7 @@ onSubmitOnce('formAddExpense', async (e) => {
   if (categoryId === '__custom__') {
     const customName = document.getElementById('expenseCustomCategory').value.trim();
     if (!customName) {
-      showToast('Iltimos, harajat toifasi nomini yozing', 'error');
+      showToast('Iltimos, xarajat turkumi nomini yozing', 'error');
       return;
     }
 
@@ -3240,7 +3362,7 @@ onSubmitOnce('formAddExpense', async (e) => {
         selectCreatedCategory('expenseCategorySelect', categoryId);
       } else {
         const errData = await catRes.json().catch(() => ({}));
-        showToast(extractErrorMessage(errData, 'Kategoriya yaratishda xatolik'), 'error');
+        showToast(extractErrorMessage(errData, 'Turkum yaratishda xatolik'), 'error');
         return;
       }
     } catch (err) {
@@ -3265,14 +3387,14 @@ onSubmitOnce('formAddExpense', async (e) => {
     const res = await sendTx('expense', payload, document.getElementById('expenseDate')?.value);
 
     if (res.ok) {
-      showToast(editing ? "Harajat o'zgartirildi" : 'Harajat muvaffaqiyatli saqlandi!');
+      showToast(editing ? "Chiqim o'zgartirildi" : 'Chiqim muvaffaqiyatli saqlandi!');
       closeModal('modalExpense');
       e.target.reset();
       document.getElementById('expenseCustomCategoryGroup').style.display = 'none';
       refreshAll();
     } else {
       const err = await res.json().catch(() => ({}));
-      showToast(extractErrorMessage(err, 'Harajat saqlashda xatolik'), 'error');
+      showToast(extractErrorMessage(err, 'Chiqim saqlashda xatolik'), 'error');
     }
   } catch (error) {
     showToast(NETWORK_ERROR_MESSAGE, 'error');
@@ -3285,7 +3407,7 @@ onSubmitOnce('formAddIncome', async (e) => {
   let categoryId = document.getElementById('incomeCategorySelect').value;
 
   if (!categoryId) {
-    showToast('Iltimos, daromad manbayini tanlang', 'error');
+    showToast('Iltimos, kirim manbayini tanlang', 'error');
     return;
   }
 
@@ -3293,7 +3415,7 @@ onSubmitOnce('formAddIncome', async (e) => {
   if (categoryId === '__custom__') {
     const customName = document.getElementById('incomeCustomCategory').value.trim();
     if (!customName) {
-      showToast('Iltimos, daromad manbayi nomini yozing', 'error');
+      showToast('Iltimos, kirim manbayi nomini yozing', 'error');
       return;
     }
 
@@ -3331,14 +3453,14 @@ onSubmitOnce('formAddIncome', async (e) => {
     const res = await sendTx('income', payload, document.getElementById('incomeDate')?.value);
 
     if (res.ok) {
-      showToast(editing ? "Daromad o'zgartirildi" : 'Daromad muvaffaqiyatli saqlandi!');
+      showToast(editing ? "Kirim o'zgartirildi" : 'Kirim muvaffaqiyatli saqlandi!');
       closeModal('modalIncome');
       e.target.reset();
       document.getElementById('incomeCustomCategoryGroup').style.display = 'none';
       refreshAll();
     } else {
       const err = await res.json().catch(() => ({}));
-      showToast(extractErrorMessage(err, 'Daromad saqlashda xatolik'), 'error');
+      showToast(extractErrorMessage(err, 'Kirim saqlashda xatolik'), 'error');
     }
   } catch (error) {
     showToast(NETWORK_ERROR_MESSAGE, 'error');
@@ -3493,7 +3615,7 @@ function openRepayModal(debtId) {
   activeRepayDebtId = debtId;
   document.getElementById('repayPersonName').textContent = debt.person_name;
   document.getElementById('repayRemaining').textContent = formatMoney(debt.remaining_summa, debt.currency || 'UZS');
-  document.querySelector('label[for="repayAmount"]').textContent = `To'lov Summasi (${debt.currency || 'UZS'}) *`;
+  document.querySelector('label[for="repayAmount"]').textContent = `To'lov Miqdori (${debt.currency || 'UZS'}) *`;
   document.getElementById('repayAmount').max = debt.remaining_summa;
   document.getElementById('repayAmount').value = debt.remaining_summa;
   // Qarz valyutasidagi hamyon bo'lsa, shuni oldindan tanlaymiz
@@ -3554,7 +3676,7 @@ async function updateTransferCurrencyPreview() {
   const hint = document.getElementById('transferRateHint');
   if (!group || !toInput || !hint) return;
 
-  document.getElementById('transferSummaLabel').textContent = fromW ? `O'tkazma Summasi (${fromW.currency}) *` : "O'tkazma Summasi *";
+  document.getElementById('transferSummaLabel').textContent = fromW ? `O'tkazma miqdori (${fromW.currency}) *` : "O'tkazma miqdori *";
   const seq = ++_transferPreviewSeq;
   const differs = fromW && toW && fromW.currency !== toW.currency;
   group.style.display = differs ? '' : 'none';
@@ -3564,7 +3686,7 @@ async function updateTransferCurrencyPreview() {
     return;
   }
 
-  document.getElementById('transferToSummaLabel').textContent = `Tushadigan summa (${toW.currency})`;
+  document.getElementById('transferToSummaLabel').textContent = `Tushadigan miqdor (${toW.currency})`;
   const amount = readAmount('transferSumma') || 0;
   try {
     const q = `from=${encodeURIComponent(fromW.currency)}&to=${encodeURIComponent(toW.currency)}&amount=${amount > 0 ? amount : 1}`;
@@ -3572,14 +3694,14 @@ async function updateTransferCurrencyPreview() {
     const data = await res.json().catch(() => ({}));
     if (seq !== _transferPreviewSeq) return; // foydalanuvchi shu orada boshqa narsa tanlagan
     if (!res.ok) {
-      toInput.placeholder = 'Summani kiriting';
-      hint.textContent = "Kursni aniqlab bo'lmadi — tushadigan summani qo'lda kiriting.";
+      toInput.placeholder = 'Miqdorni kiriting';
+      hint.textContent = "Kursni aniqlab bo'lmadi — tushadigan miqdorni qo'lda kiriting.";
       return;
     }
     const rateText = formatRateText(fromW.currency, toW.currency, Number(data.rate));
     if (amount > 0) {
       toInput.placeholder = `${formatNumber(data.result)} (avtomatik)`;
-      hint.textContent = `Markaziy bank kursi: ${rateText}. Bo'sh qoldirilsa ${formatNumber(data.result)} ${toW.currency} yoziladi. Bank boshqa summa bergan bo'lsa, haqiqiysini kiriting.`;
+      hint.textContent = `Markaziy bank kursi: ${rateText}. Bo'sh qoldirilsa ${formatNumber(data.result)} ${toW.currency} yoziladi. Bank boshqa miqdor bergan bo'lsa, haqiqiysini kiriting.`;
     } else {
       toInput.placeholder = 'Avtomatik hisoblanadi';
       hint.textContent = `Markaziy bank kursi: ${rateText}`;
@@ -3591,12 +3713,14 @@ async function updateTransferCurrencyPreview() {
       hint.textContent = `Bo'sh qoldirilsa o'tkazma kunidagi kurs saqlanadi: ${formatRateText(fromW.currency, toW.currency, Number(old.rate))}.`;
     }
   } catch (err) {
-    if (seq === _transferPreviewSeq) hint.textContent = "Kursni aniqlab bo'lmadi — tushadigan summani qo'lda kiriting.";
+    if (seq === _transferPreviewSeq) hint.textContent = "Kursni aniqlab bo'lmadi — tushadigan miqdorni qo'lda kiriting.";
   }
 }
-['transferFromWallet', 'transferToWallet'].forEach(id => {
-  document.getElementById(id)?.addEventListener('change', updateTransferCurrencyPreview);
+document.getElementById('transferFromWallet')?.addEventListener('change', () => {
+  syncTransferTargets();
+  updateTransferCurrencyPreview();
 });
+document.getElementById('transferToWallet')?.addEventListener('change', updateTransferCurrencyPreview);
 document.getElementById('transferSumma')?.addEventListener('input', () => {
   clearTimeout(updateTransferCurrencyPreview._t);
   updateTransferCurrencyPreview._t = setTimeout(updateTransferCurrencyPreview, 300);
@@ -3609,7 +3733,7 @@ function updateDebtCurrencyField() {
   if (!select || !hint) return;
   const wallet = state.wallets.find(w => String(w.id) === select.value);
   hint.textContent = wallet ? `Qarz hamyon valyutasida yoziladi: ${wallet.currency}` : '';
-  document.getElementById('debtSummaLabel').textContent = wallet ? `Summa (${wallet.currency}) *` : 'Summa *';
+  document.getElementById('debtSummaLabel').textContent = wallet ? `Miqdor (${wallet.currency}) *` : 'Miqdor *';
 }
 document.getElementById('debtWalletSelect')?.addEventListener('change', updateDebtCurrencyField);
 
@@ -3647,7 +3771,7 @@ onSubmitOnce('formRepayDebt', async (e) => {
 // ==========================================
 
 async function deleteTransaction(type, id) {
-  if (!(await confirmDelete('Ushbu amaliyotni bekor qilib o\'chirishni xohlaysizmi? Hamyon balansi qaytariladi.'))) {
+  if (!(await confirmDelete("Ushbu amalni bekor qilib o'chirishni xohlaysizmi? Hamyon qoldig'i qaytariladi."))) {
     return;
   }
 
@@ -3659,13 +3783,13 @@ async function deleteTransaction(type, id) {
     });
 
     if (res.ok || res.status === 204) {
-      showToast('Amaliyot o\'chirildi va balans qaytarildi', 'success', {
+      showToast('Amaliyot o\'chirildi va qoldiq qaytarildi', 'success', {
         action: { label: 'Qaytarish', onClick: () => restoreTransaction(type, id) },
       });
       refreshAll();
     } else {
       const err = await res.json().catch(() => ({}));
-      showToast(extractErrorMessage(err, 'O\'chirishda xatolik yuz berdi (hamyonda balans yetarli bo\'lmasligi mumkin)'), 'error');
+      showToast(extractErrorMessage(err, 'O\'chirishda xatolik yuz berdi (hamyonda qoldiq yetarli bo\'lmasligi mumkin)'), 'error');
     }
   } catch (error) {
     showToast(NETWORK_ERROR_MESSAGE, 'error');
@@ -3709,7 +3833,7 @@ async function deleteDebt(id) {
 }
 
 async function deleteWallet(id) {
-  if (!(await confirmDelete('Hamyonni o\'chirishni xohlaysizmi? Oldingi barcha amaliyotlar arxivlanadi.'))) return;
+  if (!(await confirmDelete('Hamyonni o\'chirishni xohlaysizmi? Oldingi barcha amallar arxivlanadi.'))) return;
 
   try {
     const res = await fetch(`${API_BASE}/wallets/${id}/`, {
@@ -3816,7 +3940,7 @@ function fillRecurringCategories(kind, selected) {
   const list = kind === 'income' ? state.incomeCategories : state.expenseCategories;
   select.innerHTML = '<option value="" disabled selected>-- Tanlang --</option>'
     + list.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
-  document.getElementById('recurringCategoryLabel').textContent = kind === 'income' ? 'Daromad manbayi *' : 'Harajat toifasi *';
+  document.getElementById('recurringCategoryLabel').textContent = kind === 'income' ? 'Kirim manbayi *' : 'Chiqim turkumi *';
   document.getElementById('recurringMemberGroup').style.display = kind === 'expense' && state.members.length ? '' : 'none';
   if (selected) selectValueOrKeep('recurringCategory', selected.id, selected.name);
   if (select._csSync) select._csSync();
@@ -3824,7 +3948,7 @@ function fillRecurringCategories(kind, selected) {
 
 function updateRecurringSummaLabel() {
   const wallet = state.wallets.find(w => String(w.id) === document.getElementById('recurringWallet').value);
-  document.getElementById('recurringSummaLabel').textContent = wallet ? `Summa (${wallet.currency}) *` : 'Summa *';
+  document.getElementById('recurringSummaLabel').textContent = wallet ? `Miqdor (${wallet.currency}) *` : 'Miqdor *';
 }
 
 function openRecurringModal(id) {
@@ -3833,10 +3957,10 @@ function openRecurringModal(id) {
   form.reset();
   if (r) form.dataset.editId = r.id; else delete form.dataset.editId;
   const modal = document.getElementById('modalRecurring');
-  modal.querySelector('[data-tx-title]').textContent = r ? "Takroriy to'lovni tahrirlash" : "Takroriy to'lov";
+  modal.querySelector('[data-tx-title]').textContent = r ? "Doimiy to'lovni tahrirlash" : "Doimiy to'lov";
 
   const walletSel = document.getElementById('recurringWallet');
-  walletSel.innerHTML = state.wallets.map(w => `<option value="${w.id}">${escapeHtml(w.name)} (${escapeHtml(w.currency)})</option>`).join('');
+  walletSel.innerHTML = spendableWallets().map(w => `<option value="${w.id}">${escapeHtml(w.name)} (${escapeHtml(w.currency)})</option>`).join('');
   document.getElementById('recurringMember').innerHTML = '<option value="">-- O\'zim uchun --</option>'
     + state.members.map(m => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('');
 
@@ -3883,7 +4007,7 @@ onSubmitOnce('formRecurring', async (e) => {
   const kind = document.getElementById('recurringKind').value;
   const category = parseInt(document.getElementById('recurringCategory').value);
   if (!category) {
-    showToast(kind === 'income' ? 'Daromad manbayini tanlang' : 'Harajat toifasini tanlang', 'error');
+    showToast(kind === 'income' ? 'Kirim manbayini tanlang' : 'Chiqim turkumini tanlang', 'error');
     return;
   }
   const memberVal = document.getElementById('recurringMember').value;
@@ -3907,13 +4031,13 @@ onSubmitOnce('formRecurring', async (e) => {
       body: JSON.stringify(payload),
     });
     if (res.ok) {
-      showToast(editId ? "Takroriy to'lov o'zgartirildi" : "Takroriy to'lov qo'shildi");
+      showToast(editId ? "Doimiy to'lov o'zgartirildi" : "Doimiy to'lov qo'shildi");
       closeModal('modalRecurring');
       // Bugungi to'lov darhol yozilishi mumkin — balans va ro'yxatlar ham yangilansin
       refreshAll();
     } else {
       const err = await res.json().catch(() => ({}));
-      showToast(extractErrorMessage(err, "Takroriy to'lovni saqlashda xatolik"), 'error');
+      showToast(extractErrorMessage(err, "Doimiy to'lovni saqlashda xatolik"), 'error');
     }
   } catch (error) {
     showToast(NETWORK_ERROR_MESSAGE, 'error');
@@ -3921,11 +4045,11 @@ onSubmitOnce('formRecurring', async (e) => {
 });
 
 async function deleteRecurring(id) {
-  if (!(await confirmDelete("Takroriy to'lov o'chirilsinmi? Avval yozilgan operatsiyalar saqlanib qoladi."))) return;
+  if (!(await confirmDelete("Doimiy to'lov o'chirilsinmi? Avval yozilgan amallar saqlanib qoladi."))) return;
   try {
     const res = await fetch(`${API_BASE}/recurring/${id}/`, { method: 'DELETE' });
     if (res.ok) {
-      showToast("Takroriy to'lov o'chirildi");
+      showToast("Doimiy to'lov o'chirildi");
       await fetchRecurring();
     } else {
       const err = await res.json().catch(() => ({}));
@@ -3991,30 +4115,34 @@ function renderGoals() {
 }
 
 function updateGoalTargetLabel() {
-  const wallet = state.wallets.find(w => String(w.id) === document.getElementById('goalWallet').value);
-  document.getElementById('goalTargetLabel').textContent = wallet ? `Maqsad summasi (${wallet.currency}) *` : 'Maqsad summasi *';
+  const form = document.getElementById('formGoal');
+  const g = form.dataset.editId ? state.goals.find(x => String(x.id) === form.dataset.editId) : null;
+  const currency = g ? g.wallet_currency : document.getElementById('goalCurrency').value.trim().toUpperCase();
+  document.getElementById('goalTargetLabel').textContent = currency ? `Maqsad miqdori (${currency}) *` : 'Maqsad miqdori *';
 }
 
+// Yangi maqsad: valyuta so'raladi (hamyon server tomonida ochiladi). Tahrir: hamyon faqat ko'rsatiladi
 function openGoalModal(id) {
   const form = document.getElementById('formGoal');
   const g = id ? state.goals.find(x => x.id === id) : null;
   form.reset();
   if (g) form.dataset.editId = g.id; else delete form.dataset.editId;
   document.getElementById('modalGoal').querySelector('[data-tx-title]').textContent = g ? 'Maqsadni tahrirlash' : 'Yangi maqsad';
-  document.getElementById('goalWallet').innerHTML = state.wallets.map(w =>
-    `<option value="${w.id}">${escapeHtml(w.name)} (${formatMoney(w.summa, w.currency)})</option>`).join('');
+  const currencyInput = document.getElementById('goalCurrency');
+  document.getElementById('goalCurrencyGroup').hidden = !!g;
+  currencyInput.required = !g;
+  document.getElementById('goalWalletInfo').hidden = !g;
   if (g) {
     document.getElementById('goalName').value = g.name;
-    selectValueOrKeep('goalWallet', g.wallet, g.wallet_name);
+    document.getElementById('goalWalletName').textContent = `${g.wallet_name} (${g.wallet_currency})`;
     document.getElementById('goalTarget').value = g.target;
     document.getElementById('goalDeadline').value = g.deadline || '';
   }
-  document.getElementById('goalWallet')._csSync?.();
   updateGoalTargetLabel();
   openModal('modalGoal');
 }
 
-document.getElementById('goalWallet')?.addEventListener('change', updateGoalTargetLabel);
+document.getElementById('goalCurrency')?.addEventListener('input', updateGoalTargetLabel);
 document.getElementById('goalsList')?.addEventListener('click', e => {
   const card = e.target.closest('[data-goal-id]');
   if (card) openGoalModal(Number(card.dataset.goalId));
@@ -4031,10 +4159,10 @@ onSubmitOnce('formGoal', async (e) => {
   const editId = e.target.dataset.editId;
   const payload = {
     name: document.getElementById('goalName').value.trim(),
-    wallet: parseInt(document.getElementById('goalWallet').value),
     target: readAmount('goalTarget'),
     deadline: document.getElementById('goalDeadline').value || null,
   };
+  if (!editId) payload.currency = document.getElementById('goalCurrency').value.trim() || 'UZS';
   try {
     const res = await fetch(editId ? `${API_BASE}/goals/${editId}/` : `${API_BASE}/goals/`, {
       method: editId ? 'PATCH' : 'POST',
@@ -4044,7 +4172,7 @@ onSubmitOnce('formGoal', async (e) => {
     if (res.ok) {
       showToast(editId ? "Maqsad o'zgartirildi" : "Maqsad qo'shildi");
       closeModal('modalGoal');
-      await fetchGoals();
+      await refreshAll();  // maqsad hamyoni ochildi yoki qayta nomlandi — hamyonlar ro'yxati ham yangilanadi
     } else {
       const err = await res.json().catch(() => ({}));
       showToast(extractErrorMessage(err, 'Maqsadni saqlashda xatolik'), 'error');
@@ -4054,37 +4182,89 @@ onSubmitOnce('formGoal', async (e) => {
   }
 });
 
+// Maqsad hamyoni maqsad bilan birga o'chadi. Unda pul bo'lsa, avval qaysi hamyonga o'tkazilishi so'raladi
+// (server O'tkazma yozadi, so'ng hamyonni o'chiradi). Eski maqsad oddiy hamyonga bog'langan — hamyonga tegilmaydi
 async function deleteGoal(id) {
-  if (!(await confirmDelete("Maqsad o'chirilsinmi? Hamyon va undagi pul joyida qoladi."))) return;
-  try {
-    const res = await fetch(`${API_BASE}/goals/${id}/`, { method: 'DELETE' });
-    if (res.ok) {
-      showToast("Maqsad o'chirildi");
-      await fetchGoals();
-    } else {
-      const err = await res.json().catch(() => ({}));
-      showToast(extractErrorMessage(err, "O'chirishda xatolik"), 'error');
+  const g = state.goals.find(x => x.id === id);
+  if (!g) return;
+  const saved = Number(g.saved) || 0;
+  if (g.wallet_is_goal && saved > 0) {
+    const targets = spendableWallets();
+    if (!targets.length) {
+      showToast("Maqsaddagi pulni o'tkazish uchun oddiy hamyon kerak — avval hamyon qo'shing", 'error');
+      return;
     }
+    const form = document.getElementById('formGoalDelete');
+    form.dataset.goalId = g.id;
+    document.getElementById('goalDeleteText').textContent =
+      `«${g.name}» maqsadida ${formatMoney(saved, g.wallet_currency)} yig'ilgan. Pul tanlangan hamyonga o'tkaziladi, so'ng maqsad va uning hamyoni o'chadi.`;
+    const select = document.getElementById('goalDeleteTarget');
+    // Avval maqsad bilan bir xil valyutadagi hamyonlar: boshqa valyutaga Markaziy bank kursi bo'yicha o'giriladi
+    const sorted = [...targets].sort((a, b) => (a.currency !== g.wallet_currency) - (b.currency !== g.wallet_currency));
+    select.innerHTML = sorted.map(w => `<option value="${w.id}">${escapeHtml(w.name)} (${formatMoney(w.summa, w.currency)})</option>`).join('');
+    select._csSync?.();
+    openModal('modalGoalDelete');
+    return;
+  }
+  const message = g.wallet_is_goal
+    ? "Maqsad o'chirilsinmi? Uning hamyoni ham o'chadi."
+    : "Maqsad o'chirilsinmi? Hamyon va undagi pul joyida qoladi.";
+  if (!(await confirmDelete(message))) return;
+  await sendGoalDelete(id);
+}
+
+async function sendGoalDelete(id, toWallet = null) {
+  try {
+    const res = await fetch(`${API_BASE}/goals/${id}/`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(toWallet ? { to_wallet: toWallet } : {}),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      showToast(data.message || "Maqsad o'chirildi");
+      await refreshAll();  // hamyon o'chdi va pul boshqa hamyonga o'tdi — qoldiqlar ham yangilanadi
+      return true;
+    }
+    showToast(extractErrorMessage(data, "O'chirishda xatolik"), 'error');
   } catch (error) {
     showToast(NETWORK_ERROR_MESSAGE, 'error');
   }
+  return false;
 }
 
-// "Pul qo'shish" — O'tkazma oynasi maqsad hamyoniga yo'naltirilgan holda ochiladi
+onSubmitOnce('formGoalDelete', async (e) => {
+  const id = Number(e.target.dataset.goalId);
+  const toWallet = parseInt(document.getElementById('goalDeleteTarget').value);
+  if (await sendGoalDelete(id, toWallet)) closeModal('modalGoalDelete');
+});
+
+// "Pul qo'shish" — O'tkazma oynasi maqsad hamyoniga yo'naltirilgan holda ochiladi. "Qaysi hamyonga" qulflanadi:
+// pul faqat shu maqsad hamyoniga tushadi (oyna yopilganda closeModal -> unlockTransferTarget)
 function fundGoal(id) {
   const g = state.goals.find(x => x.id === id);
   if (!g) return;
-  if (state.wallets.length < 2) {
-    showToast("Pul qo'shish uchun yana bitta hamyon kerak: pul o'sha hamyondan maqsad hamyoniga o'tkaziladi", 'error');
+  const sources = spendableWallets().filter(w => w.id !== g.wallet);
+  if (!sources.length) {
+    showToast("Pul qo'shish uchun oddiy hamyon kerak: pul o'sha hamyondan maqsad hamyoniga o'tkaziladi", 'error');
     return;
   }
   const to = document.getElementById('transferToWallet');
   const from = document.getElementById('transferFromWallet');
+  if (!sources.some(w => String(w.id) === from.value)) from.value = String(sources[0].id);
+  syncTransferTargets();
   to.value = String(g.wallet);
-  if (from.value === to.value) from.value = String(state.wallets.find(w => w.id !== g.wallet).id);
+  to.disabled = true;
   [to, from].forEach(el => el._csSync?.());
   document.getElementById('transferDescription').value = `Maqsad: ${g.name}`;
   openModal('modalTransfer');
+}
+
+function unlockTransferTarget() {
+  const to = document.getElementById('transferToWallet');
+  if (!to?.disabled) return;
+  to.disabled = false;
+  to._csSync?.();
 }
 
 // Helper
@@ -4156,12 +4336,17 @@ async function checkAuth() {
     if (userProfileNav) userProfileNav.style.display = 'flex';
     const navSections = document.getElementById('navSections');
     if (navSections) navSections.style.display = 'flex';
+    // Bo'limlar kapsulasi chiqqach navbar balandlashadi — ro'yxat sahifalari uning ostidan to'g'ri boshlansin
+    syncNavbarHeight();
     // Brend endi bo'limlar kapsulasida ("Moliya") — alohida logotip takrorlanmasin
     const brandLogo = document.getElementById('brandLogo');
     if (brandLogo) brandLogo.style.display = 'none';
     const notifWrap = document.getElementById('notifWrap');
     if (notifWrap) notifWrap.style.display = 'block';
     renderUserNav();
+    // Ovozli yordamchi (voice.js) — faqat kirgan foydalanuvchiga: «Salom Moliya» yoqilgan bo'lsa fonda tinglaydi
+    window.moliyaVoice?.start();
+    setAssistantFab(true);
     startSupportUnreadPolling(data.user.support_unread);
     fetchNotices();
 
@@ -4172,6 +4357,8 @@ async function checkAuth() {
   // Not authenticated: Show login screen, hide main app
   state.currentUser = null;
   state.currentUserId = null;
+  window.moliyaVoice?.stop();
+  setAssistantFab(false);
   stopSupportUnreadPolling();
   _setNotifPanel(false);
 
@@ -4206,7 +4393,7 @@ document.getElementById('authTabLogin')?.addEventListener('click', () => {
   document.getElementById('formLoginMain').style.display = 'flex';
   document.getElementById('formRegisterMain').style.display = 'none';
   const title = document.getElementById('authScreenTitle');
-  if (title) title.textContent = 'Moliya Tizimiga Kirish';
+  if (title) title.textContent = 'Moliyaga xush kelibsiz';
 });
 
 document.getElementById('authTabRegister')?.addEventListener('click', () => {
@@ -4228,11 +4415,11 @@ let forgotStep = 1;
 const FORGOT_STEPS = {
   1: {
     button: 'Kod yuborish',
-    intro: "Foydalanuvchi nomingiz yoki emailingizni kiriting — akkauntga ulangan emailga 6 xonali tiklash kodi yuboramiz."
+    intro: "Foydalanuvchi nomingiz yoki elektron pochtangizni kiriting — hisobga ulangan elektron pochtaga 6 xonali tiklash kodi yuboramiz."
   },
   2: {
     button: 'Kodni tekshirish',
-    intro: "Emailingizga 6 xonali kod yuborildi (spam papkasini ham tekshiring). Kod 15 daqiqa amal qiladi."
+    intro: "Elektron pochtangizga 6 xonali kod yuborildi (spam papkasini ham tekshiring). Kod 15 daqiqa amal qiladi."
   },
   3: {
     button: 'Parolni yangilash',
@@ -4264,7 +4451,7 @@ function showForgotPassword(show) {
   loginForm.style.display = show ? 'none' : 'flex';
   forgotForm.style.display = show ? 'flex' : 'none';
   if (tabs) tabs.style.display = show ? 'none' : '';
-  if (title) title.textContent = show ? 'Parolni Tiklash' : 'Moliya Tizimiga Kirish';
+  if (title) title.textContent = show ? 'Parolni tiklash' : 'Moliyaga xush kelibsiz';
 
   if (show) {
     forgotForm.reset();
@@ -4277,7 +4464,7 @@ function showForgotPassword(show) {
 async function requestResetCode() {
   const username = document.getElementById('forgotUsername').value.trim();
   if (!username) {
-    showToast('Foydalanuvchi nomi yoki emailni kiriting', 'error');
+    showToast('Foydalanuvchi nomi yoki elektron pochtani kiriting', 'error');
     return false;
   }
   try {
@@ -4433,8 +4620,8 @@ function setTwoFactorMode(mode) {
   _twoFactor.mode = mode;
   const enabled = !!state.currentUser?.two_factor_enabled;
   document.getElementById('twoFactorStatus').textContent = enabled
-    ? "Yoqilgan. Yangi qurilmadan kirishda emailingizga kod yuboriladi."
-    : "O'chiq. Yoqilsa, yangi qurilmadan kirishda parol bilan birga emailga kelgan kod ham so'raladi.";
+    ? "Yoqilgan. Yangi qurilmadan kirishda elektron pochtangizga kod yuboriladi."
+    : "O'chiq. Yoqilsa, yangi qurilmadan kirishda parol bilan birga elektron pochtaga kelgan kod ham so'raladi.";
   document.getElementById('twoFactorBox').classList.toggle('is-on', enabled);
   const toggle = document.getElementById('btnTwoFactorToggle');
   toggle.textContent = enabled ? "O'chirish" : 'Yoqish';
@@ -4455,7 +4642,7 @@ function setTwoFactorMode(mode) {
 document.getElementById('btnTwoFactorToggle')?.addEventListener('click', () => {
   _twoFactor.target = !state.currentUser?.two_factor_enabled;
   if (_twoFactor.target && !state.currentUser?.email) {
-    showToast("Avval Profil bo'limida email kiriting — kod o'sha emailga keladi", 'error');
+    showToast("Avval Profil bo'limida elektron pochta kiriting — kod o'sha elektron pochtaga keladi", 'error');
     return;
   }
   setTwoFactorMode('password');
@@ -4524,7 +4711,7 @@ function showLoginCode(data) {
   const tabs = document.querySelector('.auth-tabs');
   if (tabs) tabs.style.display = show ? 'none' : '';
   const title = document.getElementById('authScreenTitle');
-  if (title) title.textContent = show ? 'Kirishni tasdiqlash' : 'Moliya Tizimiga Kirish';
+  if (title) title.textContent = show ? 'Kirishni tasdiqlash' : 'Moliyaga xush kelibsiz';
   document.getElementById('formLoginCode').reset();
   if (show) {
     document.getElementById('loginCodeIntro').textContent =
@@ -4541,7 +4728,7 @@ onSubmitOnce('formLoginCode', async () => {
   // Ko'chirib qo'yilganda probel/defis qo'shilib qolishi mumkin — faqat raqamlar
   const code = document.getElementById('loginCode').value.replace(/\D/g, '');
   if (code.length !== 6) {
-    showToast('Emailga kelgan 6 xonali kodni kiriting', 'error');
+    showToast('Elektron pochtaga kelgan 6 xonali kodni kiriting', 'error');
     return;
   }
   try {
@@ -4636,7 +4823,11 @@ function switchSettingsTab(tab) {
     setTwoFactorMode('idle');
   }
   if (tab === 'help') showHelpTopics();
-  if (tab === 'assistant') openAssistant();
+  if (tab === 'voice') window.moliyaVoice?.renderSettings();
+  if (tab === 'assistant') {
+    setAssistantDock(false);  // chat elementlari Sozlamalarga qaytadi
+    openAssistant();
+  }
   if (tab === 'support') openSupport();
   else stopSupportPolling();
 }
@@ -4652,19 +4843,23 @@ const HELP_TOPICS = [
     ["Qanday qilib ro'yxatdan o'tish mumkin?",
      "Kirish oynasida «Ro'yxatdan o'tish» bo'limini tanlang, foydalanuvchi nomi (login) va kamida 8 belgili parol kiriting.\nRo'yxatdan o'tgach ilova darhol ochiladi — birinchi hamyoningizni qo'shishdan boshlang."],
     ["Parolimni unutdim. Nima qilaman?",
-     "Kirish oynasida «Parolni unutdingizmi?» tugmasini bosing va foydalanuvchi nomingiz yoki emailingizni kiriting. Akkauntga ulangan emailga 6 xonali kod yuboriladi — kodni va yangi parolni kiriting.\nKod faqat akkauntda email bo'lsa keladi. Shuning uchun emailni oldindan Sozlamalar → Profil bo'limida kiritib qo'ying. Xat «Spam» papkasiga tushib qolishi mumkin."],
+     "Kirish oynasida «Parolni unutdingizmi?» tugmasini bosing va foydalanuvchi nomingiz yoki elektron pochtangizni kiriting. Hisobga ulangan elektron pochtaga 6 xonali kod yuboriladi — kodni va yangi parolni kiriting.\nKod faqat hisobda elektron pochta bo'lsa keladi. Shuning uchun elektron pochtani oldindan Sozlamalar → Profil bo'limida kiritib qo'ying. Xat «Spam» papkasiga tushib qolishi mumkin."],
     ["Profil ma'lumotlarini qanday o'zgartiraman?",
-     "Sozlamalar → Profil bo'limida «Tahrirlash» tugmasini bosing. Ism, familiya, login, email va telefonni o'zgartirib «Saqlash» ni bosing.\nEmail parolni tiklash uchun ishlatilgani sababli uni o'zgartirishda joriy parol so'raladi.\nIkki bosqichli kirish yoqilgan bo'lsa, yangi email unga kelgan kod bilan tasdiqlanadi — kod kiritilmaguncha eski email saqlanib turadi."],
+     "Sozlamalar → Profil bo'limida «Tahrirlash» tugmasini bosing. Ism, familiya, login, elektron pochta va telefonni o'zgartirib «Saqlash» ni bosing.\nElektron pochta parolni tiklash uchun ishlatilgani sababli uni o'zgartirishda joriy parol so'raladi.\nIkki bosqichli himoya yoqilgan bo'lsa, yangi elektron pochta unga kelgan kod bilan tasdiqlanadi — kod kiritilmaguncha eski elektron pochta saqlanib turadi."],
   ]},
   { id: 'home', icon: 'mobile', title: 'Bosh sahifa', items: [
     ["Bosh sahifadagi ma'lumotlarni qanday yangilayman?",
-     "Bosh sahifa eng tepada turganda: telefon yoki planshetda barmoq bilan pastga torting, kompyuterda sichqoncha g'ildiragi yoki touchpad bilan yana yuqoriga aylantiring. Ilova belgisi chiqadi — halqasi to'lganda qo'yib yuboring: balans, hamyonlar va operatsiyalar qayta yuklanadi."],
-    ["Nega «Hamyonlarim» bo'limida hamma hamyonlar ko'rinmaydi?",
-     "Bosh sahifa ixcham bo'lishi uchun bu bo'limda faqat 2 ta hamyon turadi. Hammasini ko'rish uchun «Hamyonlarim ›» sarlavhasini bosing. Har bir hamyon balansi «Umumiy balans» kartasida ham ko'rinadi."],
-    ["Takroriy to'lovlar, maqsadlar va a'zolar ro'yxati qayerda?",
+     "Bosh sahifa eng tepada turganda: telefon yoki planshetda barmoq bilan pastga torting, kompyuterda sichqoncha g'ildiragi yoki touchpad bilan yana yuqoriga aylantiring. Ilova belgisi chiqadi — halqasi to'lganda qo'yib yuboring: qoldiq, hamyonlar va amallar qayta yuklanadi. Yoki navbardagi «Moliya» tugmasini bosing — bosh sahifa eng tepaga chiqadi va ma'lumotlar yangilanadi."],
+    ["Nega «Hamyonlar» bo'limida hamma hamyonlar ko'rinmaydi?",
+     "Bosh sahifa ixcham bo'lishi uchun bu bo'limda faqat 2 ta hamyon turadi. Hammasini ko'rish uchun «Hamyonlar ›» sarlavhasini bosing. Har bir hamyon qoldig'i «Umumiy qoldiq» kartasida ham ko'rinadi."],
+    ["Doimiy to'lovlar, maqsadlar va a'zolar ro'yxati qayerda?",
      "Bosh sahifada bu bo'limlarning faqat nomi turadi. Ro'yxatni ko'rish uchun bo'lim nomini bosing — u alohida sahifada ochiladi. Yangi yozuvni nom yonidagi «+» tugmasi bilan darhol qo'shish mumkin."],
     ["Ilova telefon va planshetda ishlaydimi?",
      "Ha. Ilova brauzerda ochiladi va ekran o'lchamiga o'zi moslashadi: telefonda ixcham, planshet va kompyuterda kengroq ko'rinadi. Alohida o'rnatish shart emas."],
+    ["Moliya yordamchisi qayerda?",
+     "Har sahifada pastki o'ng burchakdagi dumaloq tugmani bosing — Moliya yordamchisi oynasi ochiladi. Ilovadan qanday foydalanish bo'yicha savolingizni yozing. Oyna ochiq turganda ilovaning boshqa joylaridan ham foydalanish mumkin — u yopilmaydi. Yopish uchun oynadagi × ni yoki dumaloq tugmani yana bosing; suhbat Sozlamalar → Moliya yordamchisi bo'limida ham davom etadi."],
+    ["Adminga qanday yozaman?",
+     "Sozlamalar → Yordam bo'limida xabaringizni yozib yuboring. Admin javob berganda navbardagi qo'ng'iroqchada «Admin javob berdi» xabari chiqadi, o'qilmagan xabarlar soni Yordam bo'limi yonida ham ko'rinadi.\nIlovadan foydalanish bo'yicha darhol javob kerak bo'lsa, Moliya yordamchisidan so'rang."],
     ["Admin xabarlari qayerda ko'rinadi?",
      "Navbardagi qo'ng'iroqcha belgisini bosing — «Xabarlar» ro'yxatida admin yuborgan xabarlar eng tepada, yashil fonda va «Admin» belgisi bilan turadi. Barcha foydalanuvchilarga yuborilganida «Hammaga» deb yoziladi. Yangi xabar qo'ng'iroqchada son bilan bilinadi va ro'yxatni ochganingizda o'qilgan hisoblanadi; o'qilgan xabar 30 kun ko'rinib turadi."],
   ]},
@@ -4672,65 +4867,65 @@ const HELP_TOPICS = [
     ['Hamyon nima?',
      "Hamyon — pulingiz turgan har bir joy: naqd pul, bank kartasi, seyf va hokazo. Har bir kirim, chiqim va qarz qaysidir hamyonga yoziladi, shuning uchun avval kamida bitta hamyon oching."],
     ["Hamyonni qanday qo'shaman?",
-     "Bosh sahifadagi «Hamyonlarim» bo'limida qo'shish tugmasini bosing. Nom, boshlang'ich mablag' (hozir unda qancha pul borligi) va valyutani tanlang."],
-    ["Hamyon balansini qo'lda o'zgartirsa bo'ladimi?",
-     "Yo'q. Balans faqat Kirim, Chiqim, O'tkazma va Qarz orqali o'zgaradi — shunda har bir so'm qayerdan kelib, qayerga ketgani tarixda saqlanadi.\nAgar boshlang'ich mablag'ni xato kiritgan bo'lsangiz, farqni Kirim yoki Chiqim sifatida yozing."],
+     "Bosh sahifadagi «Hamyonlar» bo'limida qo'shish tugmasini bosing. Nom, hozirgi mablag' (hozir unda qancha pul borligi) va valyutani tanlang."],
+    ["Hamyon qoldig'ini qo'lda o'zgartirsa bo'ladimi?",
+     "Ha. Hamyon sahifasida «Tahrirlash» ni bosing va «Hamyondagi pul» maydoniga to'g'ri summani yozing. Pul shu summaga almashtiriladi, lekin kirim yoki chiqim sifatida yozilmaydi — shuning uchun tarixdagi amallar yig'indisi qoldiqqa mos kelmasligi mumkin. Pul qayerdan kelib, qayerga ketgani ko'rinishi kerak bo'lsa, farqni Kirim yoki Chiqim sifatida yozing."],
     ['Hamyon valyutasini almashtirsa bo\'ladimi?',
-     "Faqat hamyonda hali birorta operatsiya bo'lmasa. Operatsiyalar bo'lsa, boshqa valyutada yangi hamyon oching va pulni O'tkazma orqali o'tkazing."],
+     "Faqat hamyonda hali birorta amal bo'lmasa. Amallar bo'lsa, boshqa valyutada yangi hamyon oching va pulni O'tkazma orqali o'tkazing."],
     ["Hamyonni qanday o'chiraman?",
-     "Hamyon yonidagi o'chirish tugmasini bosing. O'chirish uchun hamyon balansi 0 bo'lishi va unga to'lanmagan qarz bog'lanmagan bo'lishi kerak. Pul qolgan bo'lsa, avval uni O'tkazma orqali boshqa hamyonga o'tkazing."],
-    ['Balansni qanday yashiraman?',
-     "Bosh sahifadagi balans yonidagi ko'z belgisini bosing. Summa, hamyon nomlari va valyutalar xiralashadi. Qayta bosilsa ko'rinadi. Tanlov shu brauzerda eslab qolinadi."],
+     "Hamyon yonidagi o'chirish tugmasini bosing. O'chirish uchun hamyon qoldig'i 0 bo'lishi va unga to'lanmagan qarz bog'lanmagan bo'lishi kerak. Pul qolgan bo'lsa, avval uni O'tkazma orqali boshqa hamyonga o'tkazing.\nMaqsad hamyoni bu yerda o'chirilmaydi — uni Maqsadlar bo'limida maqsad bilan birga o'chiring."],
+    ['Qoldiqni qanday yashiraman?',
+     "Bosh sahifadagi qoldiq yonidagi ko'z belgisini bosing. Miqdor, hamyon nomlari va valyutalar xiralashadi. Qayta bosilsa ko'rinadi. Tanlov shu brauzerda eslab qolinadi."],
   ]},
   { id: 'income', icon: 'income', title: 'Kirim (daromad)', items: [
     ['Kirimni qanday yozaman?',
-     "Bosh sahifada «Kirim» tugmasini bosing. Summa, pul tushgan hamyon va daromad manbayini (masalan, Maosh) tanlang. Sana va izoh ixtiyoriy.\nSaqlangach summa tanlangan hamyon balansiga qo'shiladi."],
+     "Bosh sahifada «Kirim» tugmasini bosing. Miqdor, pul tushgan hamyon va kirim manbayini (masalan, Maosh) tanlang. Sana va izoh ixtiyoriy.\nSaqlangach miqdor tanlangan hamyon qoldig'iga qo'shiladi."],
     ["Ro'yxatda kerakli manba yo'q bo'lsa-chi?",
-     "Manbalar ro'yxatidan «Boshqa (o'zingiz yozing...)» ni tanlang va yangi nom yozing — u keyingi safar ro'yxatda turadi. Toifalarni oldindan «Toifalarni sozlash» oynasida ham qo'shish mumkin."],
+     "Manbalar ro'yxatidan «Boshqa (o'zingiz yozing...)» ni tanlang va yangi nom yozing — u keyingi safar ro'yxatda turadi. Turkumlarni oldindan «Turkumlarni sozlash» oynasida ham qo'shish mumkin."],
     ["Barcha kirimlarni qayerdan ko'raman?",
      "Navbardagi «Kirim» bo'limini bosing. U yerda kirimlar sana bo'yicha ro'yxatlangan, davr va valyuta bo'yicha filtrlash mumkin."],
   ]},
-  { id: 'expense', icon: 'expense', title: 'Chiqim (harajat)', items: [
-    ['Harajatni qanday yozaman?',
-     "Bosh sahifada «Harajat» tugmasini bosing. Summa, pul chiqqan hamyon va toifani (nimaga sarflandi) tanlang. Sana, «Kimga?» va izoh ixtiyoriy."],
+  { id: 'expense', icon: 'expense', title: 'Chiqim (xarajat)', items: [
+    ['Chiqimni qanday yozaman?',
+     "Bosh sahifada «Chiqim» tugmasini bosing. Miqdor, pul chiqqan hamyon va turkumni (nimaga sarflandi) tanlang. Sana, «Kimga?» va izoh ixtiyoriy."],
     ["«Hamyonda mablag' yetarli emas» xatosi chiqdi. Nega?",
-     "Harajat summasi tanlangan hamyondagi puldan oshib ketdi. Boshqa hamyonni tanlang yoki avval shu hamyonga Kirim yoki O'tkazma qiling. Hamyon balansi manfiyga tushmaydi."],
+     "Chiqim miqdori tanlangan hamyondagi puldan oshib ketdi. Boshqa hamyonni tanlang yoki avval shu hamyonga Kirim yoki O'tkazma qiling. Hamyon qoldig'i manfiyga tushmaydi."],
     ["«Kimga?» maydoni nima uchun?",
-     "Pul kimga sarflanganini belgilash uchun: masalan, ukangiz yoki akangizning oilasi. Ro'yxatga odam yoki oilani «A'zolarim» bo'limida qo'shasiz. Bo'sh qoldirilsa — o'zingiz uchun hisoblanadi."],
+     "Pul kimga sarflanganini belgilash uchun: masalan, ukangiz yoki akangizning oilasi. Ro'yxatga odam yoki oilani «A'zolar» bo'limida qo'shasiz. Bo'sh qoldirilsa — o'zingiz uchun hisoblanadi."],
   ]},
   { id: 'transfer', icon: 'transfer', title: "O'tkazma", items: [
     ["O'tkazma nima?",
-     "Pulni bir hamyondan boshqasiga o'tkazish: masalan, kartadan naqd pul yechish. Umumiy balans o'zgarmaydi, shuning uchun o'tkazma kirim yoki chiqim hisobiga kirmaydi."],
+     "Pulni bir hamyondan boshqasiga o'tkazish: masalan, kartadan naqd pul yechish. Umumiy qoldiq o'zgarmaydi, shuning uchun o'tkazma kirim yoki chiqim hisobiga kirmaydi."],
     ["Hamyonlar har xil valyutada bo'lsa-chi?",
-     "«Tushadigan summa» kurs bo'yicha avtomatik hisoblanadi. Agar bank yoki ayirboshlash shoxobchasi boshqa kurs bergan bo'lsa, haqiqatda tushgan summani o'zingiz yozing."],
+     "«Tushadigan miqdor» kurs bo'yicha avtomatik hisoblanadi. Agar bank yoki ayirboshlash shoxobchasi boshqa kurs bergan bo'lsa, haqiqatda tushgan miqdorni o'zingiz yozing."],
   ]},
   { id: 'debts', icon: 'ledger', title: 'Qarzlar', items: [
     ['Qarzni qanday yozaman?',
-     "«Qarz» tugmasini bosing, shaxs yoki tashkilot nomini, qarz turini, summani va bog'langan hamyonni tanlang. Qaytarish muddati ixtiyoriy."],
+     "«Qarz» tugmasini bosing, shaxs yoki tashkilot nomini, qarz turini, miqdorni va bog'langan hamyonni tanlang. Qaytarish muddati ixtiyoriy."],
     ["«Qarz berdim» va «Qarz oldim» farqi nima?",
-     "«Qarz berdim» — siz birovga pul berdingiz: summa hamyoningizdan yechiladi va sizga qaytarilishi kutiladi.\n«Qarz oldim» — siz birovdan pul oldingiz: summa hamyoningizga qo'shiladi va uni qaytarishingiz kerak."],
+     "«Qarz berdim» — siz birovga pul berdingiz: miqdor hamyoningizdan yechiladi va sizga qaytarilishi kutiladi.\n«Qarz oldim» — siz birovdan pul oldingiz: miqdor hamyoningizga qo'shiladi va uni qaytarishingiz kerak."],
     ["Qarzni qisman qaytarsa bo'ladimi?",
-     "Ha. Qarzlar daftarida qarz yonidagi «To'lash» tugmasini bosing, to'langan summani va hamyonni tanlang. Qolgan summa avtomatik kamayadi, to'liq to'langanda qarz yopiladi.\nTo'lov qolgan qarzdan ko'p bo'lishi mumkin emas."],
+     "Ha. Qarzlar daftarida qarz yonidagi «To'lash» tugmasini bosing, to'langan miqdorni va hamyonni tanlang. Qolgan miqdor avtomatik kamayadi, to'liq to'langanda qarz yopiladi.\nTo'lov qolgan qarzdan ko'p bo'lishi mumkin emas."],
     ["Qarz boshqa valyutadagi hamyon orqali to'lansa-chi?",
-     "Hamyonga kurs bo'yicha hisoblangan summa yoziladi. Kurs vaqtincha aniqlanmasa, qarz valyutasidagi hamyonni tanlang yoki keyinroq urinib ko'ring."],
+     "Hamyonga kurs bo'yicha hisoblangan miqdor yoziladi. Kurs vaqtincha aniqlanmasa, qarz valyutasidagi hamyonni tanlang yoki keyinroq urinib ko'ring."],
     ["Qarzni o'chirsam nima bo'ladi?",
      "Qarzning to'lanmagan qismi hamyonga qaytariladi: «Qarz berdim» bo'lsa hamyonga qo'shiladi, «Qarz oldim» bo'lsa hamyondan yechiladi."],
   ]},
-  { id: 'operations', icon: 'receipt', title: 'Operatsiyalarni tahrirlash va o\'chirish', items: [
-    ["Xato yozilgan operatsiyani qanday tuzataman?",
-     "Kirim yoki Chiqim ro'yxatida operatsiyani bosing — tafsilotlar oynasi ochiladi. «Tahrirlash» tugmasini bosib summa, hamyon, toifa, sana yoki izohni o'zgartiring.\nHamyon balansi faqat farq bo'yicha to'g'rilanadi: masalan 100 000 so'mlik harajat 120 000 ga o'zgartirilsa, hamyondan yana 20 000 yechiladi."],
-    ["Xato yozilgan operatsiyani qanday o'chiraman?",
-     "Tafsilotlar oynasida o'chirish tugmasini bosing. Operatsiya bekor qilinadi va hamyon balansi avvalgi holiga qaytadi."],
+  { id: 'operations', icon: 'receipt', title: 'Amallarni tahrirlash va o\'chirish', items: [
+    ["Xato yozilgan amalni qanday tuzataman?",
+     "Kirim yoki Chiqim ro'yxatida amalni bosing — tafsilotlar oynasi ochiladi. «Tahrirlash» tugmasini bosib miqdor, hamyon, turkum, sana yoki izohni o'zgartiring.\nHamyon qoldig'i faqat farq bo'yicha to'g'rilanadi: masalan 100 000 so'mlik xarajat 120 000 ga o'zgartirilsa, hamyondan yana 20 000 yechiladi."],
+    ["Xato yozilgan amalni qanday o'chiraman?",
+     "Tafsilotlar oynasida o'chirish tugmasini bosing. Amal bekor qilinadi va hamyon qoldig'i avvalgi holiga qaytadi."],
     ["Adashib o'chirib yubordim. Qaytarsa bo'ladimi?",
-     "Ha. O'chirgandan keyin pastda «Qaytarish» tugmali xabar bir necha soniya turadi — uni bossangiz operatsiya va balans qayta tiklanadi.\nAgar shu orada o'sha pul boshqa joyga sarflangan bo'lsa, harajatni qaytarib bo'lmaydi: hamyonda mablag' yetmaydi."],
-    ["Nega ba'zi operatsiyalarni o'zgartirib bo'lmaydi?",
-     "Agar operatsiya o'chirilgan hamyonga tegishli bo'lsa, uni tahrirlab yoki bekor qilib bo'lmaydi — aks holda pul ko'rinmaydigan hamyonga o'tib qolardi."],
+     "Ha. O'chirgandan keyin pastda «Qaytarish» tugmali xabar bir necha soniya turadi — uni bossangiz amal va qoldiq qayta tiklanadi.\nAgar shu orada o'sha pul boshqa joyga sarflangan bo'lsa, xarajatni qaytarib bo'lmaydi: hamyonda mablag' yetmaydi."],
+    ["Nega ba'zi amallarni o'zgartirib bo'lmaydi?",
+     "Agar amal o'chirilgan hamyonga tegishli bo'lsa, uni tahrirlab yoki bekor qilib bo'lmaydi — aks holda pul ko'rinmaydigan hamyonga o'tib qolardi."],
   ]},
-  { id: 'recurring', icon: 'repeat', title: "Takroriy to'lovlar", items: [
-    ["Takroriy to'lov nima?",
-     "Ijara, kommunal, internet, obuna yoki oylik maosh kabi muntazam takrorlanadigan to'lov va tushumlar. Bir marta qo'shasiz — muddati kelganda harajat yoki daromad o'zi yoziladi."],
+  { id: 'recurring', icon: 'repeat', title: "Doimiy to'lovlar", items: [
+    ["Doimiy to'lov nima?",
+     "Ijara, kommunal, internet, obuna yoki oylik maosh kabi muntazam takrorlanadigan to'lov va tushumlar. Bir marta qo'shasiz — muddati kelganda xarajat yoki daromad o'zi yoziladi."],
     ["Qanday qo'shaman?",
-     "Bosh sahifadagi «Takroriy to'lovlar» bo'limida «+ Qo'shish» tugmasini bosing. Turi, nomi, summa, hamyon, toifa, qanchalik tez-tez (har kuni, hafta, oy yoki yil) va birinchi to'lov sanasini tanlang."],
+     "Bosh sahifadagi «Doimiy to'lovlar» bo'limida «+ Qo'shish» tugmasini bosing. Turi, nomi, miqdor, hamyon, turkum, qanchalik tez-tez (har kuni, hafta, oy yoki yil) va birinchi to'lov sanasini tanlang."],
     ["To'lov qachon yoziladi?",
      "Muddati kelgan kuni, ilovani ochganingizda. Bir necha kun ochmagan bo'lsangiz, o'tib ketgan kunlarning hammasi yoziladi.\nBirinchi to'lov sanasi o'tmishda bo'lsa, eski sanalar orqaga qarab yozilmaydi — hisob bugundan boshlanadi."],
     ["Oyning 31-sanasidagi to'lov qisqa oylarda nima bo'ladi?",
@@ -4739,50 +4934,80 @@ const HELP_TOPICS = [
      "Muddatidan necha kun oldin eslatilishini o'zingiz belgilaysiz. Shu kundan boshlab navbardagi qo'ng'iroqcha belgisida xabar chiqadi."],
     ["«Avtomatik yozilmadi» degan xabar chiqdi. Nega?",
      "Odatda hamyonda pul yetmagan. To'lov keyingi safar ilovani ochganingizda yana urinib ko'riladi — hamyonni to'ldiring yoki to'lovni boshqa hamyonga o'tkazing."],
-    ["Takroriy to'lovni o'chirsam nima bo'ladi?",
-     "Kelgusida yozilmaydi. Avval yozilgan operatsiyalar o'chirilmaydi va balans o'zgarmaydi."],
+    ["Doimiy to'lovni o'chirsam nima bo'ladi?",
+     "Kelgusida yozilmaydi. Avval yozilgan amallar o'chirilmaydi va qoldiq o'zgarmaydi."],
   ]},
   { id: 'goals', icon: 'target', title: 'Jamg\'arma maqsadlari', items: [
     ["Maqsad qanday ishlaydi?",
-     "Maqsad bitta hamyonga bog'lanadi va yig'ilgan summa — o'sha hamyon balansi. Shuning uchun maqsad uchun alohida hamyon ochish qulay (masalan «Mashina uchun»)."],
+     "Yangi maqsad qo'shilganda unga alohida hamyon ochiladi — nomi maqsad nomi bilan bir xil. Yig'ilgan miqdor — shu hamyon qoldig'i. Maqsad hamyonidan xarajat qilib bo'lmaydi va maqsadni boshqa hamyonga bog'lab bo'lmaydi."],
     ["Maqsadga qanday pul qo'shaman?",
-     "Maqsad kartochkasidagi «+ Pul qo'shish» tugmasini bosing — O'tkazma oynasi maqsad hamyoniga yo'naltirilgan holda ochiladi. Pul boshqa hamyondan o'tkaziladi, shuning uchun umumiy balans o'zgarmaydi."],
+     "Maqsad kartochkasidagi «+ Pul qo'shish» tugmasini bosing — O'tkazma oynasi ochiladi, «Qaysi hamyonga» maydonida maqsad hamyoni qulflangan bo'ladi. Pul boshqa hamyondan o'tkaziladi, shuning uchun umumiy qoldiq o'zgarmaydi. Maqsad hamyoniga kirim yozib bo'lmaydi — faqat O'tkazma."],
     ["Muddat nima beradi?",
      "Maqsad kartochkasida muddatgacha necha kun qolgani ko'rinadi. Muddat ixtiyoriy."],
     ["Maqsadni o'chirsam pul yo'qoladimi?",
-     "Yo'q. Faqat maqsad o'chadi — hamyon va undagi pul joyida qoladi."],
+     "Yo'q. Maqsad hamyonida pul bo'lsa, avval u qaysi hamyonga o'tkazilishi so'raladi — pul o'sha hamyonga O'tkazma bilan o'tadi, so'ng maqsad va uning hamyoni o'chadi. Eski (oddiy hamyonga bog'langan) maqsadda faqat maqsad o'chadi, hamyon joyida qoladi."],
   ]},
-  { id: 'categories', icon: 'tag', title: "Toifalar va a'zolar", items: [
-    ['Toifalarni qayerda sozlayman?',
-     "Kirim yoki Harajat oynasidagi «Toifalarni sozlash» tugmasini bosing. Ochilgan oynada yangi toifa qo'shish yoki keraksizini o'chirish mumkin. Kirim va harajat toifalari alohida."],
+  { id: 'categories', icon: 'tag', title: "Turkumlar va a'zolar", items: [
+    ['Turkumlarni qayerda sozlayman?',
+     "Kirim yoki Chiqim oynasidagi «Turkumlarni sozlash» tugmasini bosing. Ochilgan oynada yangi turkum qo'shish yoki keraksizini o'chirish mumkin. Kirim va xarajat turkumlari alohida."],
     ["A'zolar nima?",
-     "A'zolar — siz pul sarflaydigan odamlar yoki oilalar. Ularni bosh sahifadagi «A'zolarim» bo'limida qo'shasiz va harajat yozayotganda «Kimga?» maydonida tanlaysiz. Turi «Bitta odam» yoki «Butun oila» bo'lishi mumkin."],
+     "A'zolar — siz pul sarflaydigan odamlar yoki oilalar. Ularni bosh sahifadagi «A'zolar» bo'limida qo'shasiz va xarajat yozayotganda «Kimga?» maydonida tanlaysiz. Turi «Bitta odam» yoki «Butun oila» bo'lishi mumkin."],
   ]},
-  { id: 'stats', icon: 'chart', title: 'Statistika va hisobotlar', items: [
-    ['Statistikani qayerdan ko\'raman?',
-     "Bosh sahifadagi statistika kartochkasini bosing. Kunlik dinamika va toifalar bo'yicha taqsimot ko'rsatiladi."],
+  { id: 'stats', icon: 'chart', title: 'Hisobotlar', items: [
+    ['Hisobotni qayerdan ko\'raman?',
+     "Bosh sahifadagi hisobot kartochkasini bosing. Kunlik o'zgarish va turkumlar bo'yicha taqsimot ko'rsatiladi."],
     ['Boshqa oy yoki sana oralig\'ini tanlasa bo\'ladimi?',
      "Ha. Oyni almashtirish yoki «Dan» va «Gacha» sanalarini kiritib ixtiyoriy davrni tanlash mumkin. Davr uzunligi 1 yildan (366 kun) oshmasligi kerak."],
   ]},
   { id: 'currency', icon: 'card', title: 'Valyutalar', items: [
     ['Qaysi valyutalar bor?',
      "UZS, USD, EUR, RUB, KZT, GBP, CNY, TRY, AED, KRW, JPY va CHF. Har bir hamyon bitta valyutada yuritiladi."],
-    ['Har xil valyutadagi balans qanday ko\'rsatiladi?',
-     "Bosh sahifada balans valyutalar bo'yicha alohida chiqadi: birinchisi katta, qolganlari uning tagida. Har bir hamyon summasi o'z valyutasida ko'rsatiladi."],
+    ['Har xil valyutadagi qoldiq qanday ko\'rsatiladi?',
+     "Bosh sahifada qoldiq valyutalar bo'yicha alohida chiqadi: birinchisi katta, qolganlari uning tagida. Har bir hamyon miqdori o'z valyutasida ko'rsatiladi."],
+    ["Valyuta kursini qayerdan ko'raman?",
+     "Navbardagi «Kurs» bo'limini bosing. Markaziy bankning bugungi kurslari ko'rsatiladi: asosiy valyutalar kartochkalarda, qolganlari «Boshqa valyutalar» ro'yxatida."],
+    ["Valyuta kalkulyatori qanday ishlaydi?",
+     "«Kurs» sahifasidagi «Valyuta kalkulyatori» kartasida miqdorni yozing va ikkita valyutani tanlang — natija darhol chiqadi. O'rtadagi tugma valyutalarni almashtiradi.\nHisob Markaziy bank kursi bo'yicha, bank yoki ayirboshlash shoxobchasi kursi farq qilishi mumkin."],
   ]},
   { id: 'security', icon: 'shield', title: 'Xavfsizlik va qurilmalar', items: [
     ['Parolni qanday almashtiraman?',
      "Sozlamalar → Parol bo'limida joriy parolni va yangi parolni (kamida 8 belgi) ikki marta kiriting."],
-    ['Ikki bosqichli kirish nima?',
-     "Yoqilgan bo'lsa, kirishda paroldan keyin emailingizga 6 xonali kod yuboriladi va u kiritilmaguncha akkaunt ochilmaydi. Parolingizni kimdir bilib olsa ham, emailingizga kira olmasa akkauntga kira olmaydi."],
-    ['Ikki bosqichli kirishni qanday yoqaman?',
-     "Sozlamalar → Qurilmalar bo'limida «Ikki bosqichli kirish» yonidagi «Yoqish» tugmasini bosing, joriy parolni kiriting, so'ng emailga kelgan kodni kiriting. Kod kelishi uchun Profil bo'limida email kiritilgan bo'lishi kerak.\nYoqilgan paytda emailni o'chirib bo'lmaydi — aks holda kod keladigan joy qolmaydi."],
+    ['Ikki bosqichli himoya nima?',
+     "Yoqilgan bo'lsa, kirishda paroldan keyin elektron pochtangizga 6 xonali kod yuboriladi va u kiritilmaguncha hisob ochilmaydi. Parolingizni kimdir bilib olsa ham, elektron pochtangizga kira olmasa hisobga kira olmaydi."],
+    ['Ikki bosqichli himoyani qanday yoqaman?',
+     "Sozlamalar → Qurilmalar bo'limida «Ikki bosqichli himoya» yonidagi «Yoqish» tugmasini bosing, joriy parolni kiriting, so'ng elektron pochtaga kelgan kodni kiriting. Kod kelishi uchun Profil bo'limida elektron pochta kiritilgan bo'lishi kerak.\nYoqilgan paytda elektron pochtani o'chirib bo'lmaydi — aks holda kod keladigan joy qolmaydi."],
     ['Qurilmalar bo\'limi nima uchun?',
-     "Bu yerda akkauntingizga qaysi qurilmalardan kirilgani va kirish vaqti ko'rinadi. Notanish qurilma bo'lsa, «Boshqa qurilmalarni chiqarish» tugmasini bosing va parolni almashtiring."],
-    ["Nega «Boshqa qurilmalarni chiqarish» ishlamayapti?",
-     "Xavfsizlik uchun bu amalni faqat kamida 15 kun oldin kirilgan qurilmadan bajarish mumkin. Shunda parolingizni bilib olgan begona odam sizni akkauntdan chiqarib yubora olmaydi."],
-    ["Akkauntni qanday o'chiraman?",
-     "Sozlamalar → Profil bo'limida «Akkauntni o'chirish» tugmasini bosing va joriy parolni kiriting. Diqqat: bu amalni ortga qaytarib bo'lmaydi."],
+     "Bu yerda hisobingizga qaysi qurilmalardan kirilgani va kirish vaqti ko'rinadi. Notanish qurilma bo'lsa, «Boshqa qurilmalardan chiqarish» tugmasini bosing va parolni almashtiring."],
+    ["Nega «Boshqa qurilmalardan chiqarish» ishlamayapti?",
+     "Xavfsizlik uchun bu amalni faqat kamida 15 kun oldin kirilgan qurilmadan bajarish mumkin. Shunda parolingizni bilib olgan begona odam sizni hisobdan chiqarib yubora olmaydi."],
+    ["Hisobni qanday o'chiraman?",
+     "Sozlamalar → Profil bo'limida «Hisobni o'chirish» tugmasini bosing va joriy parolni kiriting. Diqqat: bu amalni ortga qaytarib bo'lmaydi."],
+  ]},
+  { id: 'voice', icon: 'microphone', title: 'Ovozli yordamchi', items: [
+    ["Ovoz bilan qanday buyruq beraman?",
+     "Navbardagi mikrofon tugmasini bosing (kompyuterda Alt + M) yoki «Salom Moliya» deng — pastda dumaloq belgi chiqadi. Buyruqni oddiy gap bilan ayting: «tushlikka 45 ming sarfladim», «oylik tushdi 5 million kartaga», «kartadan naqdga 200 ming o'tkaz», «Akmalga 1 million qarz berdim».\nYordamchi savollarga ham javob beradi: «qoldig'im qancha», «bu oy ovqatga qancha ketdi», «dollar kursi qancha». «Hisobotni och», «qorong'u rejim» kabi buyruqlar ham ishlaydi."],
+    ["«Salom Moliya» deb chaqirish qanday ishlaydi?",
+     "U odatda yoqilgan — faqat mikrofonga bir marta ruxsat berish kerak: ilovaga kirganda pastda chiqadigan xabardagi «Ruxsat berish» tugmasini yoki navbardagi mikrofon tugmasini bosing. Shundan keyin ilova ochiq turganda «Salom Moliya» deyishingiz kifoya — dumaloq belgi ochiladi. Yordamchi faqat «Salom Moliya» deganda ochiladi — boshqa gaplarda (hatto «Moliya» so'zi aytilsa ham) yopiq turadi. O'chirish uchun Sozlamalar → Ovozli yordamchi bo'limidagi tugmani o'chiring."],
+    ["Yordamchi nega javob bermasdan bajaradi?",
+     "Amal bajarilganda vaqtingiz olinmasligi uchun ovozda aytilmaydi: belgi yashil bo'ladi va pastda yozilgan miqdor, turkum va hamyon bilan xabar chiqadi. Biror narsa noto'g'ri yozilgan bo'lsa, xabardagi «Bekor qilish» tugmasini bosing yoki «oxirgisini bekor qil» deng — amal o'chadi va qoldiq qaytadi."],
+    ["Miqdor yoki hamyon aytilmasa nima bo'ladi?",
+     "Miqdor yoki odam aytilmasa, yordamchi so'raydi: «Qancha sarfladingiz?», «Kimga qarz berdingiz?». Hamyon aytilmasa — shu yaqinda ishlatganingiz yoki odatda ishlatadiganingiz olinadi (natijada ko'rinadi); aniq bo'lmasa «Qaysi hamyondan?» deb so'raydi. Javobni ayting — masalan «50 ming», «kartadan» yoki «birinchisi». To'xtatish uchun «kerak emas» deng."],
+    ["Bir gapda bir nechta amal aytsam bo'ladimi?",
+     "Ha. Masalan: «tushlikka 45 ming, taksiga 20 ming sarfladim» yoki «oylik 5 million va bonus 1 million tushdi» — har biri alohida yoziladi. Hamyon bir marta aytilsa («naqddan»), hammasiga tegishli bo'ladi. Savollarni ham qo'shib so'rash mumkin: «qoldig'im va qarzlarim qancha»."],
+    ["Xato yozilgan bo'lsa ovoz bilan qanday tuzataman?",
+     "Amaldan keyin darhol ayting: «yo'q, 50 ming edi» — miqdor, «kartadan edi» — hamyon, «transportga o'zgartir» — turkum, «kecha edi» — sana tuzatiladi. Qoldiq ham avtomatik to'g'rilanadi.\nButunlay bekor qilish uchun «oxirgisini bekor qil» deng yoki xabardagi «Bekor qilish» tugmasini bosing."],
+    ["Suhbat rejimi nima?",
+     "Yordamchi javob bergandan yoki amalni bajargandan keyin yana bir necha soniya tinglaydi — keyingi buyruqni «Salom Moliya»siz aytish mumkin: «yana taksiga 20 ming». Bu paytda «bekor qil» desangiz — oxirgi amal bekor qilinadi, «rahmat» desangiz — yordamchi yopiladi. Hech narsa aytilmasa, o'zi yopiladi. Darhol yopish uchun × tugmasini, Esc ni bosing yoki ekranning boshqa istalgan joyiga teging. Yopilgan yordamchi javob bermaydi: javobi hali kelmagan buyruq bekor qilinadi. Yordamchi gapirayotganda gapirib yuborsangiz — u to'xtaydi va sizni tinglaydi.\nO'chirish: Sozlamalar → Ovozli yordamchi → «Suhbat rejimi»."],
+    ["Yordamchi qanday savollarga javob beradi?",
+     "Qoldiq va har bir hamyon («qoldig'im qancha»), sarf va kirim («bu oy qancha sarfladim»), eng ko'p xarajat turkumlari («eng ko'p nimaga sarfladim»), kun xulosasi («bugungi xulosa»), o'tgan oy bilan taqqoslash («o'tgan oyga nisbatan qanday»), qarzlar, jamg'arma maqsadlari («maqsadimga qancha qoldi»), yaqin doimiy to'lovlar («keyingi to'lovlar qachon») va valyuta kursi. Ro'yxatlar dumaloq belgi ustidagi kartada ko'rinadi."],
+    ["Ruscha gapirsam tushunadimi?",
+     "Ha, asosiy buyruqlarni tushunadi: «потратил на обед 45 тысяч», «получил зарплату 5 миллионов», «перевёл с карты на наличные 200 тысяч», «сколько я потратил». Javoblar o'zbekcha bo'ladi."],
+    ["Ovozim yoziladimi yoki saqlanadimi?",
+     "Ilova ovozni saqlamaydi. Odatda ovozni brauzerning o'zi matnga aylantiradi (Chrome va Edge'da — Google, Safari'da — Apple xizmati orqali) va serverga faqat tanilgan matn yuboriladi. Brauzer gapni tanimasa yoki noto'g'ri tanisa, aniqroq tanish uchun shu gapning ovoz yozuvi server orqali OpenAI xizmatiga yuboriladi va javobdan keyin o'chiriladi. «Salom Moliya» yoqilgan bo'lsa, ilova ochiq turgan paytda mikrofon chaqiruv so'zini kutadi — brauzer buni manzil satridagi belgi bilan ko'rsatadi."],
+    ["Yordamchining ovozini o'zgartirsa bo'ladimi?",
+     "Ha. Sozlamalar → Ovozli yordamchi bo'limidagi «Yordamchi ovozi» dan Madina (ayol) yoki Sardor (erkak) ni tanlang — namunaviy gap shu ovozda o'qiladi. Tanlov shu brauzerda saqlanadi.\nJavoblar ravon o'zbekcha ovozda o'qilishi uchun server ovozi yoqilgan bo'lishi kerak. U bo'lmasa brauzerning o'z ovozi ishlatiladi: o'zbekcha ovoz faqat Edge brauzerida bor, boshqalarida javob g'alati eshitilishi mumkin."],
+    ["Qaysi brauzerda ishlaydi?",
+     "Chrome, Edge va Safari'da (telefon va kompyuterda) brauzerning o'zi taniydi. Firefox'da yoki brauzer tanimay qolsa, ovoz server orqali taniladi (agar administrator buni yoqqan bo'lsa); aks holda dumaloq belgi ochilganda buyruqni yozib yuborishingiz mumkin. «Salom Moliya» deb chaqirish faqat brauzer o'zi taniydigan joyda ishlaydi. Mikrofon faqat xavfsiz (https://) manzilda ishlaydi. Shovqinli joyda yoki ovoz tanilmasa, belgi yonidagi yozish tugmasidan foydalaning."],
   ]},
   { id: 'look', icon: 'note', title: "Ko'rinish va til", items: [
     ["Yorug' yoki qorong'u rejimni qanday almashtiraman?",
@@ -4904,8 +5129,50 @@ function renderAssistant() {
 
 function openAssistant() {
   renderAssistant();
-  document.getElementById('assistantInput').focus();
+  const input = document.getElementById('assistantInput');
+  input._grow?.();  // yashirin turganda hisoblangan balandlik noto'g'ri bo'ladi — ko'ringach qayta o'lchanadi
+  input.focus();
 }
+
+// Pastki o'ngdagi dumaloq tugma: Moliya yordamchisi har sahifada. Chat elementlari (suhbat, forma) bitta — Sozlamalar
+// bo'limi bilan oyna orasida ko'chiriladi: suhbat ham, forma tinglovchilari ham ikkala joyda umumiy
+function setAssistantDock(open) {
+  const dock = document.getElementById('assistantDock');
+  const fab = document.getElementById('assistantFab');
+  if (!dock || open === !dock.hidden) return;
+  const settingsPanel = document.getElementById('settingsAssistant');
+  const dockBody = document.getElementById('assistantDockBody');
+  const [from, to] = open ? [settingsPanel, dockBody] : [dockBody, settingsPanel];
+  while (from.firstChild) to.appendChild(from.firstChild);
+  dock.hidden = !open;
+  fab.setAttribute('aria-expanded', String(open));
+  if (open) openAssistant();
+}
+
+// Kirgan foydalanuvchiga ko'rinadi (checkAuth)
+function setAssistantFab(visible) {
+  const fab = document.getElementById('assistantFab');
+  if (!fab) return;
+  if (!visible) setAssistantDock(false);
+  fab.hidden = !visible;
+  document.body.classList.toggle('has-assistant-fab', visible);
+}
+
+document.getElementById('assistantFab')?.addEventListener('click', () => {
+  setAssistantDock(document.getElementById('assistantDock').hidden);
+});
+document.getElementById('assistantDockClose')?.addEventListener('click', () => {
+  setAssistantDock(false);
+  document.getElementById('assistantFab').focus();
+});
+// Sahifaning boshqa joyiga bosish oynani yopmaydi: yordamchi bilan gaplashib turib ilovadan foydalanish mumkin.
+// Yopish — faqat × yoki dumaloq tugma (va klaviaturada Esc)
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape' || document.getElementById('assistantDock')?.hidden !== false) return;
+  e.preventDefault(); // Esc faqat yordamchi oynasini yopadi
+  setAssistantDock(false);
+  document.getElementById('assistantFab').focus();
+});
 
 async function askAssistant(question) {
   const log = document.getElementById('assistantLog');
@@ -5119,7 +5386,7 @@ function renderDevices(data) {
   // Chiqarish taqiqlangan bo'lsa sababi va qachon ruxsat berilishi ko'rsatiladi
   hint.hidden = data.can_terminate || !others;
   if (!hint.hidden) {
-    hint.textContent = `Boshqa qurilmalarni chiqarish uchun bu qurilmada kamida ${data.min_days} kun oldin kirilgan bo'lishi kerak. `
+    hint.textContent = `Boshqa qurilmalardan chiqarish uchun bu qurilmada kamida ${data.min_days} kun oldin kirilgan bo'lishi kerak. `
       + `Ruxsat: ${formatUzDate(data.terminate_allowed_at, { year: true, time: true })}`;
   }
   const btnOthers = document.getElementById('btnTerminateOthers');
@@ -5159,12 +5426,12 @@ document.getElementById('deviceList')?.addEventListener('click', (e) => {
   const btn = e.target.closest('[data-device-end]');
   if (!btn || btn.disabled) return;
   terminateDevices(`${API_BASE}/auth/devices/${Number(btn.dataset.deviceEnd)}/terminate/`,
-    'Bu qurilma akkauntdan chiqariladi. Unda qayta kirish uchun parol kerak bo\'ladi.', 'Qurilma chiqarildi');
+    'Bu qurilma hisobdan chiqariladi. Unda qayta kirish uchun parol kerak bo\'ladi.', 'Qurilma chiqarildi');
 });
 
 document.getElementById('btnTerminateOthers')?.addEventListener('click', () => {
   terminateDevices(`${API_BASE}/auth/devices/terminate-others/`,
-    'Bu qurilmadan boshqa barcha qurilmalar akkauntdan chiqariladi.', 'Boshqa barcha qurilmalar chiqarildi');
+    'Bu qurilmadan boshqa barcha qurilmalar hisobdan chiqariladi.', 'Boshqa barcha qurilmalar chiqarildi');
 });
 
 const PROFILE_FIELD_IDS = ['settingsFirstName', 'settingsLastName', 'settingsUsername', 'settingsEmail', 'settingsPhone'];
@@ -5316,7 +5583,7 @@ async function confirmProfileEmail() {
     if (res.ok) {
       state.currentUser = data.user;
       renderUserNav();
-      showToast(data.message || 'Email yangilandi');
+      showToast(data.message || 'Elektron pochta yangilandi');
       fillProfileForm(data.user);
       setProfileMode('view');
       document.getElementById('btnProfileEdit').focus();
@@ -5399,9 +5666,9 @@ onSubmitOnce('formDeleteAccount', async (e) => {
     });
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
-      reloadSignedOut("Akkaunt o'chirildi");
+      reloadSignedOut("Hisob o'chirildi");
     } else {
-      showToast(extractErrorMessage(data, "Akkauntni o'chirishda xatolik"), 'error');
+      showToast(extractErrorMessage(data, "Hisobni o'chirishda xatolik"), 'error');
     }
   } catch (err) {
     showToast(NETWORK_ERROR_MESSAGE, 'error');
@@ -5448,15 +5715,29 @@ function syncNavbarAtTop() {
 window.addEventListener('scroll', syncNavbarAtTop, { passive: true });
 syncNavbarAtTop();
 
-// Navbar doim ko'rinib turadi: ro'yxat sahifalari (overlay) uning ostidan boshlanishi uchun balandligini kuzatib boramiz
+// Navbar doim ko'rinib turadi: ro'yxat sahifalari (overlay) kontenti uning ostidan boshlanishi uchun balandligini kuzatib boramiz.
+// Navbar balandligi kirgandan keyin (bo'limlar kapsulasi chiqadi), shrift yuklanganda va ekran eni o'zgarganda o'zgaradi.
+// Faqat ResizeObserver'ga ishonilmaydi: u ba'zan (fon varaqda) kechikadi va eski qiymat qolib, sahifa navbar ostida qolardi —
+// shuning uchun sahifa ochilganda ham qayta o'lchanadi
+const _navEl = document.querySelector('.navbar');
+let _navbarObserver = null;  // havola saqlanadi — kuzatuvchi yig'ishtirib yuborilmasin
 function syncNavbarHeight() {
-  const nav = document.querySelector('.navbar');
-  if (nav) document.documentElement.style.setProperty('--navbar-h', nav.getBoundingClientRect().height + 'px');
+  if (_navEl) document.documentElement.style.setProperty('--navbar-h', _navEl.getBoundingClientRect().height + 'px');
 }
 syncNavbarHeight();
-const _navEl = document.querySelector('.navbar');
-if (_navEl && 'ResizeObserver' in window) new ResizeObserver(syncNavbarHeight).observe(_navEl);
-else window.addEventListener('resize', syncNavbarHeight);
+if (_navEl && 'ResizeObserver' in window) {
+  _navbarObserver = new ResizeObserver(syncNavbarHeight);
+  _navbarObserver.observe(_navEl, { box: 'border-box' });
+}
+window.addEventListener('resize', syncNavbarHeight);
+window.addEventListener('load', syncNavbarHeight);
+document.fonts?.ready.then(syncNavbarHeight);
+// Sahifa (overlay) ochilishi bilan — bitta joyda, har bir open* funksiyasiga yozmasdan
+const _txOverlayEl = document.getElementById('txPageOverlay');
+if (_txOverlayEl) {
+  new MutationObserver(() => { if (_txOverlayEl.classList.contains('open')) syncNavbarHeight(); })
+    .observe(_txOverlayEl, { attributes: true, attributeFilter: ['class'] });
+}
 
 // "Shisha" tugmacha (style.css: .glass-thumb) — segmentli guruhlar (.segmented) va navbar bo'limlari (.nav-sections).
 // Tugmachaning o'rni va eni faol tugmadan o'lchanadi (--thumb-x / --thumb-w), chunki filtrlardagi tugmalar har xil enda.
@@ -5464,6 +5745,8 @@ else window.addEventListener('resize', syncNavbarHeight);
 // suzib o'tadi, bo'lim ochilganda yoki eni o'zgarganda esa animatsiyasiz joyida turadi.
 // Barmoq yoki sichqoncha bilan surilsa linza unga ergashadi; qo'yib yuborilgan joydagi tugma bosiladi (.click())
 const GLASS_LIFT_MS = 420;
+// Suzish davomiyligi (style.css: .glass-thumb transition 0.5s) — shu vaqt ichida o'lcham o'zgarsa ham silliq davom etadi
+const GLASS_SLIDE_MS = 550;
 const GLASS_DRAG_PX = 6;
 const _reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
 
@@ -5508,7 +5791,17 @@ function placeGlassThumb(track, animate) {
   if (animate && changed && !instant) {
     g.thumb.classList.add('is-lifted');
     dropGlassLater(g);
+    g.slideUntil = performance.now() + GLASS_SLIDE_MS;
   }
+}
+
+// O'lcham o'zgardi (ekran eni, ochilgan oyna). Tab almashganda ro'yxat ham yangilanadi va aylantirish chizig'i
+// paydo bo'lib/yo'qolib eni bir necha pikselga o'zgaradi: suzayotgan tugmacha shunda sakrab qolmasin — yangi
+// o'lchamga silliq suzishda davom etadi. Boshqa paytda (oyna ochildi, ekran burildi) joyiga darhol qo'yiladi
+function onGlassResize(track) {
+  const g = track._glass;
+  if (g.drag) return;
+  placeGlassThumb(track, performance.now() < (g.slideUntil || 0));
 }
 
 // Linza markaziga eng yaqin tugma
@@ -5572,7 +5865,7 @@ function initGlassTrack(track) {
     if (!g.drag && glassActive(track) !== g.active) placeGlassThumb(track, true);
   }).observe(track, { subtree: true, attributes: true, attributeFilter: ['class'] });
   if ('ResizeObserver' in window) {
-    const ro = new ResizeObserver(() => { if (!g.drag) placeGlassThumb(track, false); });
+    const ro = new ResizeObserver(() => onGlassResize(track));
     ro.observe(track);
     glassButtons(track).forEach(btn => ro.observe(btn));
   }
@@ -5693,7 +5986,13 @@ function _ptrRelease() {
 async function _ptrFinish() {
   const go = _ptr.dist >= PTR_THRESHOLD;
   _ptrReset();
-  if (!go) return;
+  if (go) await _ptrRefresh();
+}
+
+// refreshAll() + kapsula animatsiyasi. Tortib yangilash va navbardagi "Moliya" (goHome) ishlatadi;
+// yangilanish ketayotgan paytda qayta bosilsa ikkinchi so'rov yuborilmaydi
+async function _ptrRefresh() {
+  if (_ptr.busy) return;
   const el = _ptrIndicator();
   _ptr.busy = true;
   el.classList.add('refreshing');

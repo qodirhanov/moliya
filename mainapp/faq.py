@@ -31,12 +31,21 @@ STOPWORDS = {
 
 # Bir ma'nodagi so'zlar ma'lumotnomadagi atamaga keltiriladi
 SYNONYMS = {
-    "chiqim": "harajat", "xarajat": "harajat", "xarajatlar": "harajat", "sarf": "harajat", "rasxod": "harajat",
+    # Ilovadagi atamalar adabiy o'zbekchaga o'tkazilgan; foydalanuvchi eski so'zlarni yozsa ham topilsin
+    "harajat": "chiqim", "xarajat": "chiqim", "xarajatlar": "chiqim", "sarf": "chiqim", "rasxod": "chiqim",
     "daromad": "kirim", "dohod": "kirim", "maosh": "kirim", "oylik": "kirim",
-    "karta": "hamyon", "kartam": "hamyon", "koshelek": "hamyon", "hisob": "hamyon", "schyot": "hamyon",
-    "kategoriya": "toifa", "kategoriyalar": "toifa",
+    "karta": "hamyon", "kartam": "hamyon", "koshelek": "hamyon", "schyot": "hamyon",
+    "kategoriya": "turkum", "kategoriyalar": "turkum", "toifa": "turkum", "toifalar": "turkum",
+    "balans": "qoldiq", "balansni": "qoldiq", "qoldig'i": "qoldiq", "qoldig'ini": "qoldiq",
+    "operatsiya": "amal", "operatsiyalar": "amal", "operatsiyani": "amal",
+    "statistika": "hisobot", "statistikani": "hisobot",
+    "summa": "miqdor", "summani": "miqdor", "summasi": "miqdor",
+    "takroriy": "doimiy",
+    "ma'lumotnoma": "qo'llanma", "spravka": "qo'llanma",
+    "email": "elektron", "emailni": "elektron", "pochta": "elektron", "pochtani": "elektron",
     "kurs": "valyuta", "dollar": "valyuta", "usd": "valyuta", "so'm": "valyuta",
-    "parolni": "parol", "login": "kirish", "akkount": "akkaunt", "akkauntni": "akkaunt", "profilni": "profil",
+    "parolni": "parol", "login": "kirish", "akkaunt": "hisob", "akkount": "hisob", "akkauntni": "hisob",
+    "hisobni": "hisob", "profilni": "profil",
     "delete": "o'chir", "udalit": "o'chir", "tahrir": "o'zgartir", "tahrirlash": "o'zgartir", "tuzat": "o'zgartir",
     "almashtir": "o'zgartir", "yangila": "o'zgartir",
     "tema": "rang", "dizayn": "rang", "tun": "qorong'u", "dark": "qorong'u",

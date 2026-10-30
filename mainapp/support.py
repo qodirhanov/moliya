@@ -32,7 +32,7 @@ class SupportRateThrottle(UserRateThrottle):
 
 
 class AssistantRateThrottle(UserRateThrottle):
-    """Pullik Claude API ishlatilgandagina qattiq cheklov; bepul ma'lumotnoma qidiruvi umumiy "user" cheklovida"""
+    """Pullik Claude API ishlatilgandagina qattiq cheklov; bepul qo'llanma qidiruvi umumiy "user" cheklovida"""
     scope = "assistant"
 
     def allow_request(self, request, view):
@@ -78,7 +78,7 @@ def messages_since(qs, after):
 
 def admin_notify_emails():
     """Yangi xabar haqida xat oladiganlar: .env dagi SUPPORT_NOTIFY_EMAILS, berilmagan bo'lsa —
-    admin paneldagi Yordam bo'limini ko'ra oladigan faol xodimlarning emaili"""
+    admin paneldagi Yordam bo'limini ko'ra oladigan faol xodimlarning elektron pochtasi"""
     if settings.SUPPORT_NOTIFY_EMAILS:
         return settings.SUPPORT_NOTIFY_EMAILS
     from .panel import can_view_panel  # panel.py bu moduldan import qiladi — aylanma importdan qochish
@@ -168,7 +168,8 @@ def support_unread_api(request):
 @throttle_classes([UserRateThrottle, AssistantRateThrottle])
 def assistant_api(request):
     """Moliya yordamchisi: {messages: [{role, content}, ...]} — suhbat tarixi brauzerda saqlanadi, serverda yozilmaydi.
-    Odatda bepul: javob ma'lumotnomadan qidiriladi (faq.py). .env da ANTHROPIC_API_KEY bo'lsa — Claude javob beradi (pullik)"""
+    Odatda bepul: javob qo'llanmadan qidiriladi (faq.py). .env da ANTHROPIC_API_KEY (Claude, pullik) yoki
+    GEMINI_API_KEY (Gemini, tekin rejasi bor) bo'lsa — sun'iy intellekt javob beradi (assistant.provider)"""
     try:
         messages = assistant.clean_history(request.data.get("messages"))
     except ValueError as e:

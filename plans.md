@@ -1,18 +1,30 @@
 # 💰 Moliya (Kalkulator) — Loyiha Rejasi va Progress
 
 > Bu fayl loyihaning qayerga kelganini kuzatib borish uchun.
-> Oxirgi yangilangan: **2026-10-26**
+> Oxirgi yangilangan: **2026-10-30**
 
 ---
 
 ## 🐞 KAMCHILIKLAR VA XATOLAR (navbat bilan tuzatiladi)
 
 > Tuzatilgan band shu ro'yxatdan o'chiriladi. Tartib — muhimligi bo'yicha.
+> 2026-10-28: to'liq kod tekshiruvi (pul/balans, kirish/xavfsizlik, ovozli yordamchi, frontend) — topilgan 20 ta band qo'shildi; 5 ta Yuqori va «Qaysi hamyondan?» savolidagi maqsad hamyoni bandi shu kuni tuzatildi.
+
+### O'rta
+4. **Klaviaturada maqsad yoki doimiy to'lov kartochkasidagi tugma Enter bilan bosilmaydi.** Keydown handlerlari (`app.js:3891`, `app.js:4044`) `closest('[data-goal-id]')` bilan ichki tugmani ham ushlaydi va `preventDefault` qiladi. «+ Pul qo'shish» yoki o'chirish o'rniga tahrirlash oynasi ochiladi. Yechim: faqat kartochkaning o'zi (`e.target.matches(...)`).
+5. **Faqat maqsad hamyonlari qolsa, chiqim/kirim qo'shib bo'lmaydi va xabar chiqmaydi.** Oxirgi oddiy hamyonni o'chirish mumkin: o'chirish tugmasi faqat `state.wallets.length > 1` ni tekshiradi (`app.js` walletCardHtml), server `destroy` ham tekshirmaydi. Shunda Chiqim/Kirim oynasida hamyon ro'yxati bo'sh qoladi va «Saqlash» jim ishlamaydi. Yechim: oxirgi oddiy hamyonni o'chirishni taqiqlash (frontend + server).
+6. **«Pul qo'shish» bekor qilinsa, keyingi oddiy o'tkazmada maqsad ma'lumotlari qoladi.** `unlockTransferTarget()` (`app.js:4114`) faqat qulfni ochadi. Keyin «O'tkazma» bosilsa, «Qaysi hamyonga» = maqsad hamyoni va izoh «Maqsad: …» bo'lib turadi. Yechim: qulf ochilganda `formAddTransfer.reset()`.
 
 ### Past
-1. **Parolni tiklash xati spamga tushadi.** Xat shaxsiy Gmail (`smtp.gmail.com`) orqali ketadi va har qanday manzilga yetadi, lekin yangi qabul qiluvchilarda Spam papkasiga tushishi mumkin (ekranda "spam papkasini ham tekshiring" eslatmasi bor). To'liq yechim — o'z domeningiz + Resend (SPF/DKIM), DEPLOY.md 163-qator; eski Resend sozlamasi `.env` da izoh sifatida turibdi. Gmail limiti — kuniga ~500 xat. Xat endi matn + HTML ko'rinishida (2026-10-21) — bu yordam berishi mumkin, lekin kafolat emas.
-2. **"Dastur haqida" to'ldirilmagan.** Dasturchi ismi va kontaktlari `templates/index.html` dagi "Dastur haqida" blokida hozircha «—».
-3. SQLite summalarni float'da qo'shadi: ko'p yozuvlarning **jami** ~10¹³ dan oshsa, tiyin noaniq bo'lishi mumkin (bitta summa ≤ 10¹² bo'lgani uchun alohida qiymatlar aniq). PostgreSQL'ga o'tilganda o'z-o'zidan yo'qoladi.
+7. **Parolni tiklash xati spamga tushadi.** Xat shaxsiy Gmail (`smtp.gmail.com`) orqali ketadi va har qanday manzilga yetadi, lekin yangi qabul qiluvchilarda Spam papkasiga tushishi mumkin (ekranda "spam papkasini ham tekshiring" eslatmasi bor). To'liq yechim — o'z domeningiz + Resend (SPF/DKIM), DEPLOY.md 163-qator; eski Resend sozlamasi `.env` da izoh sifatida turibdi. Gmail limiti — kuniga ~500 xat. Xat endi matn + HTML ko'rinishida (2026-10-21) — bu yordam berishi mumkin, lekin kafolat emas.
+8. **"Dastur haqida" to'ldirilmagan.** Dasturchi ismi va kontaktlari `templates/index.html` dagi "Dastur haqida" blokida hozircha «—».
+9. SQLite summalarni float'da qo'shadi: ko'p yozuvlarning **jami** ~10¹³ dan oshsa, tiyin noaniq bo'lishi mumkin (bitta summa ≤ 10¹² bo'lgani uchun alohida qiymatlar aniq). PostgreSQL'ga o'tilganda o'z-o'zidan yo'qoladi.
+10. **JSON massiv yuborilsa auth endpointlari 500 qaytaradi.** `login_api`, `register_api`, `password_reset_request_api`, `login_2fa_api` va boshqa `request.data.get(...)` joylari (`views.py`, `support.py`): `POST /auth/login/` ga `[1,2]` yuborilsa `AttributeError` chiqadi. Yechim: `request.data` dict bo'lmasa 400.
+11. **Email almashtirilganda eski manzilga yuborilgan parol tiklash kodi ishlab qoladi.** `profile_api` (`views.py:443`) va `confirm_email_api` (`views.py:921`) `password_reset_codes` ni bekor qilmaydi (`change_password_api` qiladi). Yechim: email saqlangach `user.password_reset_codes.filter(used=False).update(used=True)`.
+12. **Django admin parol almashtirish formasi joriy parolni taxmin qilish limitini chetlab o'tadi.** `/<ADMIN_URL>/password_change/` `verify_current_password` (15 daqiqada 5 urinish) orqali o'tmaydi. Yechim: `clean_old_password` da `verify_current_password`.
+13. **Doimiy to'lovlarni yozishda valyuta kursi tranzaksiya ichida olinadi.** `recurring.py:50-55`: `_operation_for(...).save()` atomic ichida, `prepare_uzs_rate` esa cbu.uz ga chiqishi mumkin (10 soniyagacha). SQLite'da shu payt boshqa yozuvlar kutib qoladi. Yechim: `prepare_uzs_rate(op)` ni atomic'dan oldin chaqirish.
+15. **STT/TTS provayderi uzilib qolsa 500 xato.** `stt.py:78-86`, `tts.py:102-110`: `http.client.IncompleteRead` `OSError` emas, ushlanmaydi. STT'da JSON obyekt bo'lmasa `payload.get` ham yiqiladi. Yechim: `http.client.HTTPException` ni ham ushlash va `isinstance(payload, dict)`.
+16. **Mikrofon ochilayotgan paytda yopilsa, yonib qolishi mumkin.** `voice.js:209-224`: `getUserMedia` kutilayotganda `releaseMicNow()` hech narsa qilmaydi, keyin kelgan oqim saqlanib qoladi (masalan, sahifa ochilishi bilan boshqa tabga o'tilsa). Yechim: so'rovdan keyin release bo'lgan bo'lsa, `.then` da oqimni darhol to'xtatish.
 
 ---
 
@@ -63,6 +75,14 @@
 | 41 | Navbarda "Moliya" (bosh sahifa) Kirim / Chiqim / Qarz bilan bitta shisha kapsulada: kirilgandan keyin alohida logotip yashiriladi, bosh sahifada (statistika, hamyon sahifalarida ham) "Moliya" tanlangan bo'ladi, bosilsa ochiq sahifa yopiladi (`setNavActive`, style.css v10.14, app.js v3.76) | ✅ Bajarildi | 2026-10-21 |
 | 42 | Sozlamalarga 3 bo'lim: **Moliya yordamchisi** — bepul: savolga `assistant_knowledge.md` (Ma'lumotnoma nusxasi) dan kalit so'z qidiruvi bilan javob topadi (`mainapp/faq.py`: qo'shimchasiz solishtirish, sinonimlar, kirill yozuv); `.env` da `ANTHROPIC_API_KEY` bo'lsa ixtiyoriy ravishda Claude javob beradi (pullik, 30/soat, model nomi ko'rsatilmaydi), **Yordam** — admin bilan chat (`SupportMessage`, migratsiya 0025, polling; admin javobi `panel/support/`, navbar qo'ng'irog'ida "Admin javob berdi"; yangi xabar haqida adminlarga email — admin o'qimaguncha qayta yuborilmaydi, manzillar `SUPPORT_NOTIFY_EMAILS` yoki panelga kira oladigan xodimlar emaili), **Dastur haqida** (style.css v10.41, app.js v3.98, panel.css v7, i18n v10) | ✅ Bajarildi | 2026-10-23 |
 | 43 | Kamchiliklar ro'yxatidagi 6 ta band tuzatildi: 2FA yoqilganda yangi email kod bilan tasdiqlanadi (`/auth/profile/confirm-email/`, `LoginCode.new_email`, migratsiya 0028; kod maqsadlari ajratilgan), 2FA kodi urinishi tekshiruvdan oldin bazada band qilinadi (parallel so'rovlar limitni aylanib o'tmaydi), o'tgan sanadagi operatsiyaga o'sha kungi CBU kursi yoziladi (arxiv keshlanadi), sessiya har so'rovda emas kuniga bir marta yangilanadi (`SessionRefreshMiddleware`), yordamchi tarixi qisqartiriladi, kod git'ga commit qilindi (testlar: 587 ta; app.js v4.12, i18n v21) | ✅ Bajarildi | 2026-10-26 |
+| 44 | Kod tekshiruvidagi 5 ta Yuqori band tuzatildi: Django admin kirishida 2FA chetlab o'tilmaydi (`TwoFactorAdminAuthenticationForm`), `/api/v1/users/` da xodimga `view/change/delete_user` huquqi kerak va boshqa xodim akkauntini faqat superuser o'zgartiradi, yozuvni parallel ikki marta o'chirish pulni ikki marta qaytarmaydi (qator atomik egallanadi), ovozda maqsad hamyoni nomi tanlangan hamyondan ustun kelmaydi, «45.000» minglik ajratgich bilan o'qiladi, «Qaysi hamyondan?» savolida maqsad hamyoni taklif qilinmaydi (testlar: 681 ta) | ✅ Bajarildi | 2026-10-28 |
+| 45 | Maqsad o'chirilsa uning hamyoni ham o'chadi: hamyonda pul bo'lsa, avval qaysi oddiy hamyonga o'tkazilishi so'raladi (boshqa valyutaga Markaziy bank kursi bo'yicha), pul O'tkazma bilan o'tadi, so'ng hamyon o'chadi; eski (oddiy hamyonga bog'langan) maqsadda hamyon joyida qoladi (testlar: 685 ta; app.js v4.28, i18n v29) | ✅ Bajarildi | 2026-10-28 |
+| 46 | O'tkazmada «Qaysi hamyonga» ro'yxatida «Qaysi hamyondan» da tanlangan hamyon ko'rinmaydi (Bank → Bank tanlab bo'lmaydi; `syncTransferTargets`); shu bilan «Naqd → Naqd» standart tanlovi ham yo'qoldi (app.js v4.29) | ✅ Bajarildi | 2026-10-28 |
+| 47 | Hamyonni tahrirlashda qoldiqni ham o'zgartirish mumkin («Hamyondagi pul»): summa to'g'ridan-to'g'ri almashtiriladi, kirim/chiqim yozilmaydi (foydalanuvchi qarori — tarixdagi amallar yig'indisi qoldiqqa mos kelmasligi mumkin); maqsad hamyoni avvalgidek tahrirlanmaydi (testlar: 686 ta; app.js v4.30, i18n v30) | ✅ Bajarildi | 2026-10-28 |
+| 48 | Navbardagi «Moliya» bosilsa ochiq bo'lim sahifasi yopiladi, bosh sahifa eng tepaga chiqadi va ma'lumotlar serverdan yangilanadi — tortib yangilashdagi logotip kapsulasi ko'rinadi (`goHome`, `_ptrRefresh`; app.js v4.31, i18n v31) | ✅ Bajarildi | 2026-10-28 |
+| 49 | Moliya yordamchisiga Google Gemini ulandi: `.env` da `GEMINI_API_KEY` bo'lsa Gemini javob beradi (tekin rejasi bor; model `GEMINI_MODEL`, standart `gemini-3.6-flash`), `ANTHROPIC_API_KEY` bo'lsa Claude ustun, ikkalasi ham bo'lmasa bepul `faq.py`. REST API (kutubxonasiz), kalit sarlavhada (testlar: 691 ta) | ✅ Bajarildi | 2026-10-28 |
+| 50 | Qo'llanma to'ldirildi: Kurs sahifasi va kalkulyator, admin bilan chat, maqsad hamyonini o'chirish; «Ilova haqida → Imkoniyatlar» yangilandi; Ovozli yordamchi bo'limi 6 tilga tarjima qilindi (buyruq misollari o'zbekcha qoladi; app.js v4.42, i18n v35) | ✅ Bajarildi | 2026-10-30 |
+| 51 | Serverga chiqish tayyorgarligi: doimiy to'lov yoki maqsadi bor hamyon valyutasi qulflanadi; jadval o'zgarsa bugungi to'lov qayta yozilmaydi; ovozda «3 marta» sana emas, «20 ming 2 kishiga» 20 002 emas, «3 kun oldin» o'tgan sana; DEPLOY.md: gunicorn `--threads 4 --timeout 120`, nginx `6m` va `proxy_read_timeout 120s`, boshlang'ich HSTS 1 soat (testlar: 730 ta) | ✅ Bajarildi | 2026-10-30 |
 
 ---
 

@@ -1,11 +1,30 @@
 from django.contrib import admin
+from django.contrib.admin.forms import AdminAuthenticationForm
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.core.exceptions import ValidationError
 from .models import User, Category, ExpenseCategory, Wallet, Member, Income, Expense, Transfer, Debt, SupportMessage
+
+
+class TwoFactorAdminAuthenticationForm(AdminAuthenticationForm):
+    """2FA kodi faqat asosiy sahifadagi kirishda so'raladi (login_api). Admin kirish sahifasi esa faqat parol
+    tekshirgani uchun, 2FA yoqilgan akkaunt shu yerdan kodsiz kirib ketardi. Shuning uchun bunday akkauntlarni
+    bu yerda rad etamiz: avval asosiy sahifadan kirib (kod bilan), keyin adminni ochadi"""
+    def confirm_login_allowed(self, user):
+        super().confirm_login_allowed(user)
+        if getattr(user, "two_factor_enabled", False):
+            raise ValidationError(
+                "Sizda ikki bosqichli tasdiqlash yoqilgan. Avval asosiy sahifadan kod bilan kiring, "
+                "so'ng admin sahifasini oching.",
+                code="two_factor_required",
+            )
+
+
+admin.site.login_form = TwoFactorAdminAuthenticationForm
 
 
 class SoftDeleteAdminMixin:
     """"Delete selected" ommaviy amali queryset.delete() ishlatadi, bu esa modeldagi
-    custom delete() (soft delete + hamyon balansini qaytarish) ni chetlab o'tadi.
+    custom delete() (soft delete + hamyon qoldig'ini qaytarish) ni chetlab o'tadi.
     Shu sabab har bir obyektni alohida .delete() qilib chiqamiz."""
     def delete_queryset(self, request, queryset):
         for obj in queryset:

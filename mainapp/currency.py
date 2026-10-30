@@ -160,7 +160,7 @@ def get_rate_to_uzs(code):
 def _historical_rates(day):
     """O'tgan kunning Markaziy bank kurslari {kod: Decimal} yoki olib bo'lmasa None. O'tgan kun kursi o'zgarmaydi,
     shuning uchun kesh uzoq saqlanadi (bir kun uchun bitta so'rov — barcha valyutalar birga). Tarmoq xatosida
-    HISTORY_RETRY_SECONDS davomida qayta urinilmaydi: takroriy to'lovlarni bir necha kunga yozishda
+    HISTORY_RETRY_SECONDS davomida qayta urinilmaydi: doimiy to'lovlarni bir necha kunga yozishda
     har kun 10 soniyalab kutib qolmaslik uchun"""
     key = _HISTORY_KEY + day.isoformat()
     cached = cache.get(key)
@@ -210,18 +210,18 @@ def get_rate(from_code, to_code):
 
 
 def round_amount(value):
-    """Decimal summani 2 xonali kasrga (tiyin) yaxlitlaydi (0.005 yuqoriga)"""
+    """Decimal miqdorni 2 xonali kasrga (tiyin) yaxlitlaydi (0.005 yuqoriga)"""
     return quantize_money(value)
 
 
 def convert(amount, from_code, to_code):
-    """Summani bir valyutadan boshqasiga o'tkazadi. (yaxlitlangan_summa, kurs) qaytaradi"""
+    """Miqdorni bir valyutadan boshqasiga o'tkazadi. (yaxlitlangan_miqdor, kurs) qaytaradi"""
     rate = get_rate(from_code, to_code)
     return round_amount(Decimal(amount) * rate), rate.quantize(Decimal("0.00000001"), rounding=ROUND_HALF_UP)
 
 
 class UzsConverter:
-    """Statistika uchun: har xil valyutadagi summalarni so'mga o'giradi (Markaziy bank kursi).
+    """Hisobot uchun: har xil valyutadagi miqdorlarni so'mga o'giradi (Markaziy bank kursi).
     Kurs har bir valyuta uchun bir marta olinadi. Kursi topilmagan valyuta `missing` ga yoziladi
     va jamiga qo'shilmaydi (aks holda dollar so'm bilan bir xil son bo'lib qo'shilib ketardi)"""
 

@@ -268,8 +268,35 @@ else:
 
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL') or EMAIL_SMTP_USER or 'Moliya <noreply@localhost>'
 
-# Moliya yordamchisi ixtiyoriy ravishda Claude API orqali (pullik). Berilmasa bepul ma'lumotnoma qidiruvi ishlaydi (mainapp/faq.py)
+# Moliya yordamchisi va ovozli yordamchi ixtiyoriy ravishda Claude API (pullik) yoki Google Gemini API (tekin rejasi
+# bor, kalit: aistudio.google.com/apikey) orqali. Ikkalasi berilsa Claude ishlaydi; hech biri berilmasa bepul
+# ma'lumotnoma qidiruvi (mainapp/faq.py) va ovozli buyruqlar uchun faqat qoidalar (mainapp/voice_parse.py).
+# Gemini kaliti bilan ovoz yozuvini tanish ham tekin ishlaydi (OPENAI_API_KEY berilmasa, mainapp/stt.py)
 ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '').strip()
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '').strip()
+# Model nomlari tez-tez almashadi: ishlamay qolsa aistudio.google.com dagi joriy Flash model nomini yozing
+GEMINI_MODEL = os.environ.get('GEMINI_MODEL', '').strip() or 'gemini-flash-latest'
+# Asosiy model band (503) yoki limiti tugasa (429) — navbat bilan shular ishlatiladi (vergul bilan)
+GEMINI_FALLBACK_MODELS = _env_list('GEMINI_FALLBACK_MODELS', 'gemini-flash-lite-latest')
+# Ovozli yordamchi (buyruqni tushunish, ovozni tanish) uchun birinchi model: tezligi muhimroq — lite bir necha
+# baravar tez javob beradi. Bo'sh qoldirilsa GEMINI_MODEL birinchi
+GEMINI_VOICE_MODEL = os.environ.get('GEMINI_VOICE_MODEL', 'gemini-flash-lite-latest').strip()
+
+# Ovozli yordamchi: brauzer o'zbekcha nutqni tanimasa, ovoz yozuvi server orqali taniladi (mainapp/stt.py). Navbat:
+# OpenAI (pullik) → VoiceLab (VOICELAB_API_KEY, quyida) → Gemini (tekin); hech biri bo'lmasa faqat brauzer taniydi
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '').strip()
+OPENAI_TRANSCRIBE_MODEL = os.environ.get('OPENAI_TRANSCRIBE_MODEL', 'gpt-4o-transcribe').strip()
+
+# Ovozli yordamchi javobini ravon o'zbekcha ovozda o'qish (mainapp/tts.py). Navbat: VoiceLab (voicelab.uz, o'zbek
+# tiliga ixtisoslashgan; bepul tarif oyiga 2 000 belgi) → Azure (o'zbek neyron ovozlari Madina, Sardor; oyiga 500 000
+# belgi bepul) → OpenAI → brauzer ovozi. Birinchisi xato bersa yoki krediti tugasa keyingisi ishlaydi
+VOICELAB_API_KEY = os.environ.get('VOICELAB_API_KEY', '').strip()
+# Ovoz ID lari (voice_...). Berilmasa o'zbekcha ovozlar ro'yxatidan tanlanadi; ro'yxat: python manage.py voicelab_voices
+VOICELAB_VOICE_FEMALE = os.environ.get('VOICELAB_VOICE_FEMALE', '').strip()
+VOICELAB_VOICE_MALE = os.environ.get('VOICELAB_VOICE_MALE', '').strip()
+AZURE_SPEECH_KEY = os.environ.get('AZURE_SPEECH_KEY', '').strip()
+AZURE_SPEECH_REGION = os.environ.get('AZURE_SPEECH_REGION', '').strip()
+OPENAI_TTS_MODEL = os.environ.get('OPENAI_TTS_MODEL', 'gpt-4o-mini-tts').strip()
 
 # Yordam bo'limiga yangi xabar kelsa xat oladigan manzillar (vergul bilan). Berilmasa — admin panelni ko'ra oladigan
 # xodimlarning emaili. Xat yuqoridagi pochta sozlamasi orqali ketadi
@@ -279,6 +306,11 @@ SUPPORT_NOTIFY_EMAILS = _env_list('SUPPORT_NOTIFY_EMAILS', '')
 # akkaunt borligini oshkor qilardi. `manage.py test` paytida False — xat shu zahoti yuboriladi: fon oqimi test
 # tranzaksiyasidagi ma'lumotlarni ko'rmaydi, mail.outbox ni esa testning o'zi o'qiydi
 MAIL_IN_BACKGROUND = 'test' not in sys.argv[1:2]
+
+# `manage.py test` .env dagi haqiqiy AI kalitlari bilan internetga chiqmasin (sekin, limitni yeydi, natija tasodifiy):
+# kalit kerak bo'lgan testlar uni override_settings bilan o'zi beradi
+if not MAIL_IN_BACKGROUND:
+    ANTHROPIC_API_KEY = GEMINI_API_KEY = OPENAI_API_KEY = AZURE_SPEECH_KEY = VOICELAB_API_KEY = ''
 
 REST_FRAMEWORK = {
     # Summalar (Decimal) JSON'da satr emas, son bo'lib qaytadi — frontend Number() bilan o'qiydi
@@ -307,6 +339,12 @@ REST_FRAMEWORK = {
         "assistant": "30/hour",
         # Yordam chatiga xabar yuborish
         "support": "20/min",
+        # Ovozli yordamchi buyruqlari (ANTHROPIC_API_KEY bo'lsa ba'zilari pullik Claude orqali tahlil qilinadi)
+        "voice": "30/min",
+        # Ovoz yozuvini server orqali tanish (OPENAI_API_KEY) — har bir so'rov pullik
+        "voice_stt": "20/min",
+        # Ovozli javob (server ovozi) — takroriy gaplar keshdan, yangilari pullik/limitli
+        "voice_tts": "40/min",
     },
     "NUM_PROXIES": NUM_PROXIES,
     # LimitOffsetPagination + ?limit= uchun yuqori chegara (200) — qarang: mainapp/pagination.py

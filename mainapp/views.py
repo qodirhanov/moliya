@@ -49,6 +49,8 @@ from .security_log import log_event
 from .notices import unread_notice_count
 from .support import unread_for_user
 from .throttles import AuthRateThrottle, client_ip
+from .tts import provider as tts_provider
+from .stt import is_enabled as stt_enabled
 from .validators import normalize_login, password_errors_uz, username_error
 
 # Uzbek hafta kunlari qisqartmasi -> Django week_day raqami (1=Yakshanba ... 7=Shanba)
@@ -69,16 +71,16 @@ from .serializers import (
 
 
 def validate_email_uz(email, exclude_pk=None):
-    """Email ixtiyoriy, lekin kiritilsa to'g'ri formatda va boshqa akkauntda band bo'lmasligi kerak
-    (email bilan ham kirish mumkinligi uchun). Xato matnini yoki None qaytaradi"""
+    """Elektron pochta ixtiyoriy, lekin kiritilsa to'g'ri formatda va boshqa hisobda band bo'lmasligi kerak
+    (elektron pochta bilan ham kirish mumkinligi uchun). Xato matnini yoki None qaytaradi"""
     if not email:
         return None
     try:
         validate_email(email)
     except DjangoValidationError:
-        return "Email manzili noto'g'ri"
+        return "Elektron pochta manzili noto'g'ri"
     if User.email_taken(email, exclude_pk=exclude_pk):
-        return "Bu email boshqa akkauntda ishlatilgan"
+        return "Bu elektron pochta boshqa hisobda ishlatilgan"
     return None
 
 
@@ -178,13 +180,13 @@ def password_from(request, field):
 @ensure_csrf_cookie
 @enforce_csrf
 def login_api(request):
-    """Tizimga kirish — foydalanuvchi nomi yoki email va parol bilan"""
+    """Tizimga kirish — foydalanuvchi nomi yoki elektron pochta va parol bilan"""
     username = str(request.data.get("username") or request.data.get("email") or "").strip()
     password = password_from(request, "password")
 
     if not username or not password:
         return Response(
-            {"error": "Foydalanuvchi nomi (yoki email) va parol kiritilishi shart"},
+            {"error": "Foydalanuvchi nomi (yoki elektron pochta) va parol kiritilishi shart"},
             status=status.HTTP_400_BAD_REQUEST
         )
 
@@ -211,7 +213,7 @@ def login_api(request):
                 "two_factor": True,
                 "token": token,
                 "email": mask_email(user.email),
-                "message": "Emailingizga 6 xonali kirish kodi yuborildi",
+                "message": "Elektron pochtangizga 6 xonali kirish kodi yuborildi",
             })
         # set_expiry() chaqirilmaydi: sessiya muddati settings'dagi SESSION_COOKIE_AGE (doimiy cookie) bo'yicha
         login(request, user)
@@ -223,7 +225,7 @@ def login_api(request):
     left = login_attempts_left(username, request)
     if left <= 0:
         return Response({"error": LOGIN_LOCKED_MESSAGE}, status=status.HTTP_429_TOO_MANY_REQUESTS)
-    message = "Foydalanuvchi nomi (yoki email) yoki parol noto'g'ri"
+    message = "Foydalanuvchi nomi (yoki elektron pochta) yoki parol noto'g'ri"
     if left <= 2:
         message += f". Yana {left} ta urinish qoldi."
     return Response({"error": message}, status=status.HTTP_401_UNAUTHORIZED)
@@ -270,7 +272,7 @@ def _terminate_problem(current):
         return None
     days = left.days + (1 if left.seconds or left.microseconds else 0)
     return Response(
-        {"error": f"Boshqa qurilmalarni chiqarish uchun bu qurilmada kamida {UserDevice.MIN_DAYS_TO_TERMINATE} kun "
+        {"error": f"Boshqa qurilmalardan chiqarish uchun bu qurilmada kamida {UserDevice.MIN_DAYS_TO_TERMINATE} kun "
                   f"oldin kirilgan bo'lishi kerak. Yana {days} kun qoldi."},
         status=status.HTTP_403_FORBIDDEN,
     )
@@ -279,7 +281,7 @@ def _terminate_problem(current):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def devices_api(request):
-    """Akkauntga kirilgan qurilmalar: joriysi birinchi, qolganlari oxirgi faollik bo'yicha"""
+    """Hisobga kirilgan qurilmalar: joriysi birinchi, qolganlari oxirgi faollik bo'yicha"""
     devices = active_devices(request.user)
     current = _current_device(request, devices)
     if current is not None and current not in devices:
@@ -343,7 +345,7 @@ def me_api(request):
         try:
             process_due_recurring(request.user)
         except Exception:
-            logger.exception("Takroriy to'lovlarni yozishda xato (user=%s)", request.user.pk)
+            logger.exception("Doimiy to'lovlarni yozishda xato (user=%s)", request.user.pk)
         return Response({
             "authenticated": True,
             "user": user_payload(request.user),
@@ -368,6 +370,11 @@ def user_payload(user):
         "support_unread": unread_for_user(user),
         # Admin yuborgan, hali o'qilmagan xabarlar (navbar qo'ng'irog'i)
         "notices_unread": unread_notice_count(user),
+        # Ovozli yordamchi: brauzer tanimasa ovoz yozuvi serverda taniladi (mainapp/stt.py, .env: OPENAI_API_KEY
+        # yoki tekin GEMINI_API_KEY)
+        "voice_server_stt": stt_enabled(),
+        # Javoblar server ovozida (mainapp/tts.py): voicelab | azure | openai | null — null bo'lsa brauzer ovozi
+        "voice_server_tts": tts_provider(),
     }
 
 
@@ -396,7 +403,7 @@ def profile_api(request):
         email_error = validate_email_uz(email, exclude_pk=user.pk)
         if not email and user.two_factor_enabled:
             # Kirish kodi emailga keladi — email olib tashlansa akkauntga kirib bo'lmay qolardi
-            email_error = "Ikki bosqichli kirish yoqilgan — emailni o'chirishdan oldin uni o'chiring"
+            email_error = "Ikki bosqichli himoya yoqilgan — elektron pochtani o'chirishdan oldin uni o'chiring"
         if email_error:
             errors["email"] = email_error
         else:
@@ -419,7 +426,7 @@ def profile_api(request):
         # "Parolni unutdingizmi?" orqali akkauntni butunlay egallab olardi
         password = password_from(request, "password")
         if not password:
-            return Response({"password": "Emailni o'zgartirish uchun joriy parolni kiriting"},
+            return Response({"password": "Elektron pochtani o'zgartirish uchun joriy parolni kiriting"},
                             status=status.HTTP_400_BAD_REQUEST)
         problem = current_password_problem(user, password, "password")
         if problem:
@@ -450,7 +457,7 @@ def profile_api(request):
     if pending_email:
         log_event("email_change_requested", request, user_id=user.pk)
         return Response({
-            "message": "Yangi emailga tasdiqlash kodi yuborildi",
+            "message": "Yangi elektron pochtaga tasdiqlash kodi yuborildi",
             "user": user_payload(user),
             "email_pending": {"token": token, "email": mask_email(pending_email)},
         })
@@ -496,8 +503,8 @@ def change_password_api(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def delete_account_api(request):
-    """Sozlamalar - parolni tasdiqlab, akkauntni o'chirish.
-    close_account(): akkauntga qayta kirib bo'lmaydi, shaxsiy ma'lumotlar tozalanadi va login nomi bo'shaydi,
+    """Sozlamalar - parolni tasdiqlab, hisobni o'chirish.
+    close_account(): hisobga qayta kirib bo'lmaydi, shaxsiy ma'lumotlar tozalanadi va login nomi bo'shaydi,
     moliyaviy tarix bazada saqlanadi"""
     password = password_from(request, "password")
     if not password:
@@ -512,7 +519,7 @@ def delete_account_api(request):
     user.close_account()
     logout(request)
     log_event("account_deleted", request, user_id=user.pk, username=username)
-    return Response({"message": "Akkaunt o'chirildi"})
+    return Response({"message": "Hisob o'chirildi"})
 
 
 @api_view(["POST"])
@@ -601,8 +608,8 @@ RESET_MAX_PER_DAY = 10
 RESET_MAX_PER_ACCOUNT_IP_PER_DAY = 3
 RESET_MAX_PER_IP_PER_HOUR = 10
 RESET_REQUEST_MESSAGE = (
-    "Agar bunday akkaunt mavjud bo'lsa va unga email ulangan bo'lsa, "
-    "emailga 6 xonali tiklash kodi yuborildi."
+    "Agar bunday hisob mavjud bo'lsa va unga elektron pochta ulangan bo'lsa, "
+    "elektron pochtaga 6 xonali tiklash kodi yuborildi."
 )
 # Kod tekshirishdagi har qanday muvaffaqiyatsizlik (akkaunt yo'q, faol kod yo'q, muddat o'tgan, urinishlar tugagan,
 # kod noto'g'ri) uchun BITTA xabar: "Yana N ta urinish qoldi" faqat mavjud akkauntda chiqib, uning borligini oshkor qilardi
@@ -610,8 +617,8 @@ RESET_CODE_INVALID_MESSAGE = "Kod noto'g'ri yoki muddati o'tgan. Kerak bo'lsa ya
 
 
 def _run_in_background(func, *args):
-    """Sekin tashqi chaqiruvni (SMTP) so'rovdan tashqarida bajaradi. Sinxron yuborilsa mavjud akkauntga javob
-    sezilarli sekinroq bo'lib, akkaunt borligini oshkor qilardi. settings.MAIL_IN_BACKGROUND=False bo'lsa (testlar)
+    """Sekin tashqi chaqiruvni (SMTP) so'rovdan tashqarida bajaradi. Sinxron yuborilsa mavjud hisobga javob
+    sezilarli sekinroq bo'lib, hisob borligini oshkor qilardi. settings.MAIL_IN_BACKGROUND=False bo'lsa (testlar)
     func shu zahoti, shu oqimda bajariladi — test tranzaksiyasi va mail.outbox ko'rinib turadi.
     Oqim daemon: jarayon to'xtaganda yuborilmay qolgan xat yo'qoladi (foydalanuvchi yangi kod so'raydi)"""
     if not settings.MAIL_IN_BACKGROUND:
@@ -677,12 +684,12 @@ def _send_reset_mail(user_id, email, name, code, reset_code_id, ip_limits):
 @throttle_classes(AUTH_THROTTLES)
 @enforce_csrf
 def password_reset_request_api(request):
-    """1-qadam: login yoki email bo'yicha akkauntni topib, ulangan emailga kod yuborish.
-    Javob (matni, statusi va deyarli vaqti ham) har doim bir xil — begona odam akkaunt yoki email borligini
+    """1-qadam: login yoki elektron pochta bo'yicha hisobni topib, ulangan elektron pochtaga kod yuborish.
+    Javob (matni, statusi va deyarli vaqti ham) har doim bir xil — begona odam hisob yoki elektron pochta borligini
     bilib ololmasligi uchun. Xat fonda yuboriladi, shuning uchun pochta xatosi ham javobga ta'sir qilmaydi"""
     identifier = str(request.data.get("username") or "").strip()
     if not identifier:
-        return Response({"error": "Foydalanuvchi nomi yoki email kiritilishi shart"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Foydalanuvchi nomi yoki elektron pochta kiritilishi shart"}, status=status.HTTP_400_BAD_REQUEST)
 
     # Kod va uning xeshi akkaunt bor-yo'qligidan qat'i nazar har doim hisoblanadi: sekin xeshlash faqat mavjud
     # akkauntda bajarilsa, javob vaqti akkaunt borligini oshkor qilardi
@@ -742,12 +749,12 @@ LOGIN_CODE_MAX_PER_HOUR = 5
 LOGIN_CODE_LIMIT_MESSAGE = "Juda ko'p kod so'raldi. Bir soatdan keyin qayta urinib ko'ring."
 LOGIN_CODE_INVALID_MESSAGE = "Kod noto'g'ri yoki muddati o'tgan. Qaytadan kirib, yangi kod oling."
 LOGIN_CODE_PURPOSES = {
-    "login": ("Moliya — kirish kodi", "Akkauntingizga kirish kodi",
+    "login": ("Moliya — kirish kodi", "Hisobingizga kirish kodi",
               "Agar hozir kirmoqchi bo'lmagan bo'lsangiz, parolingizni darhol almashtiring — uni kimdir biladi."),
-    "enable": ("Moliya — ikki bosqichli kirishni yoqish", "Ikki bosqichli kirishni yoqish kodi",
+    "enable": ("Moliya — ikki bosqichli himoyani yoqish", "Ikki bosqichli himoyani yoqish kodi",
                "Agar buni siz so'ramagan bo'lsangiz, bu xatni e'tiborsiz qoldiring."),
-    "email": ("Moliya — yangi emailni tasdiqlash", "Yangi emailni tasdiqlash kodi",
-              "Agar buni siz so'ramagan bo'lsangiz, bu xatni e'tiborsiz qoldiring — email almashtirilmaydi."),
+    "email": ("Moliya — yangi elektron pochtani tasdiqlash", "Yangi elektron pochtani tasdiqlash kodi",
+              "Agar buni siz so'ramagan bo'lsangiz, bu xatni e'tiborsiz qoldiring — elektron pochta almashtirilmaydi."),
 }
 
 
@@ -783,9 +790,9 @@ def _send_login_code_mail(user_id, email, name, code, code_id, purpose):
 
 
 def _issue_login_code(user, purpose, email=None):
-    """Yangi kod yaratib emailga yuboradi va token qaytaradi; soatlik limit tugagan bo'lsa None.
+    """Yangi kod yaratib elektron pochtaga yuboradi va token qaytaradi; soatlik limit tugagan bo'lsa None.
     Oldingi ishlatilmagan kodlar bekor qilinadi — amalda faqat oxirgi xatdagi kod ishlaydi.
-    email berilsa (akkaunt emailini almashtirish) kod o'sha yangi manzilga ketadi va kod bilan birga saqlanadi"""
+    elektron pochta berilsa (hisob elektron pochtasini almashtirish) kod o'sha yangi manzilga ketadi va kod bilan birga saqlanadi"""
     now = timezone.now()
     if user.login_codes.filter(created_at__gte=now - timedelta(hours=1)).count() >= LOGIN_CODE_MAX_PER_HOUR:
         return None
@@ -808,7 +815,7 @@ def _issue_login_code(user, purpose, email=None):
 def _use_login_code(request, token, code, user=None, email_change=False):
     """Kodni tekshiradi va ishlatilgan deb belgilaydi. Natija: (login_code, None) yoki (None, xato javobi).
     user berilsa (sozlamalardan yoqish) kod faqat o'sha foydalanuvchiniki bo'lishi kerak.
-    Kod maqsadlari ajratilgan: email_change=True faqat emailni almashtirish kodini (new_email bor), False esa
+    Kod maqsadlari ajratilgan: elektron pochta_change=True faqat elektron pochtani almashtirish kodini (new_elektron pochta bor), False esa
     kirish/yoqish kodlarini qabul qiladi — biri ikkinchisining o'rniga ishlamaydi"""
     invalid = Response({"code": LOGIN_CODE_INVALID_MESSAGE}, status=status.HTTP_400_BAD_REQUEST)
     token, code = str(token or "").strip(), str(code or "").strip()
@@ -845,7 +852,7 @@ def _use_login_code(request, token, code, user=None, email_change=False):
 @throttle_classes(AUTH_THROTTLES)
 @enforce_csrf
 def login_2fa_api(request):
-    """Kirishning 2-qadami: paroldan keyin emailga kelgan kod"""
+    """Kirishning 2-qadami: paroldan keyin elektron pochtaga kelgan kod"""
     login_code, problem = _use_login_code(request, request.data.get("token"), request.data.get("code"))
     if problem:
         return problem
@@ -859,9 +866,9 @@ def login_2fa_api(request):
 @permission_classes([IsAuthenticated])
 @throttle_classes(AUTH_THROTTLES)
 def two_factor_api(request):
-    """Sozlamalar: ikki bosqichli kirishni yoqish yoki o'chirish (joriy parol bilan).
-    Yoqish darhol emas: emailga kod ketadi va two_factor_confirm_api tasdiqlaydi — email xato yozilgan bo'lsa,
-    foydalanuvchi o'zini akkauntdan qulflab qo'ymasligi uchun"""
+    """Sozlamalar: ikki bosqichli himoyani yoqish yoki o'chirish (joriy parol bilan).
+    Yoqish darhol emas: elektron pochtaga kod ketadi va two_factor_confirm_api tasdiqlaydi — elektron pochta xato yozilgan bo'lsa,
+    foydalanuvchi o'zini hisobdan qulflab qo'ymasligi uchun"""
     user = request.user
     problem = current_password_problem(user, password_from(request, "password"), "password")
     if problem:
@@ -871,21 +878,21 @@ def two_factor_api(request):
         user.two_factor_enabled = False
         user.save(update_fields=["two_factor_enabled"])
         log_event("two_factor_disabled", request, user_id=user.pk)
-        return Response({"message": "Ikki bosqichli kirish o'chirildi", "user": user_payload(user)})
+        return Response({"message": "Ikki bosqichli himoya o'chirildi", "user": user_payload(user)})
     if not user.email:
-        return Response({"error": "Avval Profil bo'limida email kiriting — kod o'sha emailga keladi"},
+        return Response({"error": "Avval Profil bo'limida elektron pochta kiriting — kod o'sha elektron pochtaga keladi"},
                         status=status.HTTP_400_BAD_REQUEST)
     token = _issue_login_code(user, "enable")
     if token is None:
         return Response({"error": LOGIN_CODE_LIMIT_MESSAGE}, status=status.HTTP_429_TOO_MANY_REQUESTS)
-    return Response({"token": token, "email": mask_email(user.email), "message": "Emailingizga tasdiqlash kodi yuborildi"})
+    return Response({"token": token, "email": mask_email(user.email), "message": "Elektron pochtangizga tasdiqlash kodi yuborildi"})
 
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @throttle_classes(AUTH_THROTTLES)
 def two_factor_confirm_api(request):
-    """Yoqishni emailga kelgan kod bilan tasdiqlash"""
+    """Yoqishni elektron pochtaga kelgan kod bilan tasdiqlash"""
     user = request.user
     _, problem = _use_login_code(request, request.data.get("token"), request.data.get("code"), user=user)
     if problem:
@@ -893,15 +900,15 @@ def two_factor_confirm_api(request):
     user.two_factor_enabled = True
     user.save(update_fields=["two_factor_enabled"])
     log_event("two_factor_enabled", request, user_id=user.pk)
-    return Response({"message": "Ikki bosqichli kirish yoqildi", "user": user_payload(user)})
+    return Response({"message": "Ikki bosqichli himoya yoqildi", "user": user_payload(user)})
 
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @throttle_classes(AUTH_THROTTLES)
 def confirm_email_api(request):
-    """2FA yoqiq akkauntda email almashtirishni yangi manzilga kelgan kod bilan tasdiqlash.
-    Yangi email so'rovdan emas, kod bilan birga saqlangan qiymatdan olinadi"""
+    """2FA yoqiq hisobda elektron pochta almashtirishni yangi manzilga kelgan kod bilan tasdiqlash.
+    Yangi elektron pochta so'rovdan emas, kod bilan birga saqlangan qiymatdan olinadi"""
     user = request.user
     login_code, problem = _use_login_code(
         request, request.data.get("token"), request.data.get("code"), user=user, email_change=True,
@@ -917,9 +924,9 @@ def confirm_email_api(request):
     try:
         user.save(update_fields=["email"])
     except IntegrityError:
-        return Response({"email": "Bu email boshqa akkauntda ishlatilgan"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"email": "Bu elektron pochta boshqa hisobda ishlatilgan"}, status=status.HTTP_400_BAD_REQUEST)
     log_event("email_changed", request, user_id=user.pk)
-    return Response({"message": "Email yangilandi", "user": user_payload(user)})
+    return Response({"message": "Elektron pochta yangilandi", "user": user_payload(user)})
 
 
 @lru_cache(maxsize=1)
@@ -970,7 +977,7 @@ def _check_reset_code(request, identifier, code):
 @throttle_classes(AUTH_THROTTLES)
 @enforce_csrf
 def password_reset_verify_api(request):
-    """2-qadam: emailga kelgan kodni tekshirish (kod hali ishlatilmaydi — yangi parol bilan 3-qadamda yuboriladi)"""
+    """2-qadam: elektron pochtaga kelgan kodni tekshirish (kod hali ishlatilmaydi — yangi parol bilan 3-qadamda yuboriladi)"""
     identifier = str(request.data.get("username") or "").strip()
     code = str(request.data.get("code") or "").strip()
     if not identifier or not code:
@@ -1028,11 +1035,11 @@ STATS_CURRENCY = "UZS"
 
 
 def sum_groups_in_uzs(converter, qs, group_fields=(), currency_field="wallet__currency"):
-    """qs summalarini group_fields bo'yicha guruhlab so'mga o'giradi.
-    {kalit: {"uzs": Decimal, "parts": {valyuta: asl_summa}}} qaytaradi (kalit — group_fields qiymatlari kortej).
+    """qs miqdorlarini group_fields bo'yicha guruhlab so'mga o'giradi.
+    {kalit: {"uzs": Decimal, "parts": {valyuta: asl_miqdor}}} qaytaradi (kalit — group_fields qiymatlari kortej).
     Qator o'z saqlangan kursi (uzs_rate) bilan o'giriladi, kursi yo'q (NULL) qator — bugungi kurs bilan.
-    Guruhlash uzs_rate bo'yicha ham ketadi: summa SQL'da yig'iladi, ko'paytma esa Python
-    Decimal'da — SQLite'da Sum(summa * kurs) float bo'lib, 15 xonadan keyin xonalarni yo'qotardi.
+    Guruhlash uzs_rate bo'yicha ham ketadi: miqdor SQL'da yig'iladi, ko'paytma esa Python
+    Decimal'da — SQLite'da Sum(miqdor * kurs) float bo'lib, 15 xonadan keyin xonalarni yo'qotardi.
     Sum() ham SQLite'da float: natija 2 xonaga yaxlitlanadi (float xatosi 0.30000000000000004 ko'rinmasin).
     So'rovlar soni o'zgarmaydi (bitta so'rov), qatorlar soni esa kurs o'zgargan kunlar bilan cheklangan"""
     groups = {}
@@ -1065,7 +1072,7 @@ def currency_parts(parts):
 
 
 def category_breakdown_in_uzs(converter, qs, empty_name):
-    """Toifalar bo'yicha so'mdagi jami (kattasidan kichigiga) va umumiy summa.
+    """Turkumlar bo'yicha so'mdagi jami (kattasidan kichigiga) va umumiy miqdor.
     Masalan: Oylik 1 000 000 UZS va Boshqa daromad 100 USD (~1 180 000 UZS) -> Boshqa daromad birinchi"""
     groups = sum_groups_in_uzs(converter, qs, ("category__id", "category__name"))
     total = round_amount(sum((g["uzs"] for g in groups.values()), Decimal(0)))
@@ -1089,8 +1096,8 @@ def percent_change(current, previous):
 
 
 def deleted_wallet_response(*wallets, verb="bekor qilib"):
-    """O'chirilgan hamyon balansiga tegadigan bekor qilish (destroy) yoki tahrirlash (update) rad etiladi: aks holda
-    harajat puli ko'rinmaydigan hamyonga qaytib "yo'qolardi", kirim yoki o'tkazmada esa tushunarsiz
+    """O'chirilgan hamyon qoldig'iga tegadigan bekor qilish (destroy) yoki tahrirlash (update) rad etiladi: aks holda
+    xarajat puli ko'rinmaydigan hamyonga qaytib "yo'qolardi", kirim yoki o'tkazmada esa tushunarsiz
     "mablag' yetarli emas" xatosi chiqardi, tahrir esa pulni ko'rinmaydigan hamyonga o'tkazib yuborardi"""
     if any(wallet is not None and not wallet.status for wallet in wallets):
         return Response({
@@ -1101,9 +1108,9 @@ def deleted_wallet_response(*wallets, verb="bekor qilib"):
 
 
 class RestoreMixin:
-    """O'chirilgan (status=False) daromad / harajat / o'tkazmani qaytarish — "O'chirildi · Qaytarish" tugmasi uchun.
+    """O'chirilgan (status=False) daromad / xarajat / o'tkazmani qaytarish — "O'chirildi · Qaytarish" tugmasi uchun.
     Yozuv qayta faol qilinib save() qilinadi: model eski (bo'sh) va yangi effektlar farqini hamyonga o'zi qo'llaydi,
-    shuning uchun balans tekshiruvi ham odatdagidek ishlaydi (harajat puli boshqa joyga sarflangan bo'lsa — xato)"""
+    shuning uchun qoldiq tekshiruvi ham odatdagidek ishlaydi (xarajat puli boshqa joyga sarflangan bo'lsa — xato)"""
     restore_wallet_fields = ("wallet",)
 
     @action(detail=True, methods=["post"], url_path="restore")
@@ -1162,7 +1169,7 @@ def parse_int_param(value):
 
 
 def filter_by_period(qs, params):
-    """Operatsiyalarni davr bo'yicha filtrlaydi ("Barcha operatsiyalar" sahifasi).
+    """Amallarni davr bo'yicha filtrlaydi ("Barcha amallar" sahifasi).
     ?date_from=2026-10-01&date_to=2026-10-31 — ikkala kun ham kiradi; bittasi berilsa oraliq bir tomonga ochiq.
     To'g'ri chegara bo'lsa ?year=&month= e'tiborga olinmaydi. Kun mahalliy vaqt bo'yicha (TruncDay bilan bir xil).
     Noto'g'ri qiymat (masalan ?year=abc) 500 xato o'rniga e'tiborsiz qoldiriladi"""
@@ -1257,7 +1264,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return User.objects.none()
         if self.request.user.is_superuser:
             return User.objects.filter(status=True)
-        if self.request.user.is_staff:
+        if self.request.user.is_staff and self.request.user.has_perm("mainapp.view_user"):
             # Oddiy xodim superuser akkauntini ko'ra ham, o'zgartira ham, o'chira ham olmaydi (404): aks holda u
             # superuser emailini o'zinikiga almashtirib, "Parolni unutdingizmi?" orqali akkauntni egallab olardi
             return User.objects.filter(status=True, is_superuser=False)
@@ -1271,16 +1278,39 @@ class UserViewSet(viewsets.ModelViewSet):
                 {"error": "Profilni Sozlamalar orqali o'zgartiring (/api/v1/auth/profile/)"},
                 status=status.HTTP_403_FORBIDDEN
             )
+        denied = self.staff_denied(request, "change_user", "o'zgartira")
+        if denied:
+            return denied
         return super().update(request, *args, **kwargs)
+
+    def staff_denied(self, request, perm, verb):
+        """Boshqa akkauntga tegish: superuser bo'lmagan xodimga mainapp.<perm> huquqi kerak, va u boshqa xodim
+        akkauntiga umuman tega olmaydi — aks holda huquqsiz xodim emailni almashtirib, "Parolni unutdingizmi?"
+        orqali boshqa akkauntni egallab olardi. O'z akkaunti bundan mustasno. Ruxsat bo'lsa None"""
+        user = request.user
+        if user.is_superuser:
+            return None
+        target = self.get_object()
+        if target.pk == user.pk:
+            return None
+        if not user.has_perm(f"mainapp.{perm}"):
+            return Response({"error": "Bu amal uchun sizda ruxsat yo'q"}, status=status.HTTP_403_FORBIDDEN)
+        if target.is_staff:
+            return Response({"error": f"Xodim hisobini faqat superuser {verb} oladi"},
+                            status=status.HTTP_403_FORBIDDEN)
+        return None
 
     def destroy(self, request, *args, **kwargs):
         if not request.user.is_staff:
             # Akkaunt faqat parol bilan o'chiriladi (/auth/delete-account/) — sessiyani qo'lga kiritgan
             # odam bu yerdan parolsiz o'chira olmasligi uchun
             return Response(
-                {"error": "Akkauntni Sozlamalar orqali parol bilan o'chiring (/api/v1/auth/delete-account/)"},
+                {"error": "Hisobni Sozlamalar orqali parol bilan o'chiring (/api/v1/auth/delete-account/)"},
                 status=status.HTTP_403_FORBIDDEN
             )
+        denied = self.staff_denied(request, "delete_user", "o'chira")
+        if denied:
+            return denied
         instance = self.get_object()
         is_self = instance.pk == request.user.pk
         if is_self:
@@ -1289,14 +1319,14 @@ class UserViewSet(viewsets.ModelViewSet):
             self.perform_destroy(instance)
         if is_self:
             logout(request)
-        return Response({"message": "Akkaunt o'chirildi"}, status=status.HTTP_200_OK)
+        return Response({"message": "Hisob o'chirildi"}, status=status.HTTP_200_OK)
 
 
 class CanEditCategory(BasePermission):
-    """O'qish hammaga ochiq. Yaratish - tizimga kirgan foydalanuvchiga (shaxsiy toifa).
-    O'zgartirish va o'chirish hammaga ruxsat, lekin umumiy toifada natija turlicha:
+    """O'qish hammaga ochiq. Yaratish - tizimga kirgan foydalanuvchiga (shaxsiy turkum).
+    O'zgartirish va o'chirish hammaga ruxsat, lekin umumiy turkumda natija turlicha:
     admin uni hamma uchun o'zgartiradi, oddiy foydalanuvchiga esa shaxsiy nusxa yaratiladi
-    (qarang: PersonalCategoryMixin.update / destroy). Begona shaxsiy toifa querysetda yo'q — 404"""
+    (qarang: PersonalCategoryMixin.update / destroy). Begona shaxsiy turkum querysetda yo'q — 404"""
 
     def has_permission(self, request, view):
         return request.method in SAFE_METHODS or bool(request.user and request.user.is_authenticated)
@@ -1308,8 +1338,8 @@ class CanEditCategory(BasePermission):
 
 
 class PersonalCategoryMixin:
-    """Umumiy toifalar hammaga ko'rinadi; foydalanuvchi qo'shganlari faqat o'ziga.
-    Har bir foydalanuvchi keraksiz toifalarni o'z ro'yxatidan olib tashlay oladi"""
+    """Umumiy turkumlar hammaga ko'rinadi; foydalanuvchi qo'shganlari faqat o'ziga.
+    Har bir foydalanuvchi keraksiz turkumlarni o'z ro'yxatidan olib tashlay oladi"""
     permission_classes = [CanEditCategory]
     hidden_field = ""  # User'dagi yashirilgan toifalar maydoni
     operations_model = None  # Shu toifadagi operatsiyalar modeli (Income / Expense)
@@ -1348,9 +1378,9 @@ class PersonalCategoryMixin:
         return super().update(request, *args, **kwargs)
 
     def _personalize_global(self, request, global_cat):
-        """Umumiy toifa hammaniki: oddiy foydalanuvchi uni o'zgartirsa boshqalarga tegmaydi.
-        Unga yangi nomli shaxsiy nusxa yaratiladi, uning shu toifadagi operatsiyalari nusxaga o'tadi,
-        umumiy toifa esa faqat uning ro'yxatidan yashiriladi — foydalanuvchi uchun bu oddiy nom almashtirish"""
+        """Umumiy turkum hammaniki: oddiy foydalanuvchi uni o'zgartirsa boshqalarga tegmaydi.
+        Unga yangi nomli shaxsiy nusxa yaratiladi, uning shu turkumdagi amallari nusxaga o'tadi,
+        umumiy turkum esa faqat uning ro'yxatidan yashiriladi — foydalanuvchi uchun bu oddiy nom almashtirish"""
         editable = ("name", "description", "icon")
         data = {field: getattr(global_cat, field) for field in editable}
         data.update({field: request.data[field] for field in editable if field in request.data})
@@ -1380,14 +1410,14 @@ class PersonalCategoryMixin:
 
     @action(detail=True, methods=["post"], url_path="restore")
     def restore(self, request, pk=None):
-        """Olib tashlangan umumiy toifani ro'yxatga qaytarish"""
+        """Olib tashlangan umumiy turkumni ro'yxatga qaytarish"""
         obj = self.get_object()
         getattr(request.user, self.hidden_field).remove(obj)
-        return Response({"message": "Toifa qaytarildi"})
+        return Response({"message": "Turkum qaytarildi"})
 
 
 class CategoryViewSet(PersonalCategoryMixin, viewsets.ModelViewSet):
-    """Daromad turlari (Oylik, Freelance, Sovg'a...)"""
+    """Kirim turkumlari (Oylik, Freelance, Sovg'a...)"""
     hidden_field = "hidden_income_categories"
     operations_model = Income
     queryset = Category.objects.filter(status=True)
@@ -1401,7 +1431,7 @@ class CategoryViewSet(PersonalCategoryMixin, viewsets.ModelViewSet):
 
 
 class ExpenseCategoryViewSet(PersonalCategoryMixin, viewsets.ModelViewSet):
-    """Harajat turlari (Ovqat, Transport, Kiyim...)"""
+    """Chiqim turlari (Ovqat, Transport, Kiyim...)"""
     hidden_field = "hidden_expense_categories"
     operations_model = Expense
     queryset = ExpenseCategory.objects.filter(status=True)
@@ -1433,8 +1463,19 @@ class WalletViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+    def perform_update(self, serializer):
+        # Qoldiq ham tahrirlanadi: qator qulflanadi, shunda shu paytdagi parallel kirim/chiqim yangi summani
+        # eskirgan nusxa bilan ustidan yozib yubormaydi
+        with transaction.atomic():
+            Wallet.objects.select_for_update().filter(pk=serializer.instance.pk).first()
+            serializer.save()
+
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        if instance.is_goal:
+            return Response({
+                "error": "Bu maqsad hamyoni. Uni Maqsadlar bo'limida maqsad bilan birga o'chiring."
+            }, status=status.HTTP_400_BAD_REQUEST)
         # Puli bor hamyon o'chirilsa pul umumiy hisobdan yo'qolardi; ochiq qarz o'chirilganda esa
         # qoldig'i o'chirilgan (ko'rinmaydigan) hamyonga qaytardi
         if instance.summa != 0:
@@ -1454,7 +1495,7 @@ class WalletViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="summary")
     def summary(self, request):
-        """Umumiy moliyaviy statistika (balans, daromad, harajat, qarzlar)"""
+        """Umumiy moliyaviy hisobot (qoldiq, daromad, xarajat, qarzlar)"""
         if not request.user.is_authenticated:
             return Response(
                 {"error": "Autentifikatsiyadan o'tilmagan"},
@@ -1506,7 +1547,7 @@ class WalletViewSet(viewsets.ModelViewSet):
         debts_due_soon_count = open_debts_with_due.filter(due_date__gte=today, due_date__lte=soon_cutoff).count()
 
         # 1-masala: Kategoriya bo'yicha harajatlar taqsimoti (Obed, Taksi va h.k.)
-        category_expenses, monthly_expense = category_breakdown_in_uzs(converter, month_expenses, "Boshqa harajat")
+        category_expenses, monthly_expense = category_breakdown_in_uzs(converter, month_expenses, "Boshqa xarajat")
 
         # 2-masala: Hafta kunlari bo'yicha xarajat taqsimoti (joriy hafta: Dushanba -> Yakshanba)
         # Django week_day: 1=Yakshanba, 2=Dushanba, ..., 7=Shanba
@@ -1579,7 +1620,7 @@ class MemberViewSet(viewsets.ModelViewSet):
 
 
 class RecurringPaymentViewSet(viewsets.ModelViewSet):
-    """Takroriy to'lovlar. Ro'yxat so'ralganda muddati kelganlari avval yoziladi — ilova ochiq turib kun almashsa ham
+    """Doimiy to'lovlar. Ro'yxat so'ralganda muddati kelganlari avval yoziladi — ilova ochiq turib kun almashsa ham
     keyingi yangilanishda to'lov tushadi"""
     serializer_class = RecurringPaymentSerializer
     pagination_class = None
@@ -1601,7 +1642,7 @@ class RecurringPaymentViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         instance.status = False
         instance.save(update_fields=["status"])
-        return Response({"message": "Takroriy to'lov o'chirildi. Avval yozilgan operatsiyalar saqlanib qoladi"})
+        return Response({"message": "Doimiy to'lov o'chirildi. Avval yozilgan amallar saqlanib qoladi"})
 
 
 class SavingsGoalViewSet(viewsets.ModelViewSet):
@@ -1620,9 +1661,58 @@ class SavingsGoalViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.status = False
-        instance.save(update_fields=["status"])
-        return Response({"message": "Maqsad o'chirildi. Hamyon va undagi pul joyida qoladi"})
+        wallet = instance.wallet
+        if not wallet.is_goal:
+            # Eski maqsad oddiy hamyonga bog'langan — faqat maqsad o'chadi, hamyonga tegilmaydi
+            instance.status = False
+            instance.save(update_fields=["status"])
+            return Response({"message": "Maqsad o'chirildi. Hamyon va undagi pul joyida qoladi"})
+
+        # Maqsad hamyoni maqsad bilan birga o'chadi; yig'ilgan pul avval tanlangan hamyonga O'tkazma qilinadi
+        target = None
+        saved = wallet.summa
+        if saved > 0:
+            target_pk = strict_int(request.data.get("to_wallet") if isinstance(request.data, dict) else None)
+            if target_pk is None:
+                target_pk = strict_int(request.query_params.get("to_wallet"))
+            target = Wallet.objects.filter(pk=target_pk, user=request.user, status=True, is_goal=False).first() if target_pk else None
+            if not target:
+                return Response({"error": "Maqsad hamyonidagi pul qaysi hamyonga o'tkazilishini tanlang"},
+                                status=status.HTTP_400_BAD_REQUEST)
+        to_summa, rate = None, None
+        if target is not None and normalize_currency(target.currency) == normalize_currency(wallet.currency):
+            to_summa, rate = saved, Decimal(1)
+        elif target is not None:
+            # Kurs tarmoqdan olinishi mumkin — tranzaksiyadan oldin
+            try:
+                to_summa, rate = convert(saved, wallet.currency, target.currency)
+            except CurrencyRateError:
+                return Response({"error": f"{wallet.currency} → {target.currency} kursini aniqlab bo'lmadi. "
+                                          f"{wallet.currency} hamyonini tanlang yoki keyinroq urinib ko'ring"},
+                                status=status.HTTP_400_BAD_REQUEST)
+        try:
+            with transaction.atomic():
+                wallet.refresh_from_db()
+                if target is not None and wallet.summa != saved:
+                    # Shu orada hamyonga pul tushgan/chiqqan — eskirgan summa bilan o'tkazilmaydi
+                    return Response({"error": "Maqsad hamyonidagi summa o'zgardi. Sahifani yangilab qayta urinib ko'ring"},
+                                    status=status.HTTP_409_CONFLICT)
+                instance.status = False
+                instance.save(update_fields=["status"])
+                # Maqsad hamyonidan chiqim o'tkazmasi taqiqlangan (Transfer.clean) — avval oddiy hamyonga aylantiriladi
+                wallet.is_goal = False
+                wallet.save(update_fields=["is_goal", "updated_at"])
+                if target is not None:
+                    Transfer.objects.create(
+                        from_wallet=wallet, to_wallet=target, summa=wallet.summa, to_summa=to_summa, rate=rate,
+                        description=f"Maqsad o'chirildi: {instance.name}", user=request.user)
+                    wallet.refresh_from_db()
+                wallet.delete()
+        except (ValueError, DjangoValidationError) as e:
+            return Response({"error": error_text(e)}, status=status.HTTP_400_BAD_REQUEST)
+        if target is None:
+            return Response({"message": "Maqsad va uning hamyoni o'chirildi"})
+        return Response({"message": f"Maqsad va uning hamyoni o'chirildi. Pul «{target.name}» hamyoniga o'tkazildi"})
 
 
 class IncomeViewSet(RestoreMixin, viewsets.ModelViewSet):
@@ -1667,7 +1757,7 @@ class IncomeViewSet(RestoreMixin, viewsets.ModelViewSet):
             return problem
         try:
             self.perform_destroy(instance)
-            return Response({"message": "Daromad o'chirildi va balans qaytarildi"}, status=status.HTTP_200_OK)
+            return Response({"message": "Kirim o'chirildi va qoldiq qaytarildi"}, status=status.HTTP_200_OK)
         except (ValueError, DjangoValidationError, DRFValidationError) as e:
             return Response({"error": error_text(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1725,13 +1815,13 @@ class ExpenseViewSet(RestoreMixin, viewsets.ModelViewSet):
             return problem
         try:
             self.perform_destroy(instance)
-            return Response({"message": "Harajat o'chirildi va balans qaytarildi"}, status=status.HTTP_200_OK)
+            return Response({"message": "Chiqim o'chirildi va qoldiq qaytarildi"}, status=status.HTTP_200_OK)
         except (ValueError, DjangoValidationError, DRFValidationError) as e:
             return Response({"error": error_text(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TransferViewSet(RestoreMixin, viewsets.ModelViewSet):
-    """Hamyonlararo o'tkazma ViewSet"""
+    """Hamyondan hamyonga o'tkazma ViewSet"""
     queryset = Transfer.objects.filter(status=True)
     serializer_class = TransferSerializer
     restore_wallet_fields = ("from_wallet", "to_wallet")
@@ -1774,7 +1864,7 @@ class TransferViewSet(RestoreMixin, viewsets.ModelViewSet):
             return problem
         try:
             self.perform_destroy(instance)
-            return Response({"message": "O'tkazma bekor qilindi va balans qaytarildi"}, status=status.HTTP_200_OK)
+            return Response({"message": "O'tkazma bekor qilindi va qoldiq qaytarildi"}, status=status.HTTP_200_OK)
         except (ValueError, DjangoValidationError, DRFValidationError) as e:
             return Response({"error": error_text(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1828,85 +1918,90 @@ class DebtViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], url_path="repay")
     def repay(self, request, pk=None):
         """Qarzni qisman yoki to'liq to'lash/qaytarish"""
-        debt = self.get_object()
+        return repay_debt(self.get_object(), request.data.get("amount", 0), request.data.get("wallet"))
+
+
+def repay_debt(debt, raw_amount, wallet_id):
+    """Qarz to'lovi: DebtViewSet.repay va ovozli yordamchi (voice.py) uchun umumiy. Response qaytaradi"""
+    try:
+        amount = parse_amount(raw_amount)
+    except ValueError as e:
+        return Response({"error": f"To'lov miqdori: {e}"}, status=status.HTTP_400_BAD_REQUEST)
+
+    if amount <= 0:
+        return Response(
+            {"error": "To'lov miqdori 0 dan katta bo'lishi kerak"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    if amount > MAX_AMOUNT:
+        return Response({"error": MAX_AMOUNT_MESSAGE}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Hamyonsiz to'lov hech qaysi balansga tushmasdi (pul "yo'qolardi"), shuning uchun hamyon majburiy
+    if wallet_id is None or wallet_id == "":
+        return Response({"error": "Hamyonni tanlang"}, status=status.HTTP_400_BAD_REQUEST)
+    # "abc", [1], true yoki 1.5 kabi qiymat 500 xato yoki boshqa hamyon o'rniga "topilmadi" javobini oladi
+    wallet_pk = strict_int(wallet_id)
+    wallet = Wallet.objects.filter(pk=wallet_pk, user=debt.user, status=True).first() if wallet_pk else None
+    if not wallet:
+        return Response({"error": "Tanlangan hamyon topilmadi"}, status=status.HTTP_404_NOT_FOUND)
+    if wallet.is_goal:
+        return Response({"error": "Maqsad hamyoni orqali qarz to'lab bo'lmaydi — boshqa hamyonni tanlang"},
+                        status=status.HTTP_400_BAD_REQUEST)
+    wallet_amount = amount
+    if normalize_currency(wallet.currency) != normalize_currency(debt.currency):
+        # Qarz bir valyutada, hamyon boshqasida: hamyonga kurs bo'yicha hisoblangan summa yoziladi
         try:
-            amount = parse_amount(request.data.get("amount", 0))
-        except ValueError as e:
-            return Response({"error": f"To'lov summasi: {e}"}, status=status.HTTP_400_BAD_REQUEST)
-
-        wallet_id = request.data.get("wallet")
-
-        if amount <= 0:
+            wallet_amount, _rate = convert(amount, debt.currency, wallet.currency)
+        except CurrencyRateError:
             return Response(
-                {"error": "To'lov summasi 0 dan katta bo'lishi kerak"},
+                {"error": f"{debt.currency} → {wallet.currency} kursini aniqlab bo'lmadi. "
+                          f"Keyinroq urinib ko'ring yoki {debt.currency} hamyonini tanlang."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+        if wallet_amount <= 0:
+            return Response(
+                {"error": f"Miqdor juda kichik: kurs bo'yicha 0 {wallet.currency} bo'ladi"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        if amount > MAX_AMOUNT:
+        if wallet_amount > MAX_AMOUNT:
             return Response({"error": MAX_AMOUNT_MESSAGE}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Hamyonsiz to'lov hech qaysi balansga tushmasdi (pul "yo'qolardi"), shuning uchun hamyon majburiy
-        if wallet_id is None or wallet_id == "":
-            return Response({"error": "Hamyonni tanlang"}, status=status.HTTP_400_BAD_REQUEST)
-        # "abc", [1], true yoki 1.5 kabi qiymat 500 xato yoki boshqa hamyon o'rniga "topilmadi" javobini oladi
-        wallet_pk = strict_int(wallet_id)
-        wallet = Wallet.objects.filter(pk=wallet_pk, user=debt.user, status=True).first() if wallet_pk else None
-        if not wallet:
-            return Response({"error": "Tanlangan hamyon topilmadi"}, status=status.HTTP_404_NOT_FOUND)
-        wallet_amount = amount
-        if normalize_currency(wallet.currency) != normalize_currency(debt.currency):
-            # Qarz bir valyutada, hamyon boshqasida: hamyonga kurs bo'yicha hisoblangan summa yoziladi
-            try:
-                wallet_amount, _rate = convert(amount, debt.currency, wallet.currency)
-            except CurrencyRateError:
+    try:
+        with transaction.atomic():
+            # Parallel so'rovlar bir xil qarzni ikki marta to'lamasligi uchun qator qulflanadi
+            # va qolgan summa qulfdan keyin qayta tekshiriladi
+            debt = Debt.objects.select_for_update().get(pk=debt.pk)
+            if amount > debt.remaining_summa:
                 return Response(
-                    {"error": f"{debt.currency} → {wallet.currency} kursini aniqlab bo'lmadi. "
-                              f"Keyinroq urinib ko'ring yoki {debt.currency} hamyonini tanlang."},
-                    status=status.HTTP_503_SERVICE_UNAVAILABLE
-                )
-            if wallet_amount <= 0:
-                return Response(
-                    {"error": f"Summa juda kichik: kurs bo'yicha 0 {wallet.currency} bo'ladi"},
+                    {"error": f"To'lov miqdori qolgan qarzdan ({format_money(debt.remaining_summa)} {debt.currency}) ko'p bo'lishi mumkin emas"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            if wallet_amount > MAX_AMOUNT:
-                return Response({"error": MAX_AMOUNT_MESSAGE}, status=status.HTTP_400_BAD_REQUEST)
+            if debt.debt_type == "give":
+                # Menga qarz qaytarildi -> hamyonimga pul qo'shiladi
+                wallet.add_money(wallet_amount)
+            else:
+                # Men qarzimni uzdim -> hamyonimdan pul yechiladi
+                wallet.withdraw_money(wallet_amount)
 
-        try:
-            with transaction.atomic():
-                # Parallel so'rovlar bir xil qarzni ikki marta to'lamasligi uchun qator qulflanadi
-                # va qolgan summa qulfdan keyin qayta tekshiriladi
-                debt = Debt.objects.select_for_update().get(pk=debt.pk)
-                if amount > debt.remaining_summa:
-                    return Response(
-                        {"error": f"To'lov summasi qolgan qarzdan ({format_money(debt.remaining_summa)} {debt.currency}) ko'p bo'lishi mumkin emas"},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-                if debt.debt_type == "give":
-                    # Menga qarz qaytarildi -> hamyonimga pul qo'shiladi
-                    wallet.add_money(wallet_amount)
-                else:
-                    # Men qarzimni uzdim -> hamyonimdan pul yechiladi
-                    wallet.withdraw_money(wallet_amount)
+            debt.paid_summa += amount
+            if debt.paid_summa >= debt.summa:
+                debt.is_settled = True
+            debt.save()
+    except (ValueError, DjangoValidationError, DRFValidationError) as e:
+        return Response({"error": error_text(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-                debt.paid_summa += amount
-                if debt.paid_summa >= debt.summa:
-                    debt.is_settled = True
-                debt.save()
-        except (ValueError, DjangoValidationError, DRFValidationError) as e:
-            return Response({"error": error_text(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response({
-            "message": "Qarz muvaffaqiyatli to'landi / qaytarildi",
-            "debt": DebtSerializer(debt).data,
-            "wallet_amount": wallet_amount,
-        })
+    return Response({
+        "message": "Qarz muvaffaqiyatli to'landi / qaytarildi",
+        "debt": DebtSerializer(debt).data,
+        "wallet_amount": wallet_amount,
+    })
 
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def monthly_stats_api(request):
     """
-    Batafsil statistika — bitta oy yoki ixtiyoriy sana oralig'i uchun.
+    Batafsil hisobot — bitta oy yoki ixtiyoriy sana oralig'i uchun.
     Query params: ?year=2026&month=10  yoki  ?date_from=2026-09-15&date_to=2026-10-14
     Oraliq rejimi faqat ikkala sana ham to'g'ri bo'lsa yoqiladi (aks holda oy rejimi), uzunligi MAX_RANGE_DAYS dan oshmasin.
     """
@@ -2032,7 +2127,7 @@ def rates_api(request):
 @permission_classes([IsAuthenticated])
 def convert_api(request):
     """Valyuta kalkulyatori (Markaziy bank kursi): ?from=USD&to=UZS&amount=100.
-    O'tkazma oynasida tushadigan summani oldindan ko'rsatish uchun"""
+    O'tkazma oynasida tushadigan miqdorni oldindan ko'rsatish uchun"""
     from_code = normalize_currency(request.query_params.get("from"))
     to_code = normalize_currency(request.query_params.get("to"))
     try:

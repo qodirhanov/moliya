@@ -1,4 +1,4 @@
-"""plans.md №8, 9, 10, 15, 16, 17 testlari: yozuvni tahrirlash hamyon balansini buzmasligi kerak.
+"""plans.md №8, 9, 10, 15, 16, 17 testlari: yozuvni tahrirlash hamyon qoldig'ini buzmasligi kerak.
 Tarmoq har doim mock: haqiqiy cbu.uz ga murojaat qilinmaydi."""
 from decimal import Decimal
 from unittest import mock
@@ -51,7 +51,7 @@ class BalanceTestCase(TestCase):
         return res.json()
 
     def expense(self, wallet, summa, **extra):
-        category = extra.pop("category", None) or ExpenseCategory.objects.create(name="Toifa").id
+        category = extra.pop("category", None) or ExpenseCategory.objects.create(name="Turkum").id
         res = self.post("expenses", {"wallet": wallet.id, "summa": summa, "category": category, **extra})
         self.assertEqual(res.status_code, 201, res.content)
         return res.json()
@@ -68,7 +68,7 @@ class BalanceTestCase(TestCase):
         return res.json()
 
     def delete_wallet_quietly(self, wallet):
-        """Hamyon o'chirilgan, lekin yozuvlari qolgan holat (API buni balans 0 bo'lganda ruxsat etadi)"""
+        """Hamyon o'chirilgan, lekin yozuvlari qolgan holat (API buni qoldiq 0 bo'lganda ruxsat etadi)"""
         Wallet.objects.filter(pk=wallet.pk).update(status=False)
 
 
@@ -110,7 +110,7 @@ class IncomeEditTests(BalanceTestCase):
         self.url = ("incomes", self.inc["id"])
 
     def test_note_only_edit_is_allowed_when_balance_is_below_income(self):
-        """Asl xato: balans 500 < 5000 — izohni o'zgartirish ham "mablag' yetarli emas" berardi"""
+        """Asl xato: qoldiq 500 < 5000 — izohni o'zgartirish ham "mablag' yetarli emas" berardi"""
         for method in (self.put, self.patch):
             with self.subTest(method=method.__name__):
                 payload = {"wallet": self.a.id, "summa": 5000, "description": f"Yangi izoh {method.__name__}"}
@@ -236,7 +236,7 @@ class TransferEditTests(BalanceTestCase):
 
 
 class DebtEditTests(BalanceTestCase):
-    """№9: qarzni tahrirlash balansni buzmasligi kerak"""
+    """№9: qarzni tahrirlash qoldiqni buzmasligi kerak"""
 
     def setUp(self):
         super().setUp()
@@ -244,7 +244,7 @@ class DebtEditTests(BalanceTestCase):
         self.a.save()
 
     def test_type_change_of_partially_paid_debt_is_rejected(self):
-        """Asl xato: give 500, 200 to'langan, take ga o'zgartirilsa balans noto'g'ri (2 × to'langan) bo'lardi"""
+        """Asl xato: give 500, 200 to'langan, take ga o'zgartirilsa qoldiq noto'g'ri (2 × to'langan) bo'lardi"""
         debt = self.debt(self.a, 500)  # 500
         self.assertEqual(self.post(f"debts/{debt['id']}/repay", {"amount": 200, "wallet": self.a.id}).status_code, 200)
         self.assertEqual(self.balance(self.a), 700)
@@ -391,7 +391,7 @@ class DeletedWalletEditTests(BalanceTestCase):
 
 
 class HiddenAndDeletedRelationsTests(BalanceTestCase):
-    """№15: o'chirilgan/yashirilgan toifa va a'zo"""
+    """№15: o'chirilgan/yashirilgan turkum va a'zo"""
 
     def setUp(self):
         super().setUp()
@@ -435,7 +435,7 @@ class HiddenAndDeletedRelationsTests(BalanceTestCase):
         self.user.hidden_income_categories.add(self.inc_cat)
         res = self.post("incomes", {"wallet": self.a.id, "summa": 100, "category": self.inc_cat.id})
         self.assertEqual(res.status_code, 400)
-        self.assertEqual(res.json()["error"], "Toifa topilmadi")
+        self.assertEqual(res.json()["error"], "Turkum topilmadi")
         self.assertEqual(self.post("incomes", {"wallet": self.a.id, "summa": 100,
                                                "category": self.other_inc_cat.id}).status_code, 201)
 
@@ -484,7 +484,7 @@ class HiddenAndDeletedRelationsTests(BalanceTestCase):
 
 
 class TransferRateTests(BalanceTestCase):
-    """№16: kurs chegarasi va summa o'zgarmagan tahrirda to_summa saqlanishi"""
+    """№16: kurs chegarasi va miqdor o'zgarmagan tahrirda to_miqdor saqlanishi"""
 
     def setUp(self):
         super().setUp()
@@ -498,7 +498,7 @@ class TransferRateTests(BalanceTestCase):
         return data
 
     def test_absurd_rate_is_a_400_not_a_500(self):
-        """Asl xato: summa=0.01, to_summa=10^12 -> decimal.InvalidOperation (500)"""
+        """Asl xato: miqdor=0.01, to_miqdor=10^12 -> decimal.InvalidOperation (500)"""
         res = self.post("transfers", self.payload(Decimal("0.01"), 10 ** 12))
         self.assertEqual(res.status_code, 400, res.content)
         self.assertIn("kurs", res.json()["error"])
@@ -525,7 +525,7 @@ class TransferRateTests(BalanceTestCase):
         self.assertIn("kurs", res.json()["error"])
 
     def test_tiny_rate_is_a_400_not_a_zero_rate(self):
-        """Asl xato: summa=10^12, to_summa=1 -> kurs 0 bo'lib saqlanardi, keyin summani tahrirlash "Summa juda kichik" berardi"""
+        """Asl xato: miqdor=10^12, to_miqdor=1 -> kurs 0 bo'lib saqlanardi, keyin miqdorni tahrirlash "Miqdor juda kichik" berardi"""
         res = self.post("transfers", self.payload(10 ** 12, 1))
         self.assertEqual(res.status_code, 400, res.content)
         self.assertIn(MIN_RATE_MESSAGE, res.json()["error"])
@@ -591,12 +591,12 @@ class TransferRateTests(BalanceTestCase):
         # kurs bo'yicha 0 bo'ladigan summa: "Summa juda kichik", hech narsa o'zgarmaydi
         res = self.patch("transfers", tr["id"], {"summa": 10})
         self.assertEqual(res.status_code, 400, res.content)
-        self.assertIn("Summa juda kichik", res.json()["error"])
+        self.assertIn("Miqdor juda kichik", res.json()["error"])
         self.assertEqual(Transfer.objects.get(pk=tr["id"]).summa, 5 * 10 ** 8)
         self.assertEqual(self.balance(self.usd), 5)
 
     def test_unchanged_put_keeps_to_summa_and_rate(self):
-        """Asl xato: kurs 8 xonaga yaxlitlanadi (7 / 10^9 -> 1e-8), PUT da to_summa jimgina 7 dan 10 ga o'zgarardi"""
+        """Asl xato: kurs 8 xonaga yaxlitlanadi (7 / 10^9 -> 1e-8), PUT da to_miqdor jimgina 7 dan 10 ga o'zgarardi"""
         tr = self.transfer(self.uzs, self.usd, 10 ** 9, to_summa=7)
         rate = Transfer.objects.get(pk=tr["id"]).rate
         self.assertEqual(self.balance(self.usd), 7)
@@ -636,7 +636,7 @@ class TransferRateTests(BalanceTestCase):
 
 
 class RepayInputTests(BalanceTestCase):
-    """№17: /repay/ — summa haqiqiy butun son, hamyon majburiy"""
+    """№17: /repay/ — miqdor haqiqiy butun son, hamyon majburiy"""
 
     def setUp(self):
         super().setUp()
@@ -703,7 +703,7 @@ class RepayInputTests(BalanceTestCase):
         self.assertEqual((self.paid(), self.balance(self.a)), (40, 540))
 
     def test_wallet_is_required(self):
-        """Asl xato: hamyonsiz to'lov qarzni kamaytirardi, lekin hech qaysi balansga tushmasdi"""
+        """Asl xato: hamyonsiz to'lov qarzni kamaytirardi, lekin hech qaysi qoldiqqa tushmasdi"""
         for payload in ({"amount": 100}, {"amount": 100, "wallet": None}, {"amount": 100, "wallet": ""}):
             with self.subTest(payload=payload):
                 res = self.post(self.url, payload)

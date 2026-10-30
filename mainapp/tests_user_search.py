@@ -5,6 +5,7 @@ from contextlib import contextmanager
 from types import SimpleNamespace
 from unittest import mock
 
+from django.contrib.auth.models import Permission
 from django.db import connection, IntegrityError
 from django.db.backends.signals import connection_created
 from django.db.models import Value
@@ -115,7 +116,9 @@ class UsersEndpointRaceTests(APITestCase):
 class UsersSearchTests(APITestCase):
     def setUp(self):
         super().setUp()
-        self.login_as(make_user("xodim", is_staff=True))
+        staff = make_user("xodim", is_staff=True)
+        staff.user_permissions.add(*Permission.objects.filter(codename="view_user"))
+        self.login_as(staff)
         # phone bo'sh (NULL) — Casefold NULL'da yiqilmasligi kerak
         self.ali = make_user("Ali_u", first_name="Али", last_name="Каримов", email="ALI@Почта.uz")
         self.vali = make_user("Бахтиёр", first_name="Рустам", last_name="ЖАСУРОВ", phone="+998901112233")
@@ -177,6 +180,7 @@ class UsersSearchTests(APITestCase):
                 self.assertEqual(self.api.get(f"{API}/users/", {"search": "АЛИ почта"}).status_code, 200)
             return len(ctx)
 
+        count()  # birinchi so'rov xodim huquqlarini keshga yuklaydi (qo'shimcha so'rovlar)
         before = count()
         for i in range(10):
             make_user(f"ali_{i}", first_name="Али", email=f"a{i}@почта.uz")

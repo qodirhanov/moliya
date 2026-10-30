@@ -151,12 +151,12 @@ class CategoryTests(APITestCase):
 
     def test_user_creates_private_category(self):
         self.login_as(self.ali)
-        res = self.api.post(f"{API}/expense-categories/", {"name": "Mening toifam"}, format="json")
+        res = self.api.post(f"{API}/expense-categories/", {"name": "Mening turkumim"}, format="json")
         self.assertEqual(res.status_code, 201)
-        self.assertEqual(ExpenseCategory.objects.get(name="Mening toifam").user, self.ali)
+        self.assertEqual(ExpenseCategory.objects.get(name="Mening turkumim").user, self.ali)
         self.login_as(self.vali)
         names = [c["name"] for c in rows(self.api.get(f"{API}/expense-categories/"))]
-        self.assertNotIn("Mening toifam", names)
+        self.assertNotIn("Mening turkumim", names)
         self.assertIn("Oziq-ovqat", names)
 
     def test_other_user_cannot_edit_or_delete_private_category(self):
@@ -349,7 +349,7 @@ class OwnershipTests(APITestCase):
         self.thief = make_user("ogri")
         self.victim_wallet = make_wallet(self.victim, 1_000_000)
         self.thief_wallet = make_wallet(self.thief, 0)
-        self.exp_cat = ExpenseCategory.objects.create(name="Toifa")
+        self.exp_cat = ExpenseCategory.objects.create(name="Turkum")
         self.inc_cat = Category.objects.create(name="Manba")
         self.login_as(self.thief)
 
@@ -394,7 +394,7 @@ class BalanceTests(APITestCase):
         self.user = make_user("ali")
         self.wallet = make_wallet(self.user, 100000)
         self.other = make_wallet(self.user, 0, name="Ikkinchi")
-        self.exp_cat = ExpenseCategory.objects.create(name="Toifa")
+        self.exp_cat = ExpenseCategory.objects.create(name="Turkum")
         self.inc_cat = Category.objects.create(name="Manba")
         self.login_as(self.user)
 
@@ -567,8 +567,16 @@ class WalletEditTests(APITestCase):
         self.assertEqual((self.wallet.name, self.wallet.currency), ("Yangi nom", "USD"))
         self.assertEqual(self.wallet.summa, 75000)
 
-    def test_balance_cannot_be_edited_directly(self):
-        self.assertEqual(self.patch({"summa": 1}).status_code, 400)
+    def test_balance_can_be_edited_directly(self):
+        # Foydalanuvchi qarori (2026-10-28): qoldiq tahrirda shunchaki almashtiriladi, kirim/chiqim yozilmaydi
+        self.assertEqual(self.patch({"summa": "1250.50"}).status_code, 200)
+        self.wallet.refresh_from_db()
+        self.assertEqual(self.wallet.summa, Decimal("1250.50"))
+        self.assertFalse(self.wallet.incomes.exists() or self.wallet.expenses.exists())
+
+    def test_balance_edit_rejects_negative_and_huge(self):
+        for value in ("-1", "1000000000001"):
+            self.assertEqual(self.patch({"summa": value}).status_code, 400, value)
         self.wallet.refresh_from_db()
         self.assertEqual(self.wallet.summa, 75000)
 
@@ -596,7 +604,7 @@ class WalletOperationsFilterTests(APITestCase):
         self.user = make_user("ali")
         self.a = make_wallet(self.user, 1_000_000, name="A")
         self.b = make_wallet(self.user, 1_000_000, name="B")
-        self.exp_cat = ExpenseCategory.objects.create(name="Toifa")
+        self.exp_cat = ExpenseCategory.objects.create(name="Turkum")
         self.inc_cat = Category.objects.create(name="Manba")
         self.login_as(self.user)
 
@@ -684,7 +692,7 @@ class DateRangeFilterTests(APITestCase):
         a = make_wallet(self.user, 1_000_000, name="A")
         b = make_wallet(self.user, 0, name="B")
         inc_cat = Category.objects.create(name="Manba")
-        exp_cat = ExpenseCategory.objects.create(name="Toifa")
+        exp_cat = ExpenseCategory.objects.create(name="Turkum")
         for moment in self.MOMENTS:
             when = timezone.make_aware(moment)
             Income.objects.create(user=self.user, wallet=a, category=inc_cat, summa=100, date=when)
@@ -1115,7 +1123,7 @@ class DateRangeStatsTests(APITestCase):
 
 @mock.patch("mainapp.currency._fetch_cbu", return_value=FAKE_RATES)
 class StatsCurrencyTests(APITestCase):
-    """Statistikada dollar va so'm kurs bo'yicha so'mga o'girilib jamlanadi va saralanadi (1 USD = 12 000 UZS)"""
+    """Hisobotda dollar va so'm kurs bo'yicha so'mga o'girilib jamlanadi va saralanadi (1 USD = 12 000 UZS)"""
 
     def setUp(self):
         super().setUp()
@@ -1280,7 +1288,7 @@ class PasswordResetTests(APITestCase):
 # ==========================================
 
 class ForeignWalletLeakTests(APITestCase):
-    """Begona hamyon ID'si bilan so'rov yuborilganda uning balansi yoki valyutasi xato xabarida ko'rinmasligi kerak"""
+    """Begona hamyon ID'si bilan so'rov yuborilganda uning qoldig'i yoki valyutasi xato xabarida ko'rinmasligi kerak"""
 
     def setUp(self):
         super().setUp()
@@ -1403,7 +1411,9 @@ class UsernameRulesTests(APITestCase):
     def test_users_endpoint_keeps_case_insensitive_uniqueness(self):
         make_user("ali")
         vali = make_user("vali")
-        self.login_as(make_user("boss", is_staff=True))
+        boss = make_user("boss", is_staff=True)
+        boss.user_permissions.add(*Permission.objects.filter(codename__in=["view_user", "change_user"]))
+        self.login_as(boss)
         res = self.api.patch(f"{API}/users/{vali.id}/", {"username": "ALI"}, format="json")
         self.assertEqual(res.status_code, 400)
         vali.refresh_from_db()
@@ -1521,7 +1531,7 @@ class ExtremeInputTests(APITestCase):
 
 
 class AccountTakeoverTests(APITestCase):
-    """Ochiq qolgan (o'g'irlangan) sessiya bilan akkauntni butunlay egallab yoki o'chirib bo'lmasligi kerak"""
+    """Ochiq qolgan (o'g'irlangan) sessiya bilan hisobni butunlay egallab yoki o'chirib bo'lmasligi kerak"""
 
     def setUp(self):
         super().setUp()
@@ -1654,7 +1664,7 @@ class PlansIssueFixTests(APITestCase):
         self.user = make_user("ali")
         self.a = make_wallet(self.user, 1_000_000, name="A")
         self.b = make_wallet(self.user, 0, name="B")
-        self.exp_cat = ExpenseCategory.objects.create(name="Toifa")
+        self.exp_cat = ExpenseCategory.objects.create(name="Turkum")
         self.inc_cat = Category.objects.create(name="Manba")
         self.login_as(self.user)
 
@@ -1775,12 +1785,14 @@ def post_login(api, password, username="ali", ip="10.0.0.1"):
 
 
 class StaffCannotTouchSuperuserTests(APITestCase):
-    """№2: superuser bo'lmagan xodim /users/ orqali superuser akkauntini o'zgartira/o'chira olmasligi kerak"""
+    """№2: superuser bo'lmagan xodim /users/ orqali superuser hisobini o'zgartira/o'chira olmasligi kerak"""
 
     def setUp(self):
         super().setUp()
         self.root = make_user("root", is_staff=True, is_superuser=True, email="root@example.com")
         self.staff = make_user("boss", is_staff=True)
+        # Panelga o'xshash huquqlar: ko'rish va o'zgartirish (o'chirish emas)
+        self.staff.user_permissions.add(*Permission.objects.filter(codename__in=["view_user", "change_user"]))
         self.ali = make_user("ali")
 
     def test_staff_cannot_hijack_superuser_email(self):
@@ -1892,7 +1904,7 @@ class UnicodeUsernameTests(APITestCase):
 
 
 class AtSignLoginTests(APITestCase):
-    """№6: "@" bor identifikator email deb qidiriladi — begona odam qurbonning login nomini o'z emaili qila olmasligi kerak"""
+    """№6: "@" bor identifikator elektron pochta deb qidiriladi — begona odam qurbonning login nomini o'z elektron pochtasi qila olmasligi kerak"""
 
     def setUp(self):
         super().setUp()
@@ -1949,7 +1961,7 @@ class LoginCacheEvictionTests(APITestCase):
 
 
 class LoginLockPerIpTests(APITestCase):
-    """№14: blok (akkaunt + IP) juftligi bo'yicha; taqsimlangan urinishlarga qarshi akkaunt bo'yicha umumiy chegara"""
+    """№14: blok (hisob + IP) juftligi bo'yicha; taqsimlangan urinishlarga qarshi hisob bo'yicha umumiy chegara"""
 
     def setUp(self):
         super().setUp()

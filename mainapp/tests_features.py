@@ -1,5 +1,5 @@
-"""Yangi imkoniyatlar: o'chirilgan operatsiyani qaytarish, takroriy to'lovlar, jamg'arma maqsadlari va
-ikki bosqichli kirish (email kod). Tarmoq har doim mock: haqiqiy cbu.uz ga murojaat qilinmaydi."""
+"""Yangi imkoniyatlar: o'chirilgan amalni qaytarish, doimiy to'lovlar, jamg'arma maqsadlari va
+ikki bosqichli himoya (elektron pochta kod). Tarmoq har doim mock: haqiqiy cbu.uz ga murojaat qilinmaydi."""
 import re
 from datetime import date, timedelta
 from decimal import Decimal
@@ -85,7 +85,7 @@ class RecurringTests(FeatureTestCase):
         self.assertEqual(self.balance(), Decimal("900"))
         payment.refresh_from_db()
         self.assertEqual(payment.next_date, add_months(timezone.localdate(), 1, timezone.localdate().day))
-        self.assertTrue(Expense.objects.filter(description="Takroriy: Ijara").exists())
+        self.assertTrue(Expense.objects.filter(description="Doimiy: Ijara").exists())
 
     def test_past_start_date_is_not_backfilled(self):
         payment = self.create(start_date=(timezone.localdate() - timedelta(days=40)).isoformat(), frequency="weekly")
@@ -126,17 +126,109 @@ class RecurringTests(FeatureTestCase):
 
 
 class GoalTests(FeatureTestCase):
-    def test_goal_progress_is_wallet_balance(self):
-        res = self.api.post(f"{API}/goals/", {"name": "Mashina", "target": "5000", "wallet": self.wallet.id}, format="json")
-        self.assertEqual(res.status_code, 201, res.content)
-        self.assertEqual(Decimal(res.json()["saved"]), Decimal("1000"))
-        self.assertEqual(res.json()["wallet_currency"], "UZS")
+    """Yangi maqsadga o'z hamyoni ochiladi: undan pul chiqmaydi, unga faqat O'tkazma tushadi"""
 
-    def test_foreign_wallet_rejected(self):
-        other = User.objects.create_user(username="vali", password=PASSWORD)
-        foreign = Wallet.objects.create(user=other, name="X", summa=0)
-        res = self.api.post(f"{API}/goals/", {"name": "M", "target": "5", "wallet": foreign.id}, format="json")
+    def create_goal(self, **extra):
+        res = self.api.post(f"{API}/goals/", {"name": "Mashina", "target": "5000", **extra}, format="json")
+        self.assertEqual(res.status_code, 201, res.content)
+        return res.json()
+
+    def test_goal_opens_own_wallet(self):
+        data = self.create_goal(currency="usd")
+        wallet = Wallet.objects.get(pk=data["wallet"])
+        self.assertTrue(wallet.is_goal)
+        self.assertEqual((wallet.name, wallet.currency, wallet.summa), ("Mashina", "USD", Decimal("0")))
+        self.assertEqual(Decimal(data["saved"]), Decimal("0"))
+        self.assertTrue(data["wallet_is_goal"])
+
+    def test_wallet_cannot_be_chosen_or_changed(self):
+        # Mavjud hamyon ID si e'tiborsiz qoldiriladi — har doim yangi hamyon ochiladi
+        data = self.create_goal(wallet=self.wallet.id)
+        self.assertNotEqual(data["wallet"], self.wallet.id)
+        res = self.api.patch(f"{API}/goals/{data['id']}/", {"wallet": self.wallet.id, "name": "Uy"}, format="json")
+        self.assertEqual(res.status_code, 200, res.content)
+        self.assertEqual(res.json()["wallet"], data["wallet"])
+        # Maqsad nomi o'zgarsa hamyon ham qayta nomlanadi
+        self.assertEqual(Wallet.objects.get(pk=data["wallet"]).name, "Uy")
+
+    def test_transfer_in_counts_as_progress(self):
+        data = self.create_goal()
+        res = self.api.post(f"{API}/transfers/", {"from_wallet": self.wallet.id, "to_wallet": data["wallet"], "summa": "300"}, format="json")
+        self.assertEqual(res.status_code, 201, res.content)
+        self.assertEqual(Decimal(self.api.get(f"{API}/goals/").json()[0]["saved"]), Decimal("300"))
+
+    def test_goal_wallet_blocks_money_out_and_income(self):
+        goal_wallet = Wallet.objects.get(pk=self.create_goal()["wallet"])
+        self.api.post(f"{API}/transfers/", {"from_wallet": self.wallet.id, "to_wallet": goal_wallet.id, "summa": "300"}, format="json")
+        attempts = {
+            "expenses": {"wallet": goal_wallet.id, "summa": "10", "category": self.exp_cat.id},
+            "incomes": {"wallet": goal_wallet.id, "summa": "10", "category": self.inc_cat.id},
+            "transfers": {"from_wallet": goal_wallet.id, "to_wallet": self.wallet.id, "summa": "10"},
+            "debts": {"person_name": "Vali", "debt_type": "give", "summa": "10", "wallet": goal_wallet.id},
+        }
+        for endpoint, payload in attempts.items():
+            res = self.api.post(f"{API}/{endpoint}/", payload, format="json")
+            self.assertEqual(res.status_code, 400, (endpoint, res.content))
+        goal_wallet.refresh_from_db()
+        self.assertEqual(goal_wallet.summa, Decimal("300"))
+        # Hamyonni to'g'ridan-to'g'ri tahrirlash va o'chirish ham yopiq
+        self.assertEqual(self.api.patch(f"{API}/wallets/{goal_wallet.id}/", {"name": "X"}, format="json").status_code, 400)
+        self.assertEqual(self.api.delete(f"{API}/wallets/{goal_wallet.id}/").status_code, 400)
+
+    def test_deleting_goal_moves_money_and_deletes_wallet(self):
+        data = self.create_goal()
+        self.api.post(f"{API}/transfers/", {"from_wallet": self.wallet.id, "to_wallet": data["wallet"], "summa": "300"}, format="json")
+        # Pul bor — qaysi hamyonga o'tkazilishi aytilmasa rad etiladi, hech narsa o'zgarmaydi
+        res = self.api.delete(f"{API}/goals/{data['id']}/")
         self.assertEqual(res.status_code, 400)
+        self.assertTrue(Wallet.objects.get(pk=data["wallet"]).status)
+
+        res = self.api.delete(f"{API}/goals/{data['id']}/", {"to_wallet": self.wallet.id}, format="json")
+        self.assertEqual(res.status_code, 200, res.content)
+        goal_wallet = Wallet.objects.get(pk=data["wallet"])
+        self.assertFalse(goal_wallet.status)
+        self.assertEqual(goal_wallet.summa, Decimal("0"))
+        self.wallet.refresh_from_db()
+        self.assertEqual(self.wallet.summa, Decimal("1000"))  # 1000 - 300 + 300
+        self.assertEqual(self.api.get(f"{API}/goals/").json(), [])
+
+    def test_deleting_empty_goal_deletes_wallet(self):
+        data = self.create_goal()
+        self.assertEqual(self.api.delete(f"{API}/goals/{data['id']}/").status_code, 200)
+        self.assertFalse(Wallet.objects.get(pk=data["wallet"]).status)
+
+    def test_goal_money_cannot_go_to_foreign_or_goal_wallet(self):
+        data = self.create_goal()
+        other_goal = self.create_goal()
+        self.api.post(f"{API}/transfers/", {"from_wallet": self.wallet.id, "to_wallet": data["wallet"], "summa": "300"}, format="json")
+        foreign = Wallet.objects.create(user=User.objects.create_user(username="vali", password=PASSWORD), name="X")
+        for target in (foreign.id, other_goal["wallet"], data["wallet"]):
+            res = self.api.delete(f"{API}/goals/{data['id']}/", {"to_wallet": target}, format="json")
+            self.assertEqual(res.status_code, 400, target)
+        self.assertEqual(Wallet.objects.get(pk=data["wallet"]).summa, Decimal("300"))
+
+    def test_deleting_goal_converts_currency(self):
+        data = self.create_goal(currency="USD")
+        usd = Wallet.objects.create(user=self.user, name="Dollar", summa=Decimal("50"), currency="USD")
+        self.api.post(f"{API}/transfers/", {"from_wallet": usd.id, "to_wallet": data["wallet"], "summa": "20"}, format="json")
+        with mock.patch("mainapp.views.convert", return_value=(Decimal("250000"), Decimal("12500"))):
+            res = self.api.delete(f"{API}/goals/{data['id']}/", {"to_wallet": self.wallet.id}, format="json")
+        self.assertEqual(res.status_code, 200, res.content)
+        self.wallet.refresh_from_db()
+        self.assertEqual(self.wallet.summa, Decimal("251000"))
+
+    def test_legacy_goal_keeps_its_wallet(self):
+        from .models import SavingsGoal
+        goal = SavingsGoal.objects.create(user=self.user, name="Eski", target=Decimal("5000"), wallet=self.wallet)
+        self.assertEqual(self.api.delete(f"{API}/goals/{goal.id}/").status_code, 200)
+        self.wallet.refresh_from_db()
+        self.assertTrue(self.wallet.status)
+        self.assertEqual(self.wallet.summa, Decimal("1000"))
+
+    def test_bad_currency_rejected(self):
+        res = self.api.post(f"{API}/goals/", {"name": "M", "target": "5", "currency": "12"}, format="json")
+        self.assertEqual(res.status_code, 400)
+        self.assertFalse(Wallet.objects.filter(is_goal=True).exists())
 
 
 class TwoFactorTests(TestCase):

@@ -14,7 +14,7 @@ from django.db.models.functions import Round
 # SQLite esa DecimalField arifmetikasini float'da bajaradi: float ~15-16 ta muhim raqamni aniq saqlaydi,
 # 10^12 + 2 kasr xona = 15 raqam — shu chegaradan pastda tiyinlar aniq qoladi
 MAX_AMOUNT = 10 ** 12
-MAX_AMOUNT_MESSAGE = "Summa juda katta — eng ko'pi 1 000 000 000 000 bo'lishi mumkin"
+MAX_AMOUNT_MESSAGE = "Miqdor juda katta — eng ko'pi 1 000 000 000 000 bo'lishi mumkin"
 MONEY_FIELD_KWARGS = {"max_digits": 15, "decimal_places": 2}
 
 
@@ -177,6 +177,9 @@ class Wallet(models.Model):
     summa = models.DecimalField(default=0, **MONEY_FIELD_KWARGS)
     currency = models.CharField(max_length=10, default="UZS")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wallets")
+    # Maqsad hamyoni (maqsad qo'shilganda avtomatik ochiladi): undan xarajat qilib bo'lmaydi, pul unga faqat
+    # boshqa hamyondan O'tkazma bilan tushadi. Maqsad o'chirilsa oddiy hamyonga aylanadi (False)
+    is_goal = models.BooleanField(default=False)
     status = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -189,21 +192,23 @@ class Wallet(models.Model):
         return f"{self.name} — {format_money(self.summa)} {self.currency}"
 
     def has_operations(self):
-        """Hamyonda amaldagi (o'chirilmagan) daromad, harajat, o'tkazma yoki qarz bormi"""
+        """Hamyonda amaldagi (o'chirilmagan) daromad, harajat, o'tkazma, qarz, doimiy to'lov yoki maqsad bormi.
+        Doimiy to'lov va maqsad summasi ham hamyon valyutasida: valyuta almashsa "3 000 000 so'm" 3 000 000 USD bo'lib qolardi"""
         return any(
             related.filter(status=True).exists()
-            for related in (self.incomes, self.expenses, self.transfers_sent, self.transfers_received, self.debts)
+            for related in (self.incomes, self.expenses, self.transfers_sent, self.transfers_received, self.debts,
+                            self.recurring_payments, self.savings_goals)
         )
 
     def add_money(self, amount):
         """Hamyonga pul qo'shish (3. pk=None holati hisobga olingan, race-safe)"""
         if amount <= 0:
-            raise ValueError("Qo'shiladigan summa musbat bo'lishi kerak")
+            raise ValueError("Qo'shiladigan miqdor musbat bo'lishi kerak")
         if amount > MAX_AMOUNT:
             raise ValueError(MAX_AMOUNT_MESSAGE)
         if not self.pk:
             if self.summa + amount > MAX_AMOUNT:
-                raise ValueError("Hamyon balansi juda katta bo'lib ketadi")
+                raise ValueError("Hamyon qoldig'i juda katta bo'lib ketadi")
             self.summa += amount
             self.save()
             return
@@ -212,12 +217,12 @@ class Wallet(models.Model):
         )
         self.refresh_from_db()
         if not updated:
-            raise ValueError("Hamyon balansi juda katta bo'lib ketadi")
+            raise ValueError("Hamyon qoldig'i juda katta bo'lib ketadi")
 
     def withdraw_money(self, amount):
         """Hamyondan pul yechish (3. pk=None holati hisobga olingan, race-safe)"""
         if amount <= 0:
-            raise ValueError("Yechiladigan summa musbat bo'lishi kerak")
+            raise ValueError("Yechiladigan miqdor musbat bo'lishi kerak")
         if amount > MAX_AMOUNT:
             raise ValueError(MAX_AMOUNT_MESSAGE)
         if not self.pk:
@@ -240,6 +245,16 @@ class Wallet(models.Model):
         self.status = False
         self.save(update_fields=["status"])
         return (1, {self._meta.label: 1})
+
+
+GOAL_WALLET_SPEND_MESSAGE = "Bu maqsad hamyoni — undan pul chiqarib bo'lmaydi. Pul unga faqat boshqa hamyondan O'tkazma bilan qo'shiladi"
+GOAL_WALLET_INCOME_MESSAGE = "Maqsad hamyoniga pul faqat boshqa hamyondan O'tkazma bilan qo'shiladi"
+
+
+def check_not_goal_wallet(wallet, message=GOAL_WALLET_SPEND_MESSAGE):
+    """Maqsad hamyoni bilan taqiqlangan amal (xarajat, kirim, qarz, chiqim o'tkazmasi) rad etiladi"""
+    if wallet is not None and wallet.is_goal:
+        raise ValidationError(message)
 
 
 def apply_wallet_changes(new_effects, old_effects=()):
@@ -417,12 +432,14 @@ class Income(models.Model):
         ordering = ["-date"]
 
     def __str__(self):
-        return f"Daromad: {format_money(self.summa)} — {self.category}"
+        return f"Kirim: {format_money(self.summa)} — {self.category}"
 
     def clean(self):
         # 5. Hamyon egasi bilan amaliyot qiluvchi foydalanuvchi tekshiruvi
         if self.wallet_id and self.user_id and self.wallet.user_id != self.user_id:
             raise ValidationError("Ushbu hamyon boshqa foydalanuvchiga tegishli!")
+        if self.status and self.wallet_id:
+            check_not_goal_wallet(self.wallet, GOAL_WALLET_INCOME_MESSAGE)
 
     def balance_effects(self):
         """Hamyonga ta'siri: faol daromad hamyonga kiradi"""
@@ -431,7 +448,7 @@ class Income(models.Model):
     def save(self, *args, **kwargs):
         self.clean()
         if self.summa <= 0:
-            raise ValueError("Daromad summasi musbat bo'lishi kerak")
+            raise ValueError("Kirim miqdori musbat bo'lishi kerak")
 
         # Kursni olish tarmoqqa chiqishi mumkin — tranzaksiyadan oldin
         if prepare_uzs_rate(self) and kwargs.get("update_fields") is not None:
@@ -445,10 +462,10 @@ class Income(models.Model):
     def delete(self, *args, **kwargs):
         """4. Soft delete — Django standartiga muvofiq (count, dict) qaytaradi"""
         with transaction.atomic():
-            if self.status:
-                self.status = False
+            # Qatorni atomik "egallaymiz": view'dagi get_object() eskirgan bo'lishi mumkin — ikki parallel DELETE ikkalasi ham status=True ko'rardi
+            if Income.objects.filter(pk=self.pk, status=True).update(status=False, updated_at=timezone.now()) == 1:
                 self.wallet.withdraw_money(self.summa)
-                super().save(update_fields=["status"])
+            self.status = False
         return (1, {self._meta.label: 1})
 
 
@@ -479,15 +496,17 @@ class Expense(models.Model):
         ordering = ["-date"]
 
     def __str__(self):
-        cat = self.category.name if self.category else "Harajat"
+        cat = self.category.name if self.category else "Chiqim"
         return f"{cat}: {format_money(self.summa)}"
 
     def clean(self):
         # 5. Hamyon egasi bilan amaliyot qiluvchi foydalanuvchi tekshiruvi
         if self.wallet_id and self.user_id and self.wallet.user_id != self.user_id:
-            raise ValidationError("Ushbu hamyon boshqa foydalanuvchiga tegishli! Begona hamyondan harajat qilib bo'lmaydi.")
+            raise ValidationError("Ushbu hamyon boshqa foydalanuvchiga tegishli! Begona hamyondan xarajat qilib bo'lmaydi.")
         if self.member_id and self.user_id and self.member.user_id != self.user_id:
             raise ValidationError("Tanlangan a'zo sizga tegishli emas!")
+        if self.status and self.wallet_id:
+            check_not_goal_wallet(self.wallet)
 
     def balance_effects(self):
         """Hamyonga ta'siri: faol harajat hamyondan chiqadi"""
@@ -496,7 +515,7 @@ class Expense(models.Model):
     def save(self, *args, **kwargs):
         self.clean()
         if self.summa <= 0:
-            raise ValueError("Harajat summasi musbat bo'lishi kerak")
+            raise ValueError("Chiqim miqdori musbat bo'lishi kerak")
 
         # Kursni olish tarmoqqa chiqishi mumkin — tranzaksiyadan oldin
         if prepare_uzs_rate(self) and kwargs.get("update_fields") is not None:
@@ -510,10 +529,10 @@ class Expense(models.Model):
     def delete(self, *args, **kwargs):
         """4. Soft delete — Django standartiga muvofiq (count, dict) qaytaradi"""
         with transaction.atomic():
-            if self.status:
-                self.status = False
+            # Qatorni atomik "egallaymiz": view'dagi get_object() eskirgan bo'lishi mumkin — ikki parallel DELETE ikkalasi ham status=True ko'rardi
+            if Expense.objects.filter(pk=self.pk, status=True).update(status=False, updated_at=timezone.now()) == 1:
                 self.wallet.add_money(self.summa)
-                super().save(update_fields=["status"])
+            self.status = False
         return (1, {self._meta.label: 1})
 
 
@@ -550,6 +569,8 @@ class Transfer(models.Model):
             raise ValidationError("Chiqim hamyoni sizga tegishli emas!")
         if self.to_wallet_id and self.user_id and self.to_wallet.user_id != self.user_id:
             raise ValidationError("Kirim hamyoni sizga tegishli emas!")
+        if self.status and self.from_wallet_id:
+            check_not_goal_wallet(self.from_wallet)
 
     def balance_effects(self):
         """Hamyonlarga ta'siri: faol o'tkazma chiqim hamyonidan chiqadi, kirim hamyoniga tushadi"""
@@ -560,7 +581,7 @@ class Transfer(models.Model):
         if self.to_summa is None and self.from_wallet.currency == self.to_wallet.currency:
             self.to_summa = self.summa
         if self.summa <= 0 or not self.to_summa or self.to_summa <= 0:
-            raise ValueError("O'tkazma summasi musbat bo'lishi kerak")
+            raise ValueError("O'tkazma miqdori musbat bo'lishi kerak")
 
         with transaction.atomic():
             old = Transfer.objects.filter(pk=self.pk).first() if self.pk else None
@@ -570,11 +591,11 @@ class Transfer(models.Model):
     def delete(self, *args, **kwargs):
         """4. Soft delete — Django standartiga muvofiq (count, dict) qaytaradi"""
         with transaction.atomic():
-            if self.status:
-                self.status = False
+            # Qatorni atomik "egallaymiz": view'dagi get_object() eskirgan bo'lishi mumkin — ikki parallel DELETE ikkalasi ham status=True ko'rardi
+            if Transfer.objects.filter(pk=self.pk, status=True).update(status=False, updated_at=timezone.now()) == 1:
                 self.from_wallet.add_money(self.summa)
                 self.to_wallet.withdraw_money(self.to_summa)
-                super().save(update_fields=["status"])
+            self.status = False
         return (1, {self._meta.label: 1})
 
 
@@ -613,14 +634,16 @@ class Debt(models.Model):
         return max(0, self.summa - self.paid_summa)
 
     def __str__(self):
-        action = "Berdim" if self.debt_type == "give" else "Oldim"
+        action = "Qarz berdim" if self.debt_type == "give" else "Qarz oldim"
         return f"{self.person_name} ({action}: {format_money(self.summa)} {self.currency})"
 
     def clean(self):
         if self.wallet and self.user and self.wallet.user_id != self.user_id:
             raise ValidationError("Tanlangan hamyon sizga tegishli emas!")
+        if self.status and self.wallet:
+            check_not_goal_wallet(self.wallet, "Maqsad hamyonini qarzga bog'lab bo'lmaydi — boshqa hamyonni tanlang")
         if self.paid_summa > self.summa:
-            raise ValidationError("Qaytarilgan summa umumiy qarzdan oshib ketishi mumkin emas!")
+            raise ValidationError("Qaytarilgan miqdor umumiy qarzdan oshib ketishi mumkin emas!")
         if not self.pk and self.wallet and self.debt_type == "give":
             if self.wallet.summa < self.summa:
                 raise ValidationError(f"Hamyonda yetarli mablag' yo'q! Mavjud: {format_money(self.wallet.summa)} {self.wallet.currency}")
@@ -663,14 +686,18 @@ class Debt(models.Model):
     def delete(self, *args, **kwargs):
         """4. Soft delete — qarz bekor qilinganda hamyon balansini atomik tiklaydi"""
         with transaction.atomic():
-            if self.status:
-                self.status = False
-                if self.wallet and self.remaining_summa > 0:
-                    if self.debt_type == "give":
-                        self.wallet.add_money(self.remaining_summa)
-                    elif self.debt_type == "take":
-                        self.wallet.withdraw_money(self.remaining_summa)
-                super().save(update_fields=["status"])
+            # Qatorni atomik "egallaymiz": view'dagi get_object() eskirgan bo'lishi mumkin — ikki parallel DELETE ikkalasi ham status=True ko'rardi
+            if Debt.objects.filter(pk=self.pk, status=True).update(status=False, updated_at=timezone.now()) == 1:
+                # Qoldiq egallashdan KEYIN bazadan qayta o'qiladi: eskirgan nusxada repay'dan oldingi paid_summa bo'lishi mumkin
+                fresh = Debt.objects.filter(pk=self.pk).values("summa", "paid_summa", "wallet_id", "debt_type").first()
+                remaining = max(0, fresh["summa"] - fresh["paid_summa"]) if fresh else 0
+                if fresh and fresh["wallet_id"] and remaining > 0:
+                    wallet = self.wallet if self.wallet_id == fresh["wallet_id"] else Wallet.objects.get(pk=fresh["wallet_id"])
+                    if fresh["debt_type"] == "give":
+                        wallet.add_money(remaining)
+                    elif fresh["debt_type"] == "take":
+                        wallet.withdraw_money(remaining)
+            self.status = False
         return (1, {self._meta.label: 1})
 
 ####################################################
@@ -821,8 +848,9 @@ class RecurringPayment(models.Model):
 
 
 class SavingsGoal(models.Model):
-    """Jamg'arma maqsadi. Bitta hamyonga bog'lanadi: yig'ilgan summa — o'sha hamyon balansi. Pul maqsadga
-    O'tkazma orqali qo'yiladi, shuning uchun balans hisobi alohida mantiqsiz o'zgarmaydi"""
+    """Jamg'arma maqsadi. Bitta hamyonga bog'lanadi: yig'ilgan summa — o'sha hamyon balansi. Yangi maqsadga o'z
+    hamyoni ochiladi (Wallet.is_goal): pul unga faqat O'tkazma orqali qo'yiladi, undan xarajat qilib bo'lmaydi.
+    Eski maqsadlar oddiy hamyonga bog'langan bo'lishi mumkin — ularga cheklov qo'yilmaydi"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="savings_goals")
     name = models.CharField(max_length=255, help_text="Masalan: Mashina, Ta'til")
     target = models.DecimalField(**MONEY_FIELD_KWARGS, help_text="Maqsad summasi (hamyon valyutasida)")

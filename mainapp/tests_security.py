@@ -1,4 +1,4 @@
-"""plans.md №7, 20, 21, 22, 23, 24 testlari: parol tiklashda akkaunt borligi bilinmasligi, IP bo'yicha kirish
+"""plans.md №7, 20, 21, 22, 23, 24 testlari: parol tiklashda hisob borligi bilinmasligi, IP bo'yicha kirish
 cheklovi, proksi sarlavhalari, panelga kirish huquqi, xavfsizlik logi va mayda tuzatishlar."""
 import logging
 import re
@@ -74,7 +74,7 @@ class FakeThread:
 
 
 class ResetEnumerationTests(ResetFlowMixin, APITestCase):
-    """№7: parol tiklashda javob akkaunt borligini oshkor qilmasligi kerak"""
+    """№7: parol tiklashda javob hisob borligini oshkor qilmasligi kerak"""
 
     def setUp(self):
         super().setUp()
@@ -218,7 +218,7 @@ class AdminLoginIpLimitTests(APITestCase):
         self.boss = make_user("boss", is_staff=True, is_superuser=True)
 
     def spray(self, ip, times):
-        """Bitta IP'dan har safar boshqa login bilan noto'g'ri urinish (har bir (akkaunt+IP) juftligi alohida)"""
+        """Bitta IP'dan har safar boshqa login bilan noto'g'ri urinish (har bir (hisob+IP) juftligi alohida)"""
         for n in range(times):
             self.assertIsNone(authenticate(admin_request(ip), username=f"yoq{n}", password="xato"))
 
@@ -468,7 +468,7 @@ class SecurityLogTests(ResetFlowMixin, APITestCase):
 
 
 class InactiveAccountLoginTests(APITestCase):
-    """№24 (c): bloklangan akkauntga "Hisob bloklangan" xabari (avval bu shox hech qachon ishlamagan)"""
+    """№24 (c): bloklangan hisobga "Hisob bloklangan" xabari (avval bu shox hech qachon ishlamagan)"""
 
     def setUp(self):
         super().setUp()
@@ -594,7 +594,7 @@ class EnvExampleTests(unittest.TestCase):
 
 
 class AdminDeleteUserTests(TestCase):
-    """Admin o'chirgan akkaunt ham foydalanuvchi o'zi o'chirgandagidek tozalanadi"""
+    """Admin o'chirgan hisob ham foydalanuvchi o'zi o'chirgandagidek tozalanadi"""
 
     def setUp(self):
         self.admin = User.objects.create_superuser("boss", "boss@example.com", "BossPass123!")

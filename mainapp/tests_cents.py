@@ -1,4 +1,4 @@
-"""Summalar tiyin bilan (2 xonali kasr) saqlanadi: kiritish, aniq balans, chegaralar, statistika va JSON ko'rinishi.
+"""Miqdorlar tiyin bilan (2 xonali kasr) saqlanadi: kiritish, aniq qoldiq, chegaralar, hisobot va JSON ko'rinishi.
 Tarmoq har doim mock: haqiqiy cbu.uz ga murojaat qilinmaydi."""
 from decimal import Decimal
 from unittest import mock
@@ -74,10 +74,11 @@ class CreateWithCentsTests(BalanceTestCase):
         res = self.patch("transfers", tr["id"], {"summa": "1.15"})
         self.assertEqual(res.status_code, 200, res.content)
         self.assertEqual((self.balance(self.a), self.balance(self.b)), (Decimal("83.80"), Decimal("1.15")))
-        # Hamyon summasi to'g'ridan-to'g'ri o'zgartirilmaydi (o'zgarmagan qiymat yuborilsa xato yo'q)
-        res = self.patch("wallets", self.a.id, {"name": "Yangi", "summa": "83.80"})
+        # Hamyon summasi tahrirda to'g'ridan-to'g'ri o'zgartiriladi (tiyin bilan); 3 xonali kasr rad etiladi
+        res = self.patch("wallets", self.a.id, {"name": "Yangi", "summa": "83.81"})
         self.assertEqual(res.status_code, 200, res.content)
-        res = self.patch("wallets", self.a.id, {"summa": "83.81"})
+        self.assertEqual(self.balance(self.a), Decimal("83.81"))
+        res = self.patch("wallets", self.a.id, {"summa": "83.815"})
         self.assertEqual(res.status_code, 400, res.content)
 
 

@@ -1,5 +1,5 @@
-"""Admin panel: akkauntlar haqida ma'lumot. Faqat akkauntlarni ko'rish huquqi bor xodimlar ko'radi (qarang: can_view_panel) va faqat o'qiladi —
-akkauntni tahrirlash Django admin orqali qilinadi"""
+"""Admin panel: hisoblar haqida ma'lumot. Faqat hisoblarni ko'rish huquqi bor xodimlar ko'radi (qarang: can_view_panel) va faqat o'qiladi —
+hisobni tahrirlash Django admin orqali qilinadi"""
 from datetime import timedelta
 from functools import wraps
 
@@ -35,12 +35,12 @@ FILTERS = {
 SORTS = {
     "new": ("Yangi qo'shilgan", ["-date_joined", "-pk"]),
     "login": ("Oxirgi kirish", [F("last_login").desc(nulls_last=True), "-pk"]),
-    "ops": ("Ko'p operatsiya", ["-ops_count", "-pk"]),
+    "ops": ("Ko'p amal", ["-ops_count", "-pk"]),
 }
 
 
 def can_view_panel(user):
-    """Xodim (is_staff) va akkauntlarni ko'rish huquqi bor (superuser yoki "mainapp.view_user" ruxsati).
+    """Xodim (is_staff) va hisoblarni ko'rish huquqi bor (superuser yoki "mainapp.view_user" ruxsati).
     Faqat is_staff yetarli emas: Django adminda ham xodim ruxsatsiz User ro'yxatini ko'ra olmaydi"""
     return user.is_authenticated and user.is_staff and (user.is_superuser or user.has_perm("mainapp.view_user"))
 
@@ -86,7 +86,7 @@ def users_with_stats():
 
 
 def last_activity(user):
-    """Oxirgi qo'shilgan operatsiya vaqti (kirim, chiqim yoki o'tkazma)"""
+    """Oxirgi qo'shilgan amal vaqti (kirim, chiqim yoki o'tkazma)"""
     dates = [d for d in (user.last_income, user.last_expense, user.last_transfer) if d]
     return max(dates) if dates else None
 
@@ -246,7 +246,7 @@ def _find_recipient(username):
     if not user:
         raise ValueError(f"@{username} topilmadi")
     if not (user.status and user.is_active):
-        raise ValueError(f"@{user.username} akkaunti faol emas")
+        raise ValueError(f"@{user.username} hisobi faol emas")
     return user
 
 

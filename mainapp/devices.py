@@ -1,4 +1,4 @@
-"""Qurilmalar (Sozlamalar → Qurilmalar): akkauntga qaysi qurilmalardan kirilgani va ularni chiqarish.
+"""Qurilmalar (Sozlamalar → Qurilmalar): hisobga qaysi qurilmalardan kirilgani va ularni chiqarish.
 
 Qurilma = sessiya. Ro'yxatda faqat hali haqiqiy sessiyalar ko'rsatiladi: parol almashgani, "barcha qurilmalardan
 chiqish" (session_epoch) yoki sessiya muddati tugagani sababli yaroqsiz bo'lgan yozuvlar ro'yxat so'ralganda
@@ -100,7 +100,7 @@ def end_device(device):
 
 
 def terminate_wait(current):
-    """Boshqa qurilmalarni chiqarishgacha qolgan vaqt (timedelta); chiqarish mumkin bo'lsa — None"""
+    """Boshqa qurilmalardan chiqarishgacha qolgan vaqt (timedelta); chiqarish mumkin bo'lsa — None"""
     allowed_at = current.created_at + timedelta(days=UserDevice.MIN_DAYS_TO_TERMINATE)
     left = allowed_at - timezone.now()
     return left if left > timedelta(0) else None

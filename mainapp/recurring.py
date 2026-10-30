@@ -1,6 +1,6 @@
-"""Takroriy to'lovlar: muddati kelganlarini daromad/harajat sifatida yozish.
+"""Doimiy to'lovlar: muddati kelganlarini daromad/xarajat sifatida yozish.
 
-Alohida fon jarayoni (cron) kerak emas: foydalanuvchi ilovani ochganda (views.py: me_api) va takroriy to'lovlar
+Alohida fon jarayoni (cron) kerak emas: foydalanuvchi ilovani ochganda (views.py: me_api) va doimiy to'lovlar
 ro'yxati so'ralganda chaqiriladi. Ilova bir necha kun ochilmagan bo'lsa, o'tib ketgan sanalarning hammasi yoziladi.
 """
 from datetime import datetime, time
@@ -17,11 +17,11 @@ MAX_CATCH_UP = 60
 
 
 def _operation_for(payment, day):
-    """Shu sanadagi daromad yoki harajat (hali saqlanmagan)"""
+    """Shu sanadagi daromad yoki xarajat (hali saqlanmagan)"""
     today = timezone.localdate()
     # Bugungi to'lov hozirgi vaqt bilan, o'tgan kunniki kun o'rtasi bilan yoziladi — o'sha kun ro'yxatida tursin
     when = timezone.now() if day == today else timezone.make_aware(datetime.combine(day, time(12, 0)))
-    note = f"Takroriy: {payment.name}"
+    note = f"Doimiy: {payment.name}"
     if payment.kind == RecurringPayment.KIND_INCOME:
         return Income(user=payment.user, wallet=payment.wallet, summa=payment.summa,
                       category=payment.income_category, description=note, date=when)
@@ -30,7 +30,7 @@ def _operation_for(payment, day):
 
 
 def process_payment(payment, today=None):
-    """Bitta takroriy to'lovning muddati kelgan sanalarini yozadi. Yozilganlar sonini qaytaradi.
+    """Bitta doimiy to'lovning muddati kelgan sanalarini yozadi. Yozilganlar sonini qaytaradi.
     Har sana alohida tranzaksiya: next_date shartli update bilan suriladi — ikki parallel so'rov bir sanani
     ikki marta yoza olmaydi (birinchisi surgach ikkinchisining sharti mos kelmaydi)"""
     today = today or timezone.localdate()
@@ -66,7 +66,7 @@ def process_payment(payment, today=None):
 
 
 def process_due(user):
-    """Foydalanuvchining muddati kelgan barcha takroriy to'lovlarini yozadi"""
+    """Foydalanuvchining muddati kelgan barcha doimiy to'lovlarini yozadi"""
     today = timezone.localdate()
     due = RecurringPayment.objects.filter(user=user, status=True, next_date__lte=today).select_related("wallet")
     return sum(process_payment(payment, today) for payment in due)

@@ -3,6 +3,7 @@ va ?limit= yuqori chegaraga ega (MaxLimitPagination)."""
 from datetime import timedelta
 from decimal import Decimal
 
+from django.contrib.auth.models import Permission
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
@@ -18,16 +19,16 @@ BIG_PAGE = "?limit=200"
 
 
 def seed_operations(user, n):
-    """Foydalanuvchiga n tadan hamyon, toifa, a'zo, daromad, harajat, o'tkazma va qarz yaratadi. Har qator o'z
-    hamyoni / toifasi / a'zosiga ega — bog'liq obyekt keshdan emas, har safar alohida so'rov bilan olinsa ko'rinib qoladi.
+    """Foydalanuvchiga n tadan hamyon, turkum, a'zo, daromad, xarajat, o'tkazma va qarz yaratadi. Har qator o'z
+    hamyoni / turkumi / a'zosiga ega — bog'liq obyekt keshdan emas, har safar alohida so'rov bilan olinsa ko'rinib qoladi.
     Valyutalar ikkita (UZS, USD), qatorlar soni bilan o'zgarmaydi: kurs so'rovlari ham doimiy bo'lishi kerak"""
     now = timezone.now()
     for i in range(n):
         currency = "USD" if i % 2 else "UZS"
         wallet = Wallet.objects.create(user=user, name=f"Hamyon {i}", summa=10_000_000, currency=currency)
         other = Wallet.objects.create(user=user, name=f"Boshqa {i}", summa=0, currency=currency)
-        income_cat = Category.objects.create(user=user, name=f"Daromad turi {i}")
-        expense_cat = ExpenseCategory.objects.create(user=user, name=f"Harajat turi {i}")
+        income_cat = Category.objects.create(user=user, name=f"Kirim turi {i}")
+        expense_cat = ExpenseCategory.objects.create(user=user, name=f"Chiqim turi {i}")
         member = Member.objects.create(user=user, name=f"A'zo {i}")
         Income.objects.create(user=user, wallet=wallet, category=income_cat, summa=1000 + i, date=now - timedelta(minutes=i))
         Expense.objects.create(
@@ -109,16 +110,18 @@ class QueryCountTests(APITestCase):
 
     def test_filtered_and_searched_lists_constant(self):
         # Qidiruv va filtr (category__name, wallet__name bo'yicha JOIN) qo'shimcha so'rov qo'shmasligi kerak
-        self.assert_constant(f"incomes/{BIG_PAGE}&search=Daromad")
+        self.assert_constant(f"incomes/{BIG_PAGE}&search=Kirim")
         self.assert_constant(f"expenses/{BIG_PAGE}&search=A'zo")
         self.assert_constant(f"transfers/{BIG_PAGE}&search=Hamyon")
-        self.assert_constant(f"expenses/{BIG_PAGE}&ordering=-summa")
+        self.assert_constant(f"expenses/{BIG_PAGE}&ordering=-miqdor")
 
     def test_users_list_constant(self):
         # Xodim barcha foydalanuvchilarni ko'radi: SMALL va LARGE ta foydalanuvchi qo'shiladi
         staff = make_user("xodim", is_staff=True)
+        staff.user_permissions.add(*Permission.objects.filter(codename="view_user"))
         self.login_as(staff)
         User.objects.filter(username__in=("kichik", "katta")).update(status=False)
+        self.api.get(f"{API}/users/{BIG_PAGE}")  # huquqlar keshini isitish (birinchi so'rovda qo'shimcha so'rovlar)
         for i in range(SMALL):
             make_user(f"u_kichik_{i}")
         with CaptureQueriesContext(connection) as small_ctx:
@@ -197,7 +200,7 @@ class PaginationLimitTests(APITestCase):
 
 
 class PanelQueryTests(APITestCase):
-    """Admin panel akkauntlar ro'yxati: operatsiyalar soni annotatsiya (subquery) bilan, har foydalanuvchiga alohida so'rovsiz"""
+    """Admin panel hisoblar ro'yxati: amallar soni annotatsiya (subquery) bilan, har foydalanuvchiga alohida so'rovsiz"""
 
     def test_accounts_list_constant(self):
         boss = make_user("boss", is_staff=True, is_superuser=True)
@@ -213,4 +216,4 @@ class PanelQueryTests(APITestCase):
             with CaptureQueriesContext(connection) as ctx:
                 self.assertEqual(self.client.get(url).status_code, 200)
             counts.append(len(ctx))
-        self.assertEqual(counts[0], counts[1], f"Panel: {SMALL} akkauntda {counts[0]}, {LARGE} akkauntda {counts[1]} ta SQL so'rov")
+        self.assertEqual(counts[0], counts[1], f"Panel: {SMALL} hisobda {counts[0]}, {LARGE} hisobda {counts[1]} ta SQL so'rov")

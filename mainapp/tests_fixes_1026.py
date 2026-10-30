@@ -1,5 +1,5 @@
-"""2026-10-26 tuzatishlari: 2FA da email almashtirishni tasdiqlash, kod urinishlarini parallel so'rovda aylanib o'tib
-bo'lmasligi, o'tgan sanali operatsiyaga o'sha kun kursi, sessiyani kuniga bir marta yozish va yordamchi tarixi chegarasi.
+"""2026-10-26 tuzatishlari: 2FA da elektron pochta almashtirishni tasdiqlash, kod urinishlarini parallel so'rovda aylanib o'tib
+bo'lmasligi, o'tgan sanali amalga o'sha kun kursi, sessiyani kuniga bir marta yozish va yordamchi tarixi chegarasi.
 Tarmoq har doim mock: haqiqiy cbu.uz ga murojaat qilinmaydi."""
 import re
 import time
@@ -50,7 +50,7 @@ class EmailChangeWith2FATests(TestCase):
         res = self.request_change(first_name="Vali")
         self.assertEqual(res.status_code, 200, res.content)
         body = res.json()
-        self.assertEqual(body["message"], "Yangi emailga tasdiqlash kodi yuborildi")
+        self.assertEqual(body["message"], "Yangi elektron pochtaga tasdiqlash kodi yuborildi")
         self.assertEqual(body["user"]["email"], "ali@example.com")
         self.assertEqual(body["email_pending"]["email"], "ya***@example.com")
         # Boshqa maydonlar saqlangan, email esa hali eski
@@ -62,7 +62,7 @@ class EmailChangeWith2FATests(TestCase):
 
         done = self.confirm(body["email_pending"]["token"], self.code())
         self.assertEqual(done.status_code, 200, done.content)
-        self.assertEqual(done.json()["message"], "Email yangilandi")
+        self.assertEqual(done.json()["message"], "Elektron pochta yangilandi")
         self.assertEqual(done.json()["user"]["email"], "yangi@example.com")
         self.user.refresh_from_db()
         self.assertEqual(self.user.email, "yangi@example.com")
