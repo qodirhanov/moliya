@@ -138,7 +138,8 @@ DATABASES = {
         'OPTIONS': {
             'timeout': 20,
             'transaction_mode': 'IMMEDIATE',
-            'init_command': 'PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;',
+            # PythonAnywhere kabi tarmoq diskida WAL ishlamasligi mumkin: u yerda .env ga SQLITE_JOURNAL_MODE=DELETE yozing
+            'init_command': f"PRAGMA journal_mode={os.environ.get('SQLITE_JOURNAL_MODE', 'WAL')}; PRAGMA synchronous=NORMAL;",
         },
     }
 }
