@@ -34,10 +34,11 @@ class MoneyField(serializers.DecimalField):
     yaxlitlanmaydi). DRF'ning standart tekshiruvi "12.340" ni ham rad etardi, bu yerda nolga teng ortiqcha xona mumkin"""
 
     def validate_precision(self, value):
-        if value != value.quantize(CENT):
-            self.fail("max_decimal_places", max_decimal_places=2)
+        # Avval kattalik: 1e999999 kabi qiymatda quantize() decimal.InvalidOperation (500) berardi
         if abs(value) >= 10 ** 13:  # 13 xonali butun qism — max_digits=15 chegarasi; undan kattasi bazaga sig'maydi
             self.fail("max_whole_digits", max_whole_digits=13)
+        if value != value.quantize(CENT):
+            self.fail("max_decimal_places", max_decimal_places=2)
         return value
 
 

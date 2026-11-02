@@ -11,14 +11,11 @@
 > 2026-10-28: to'liq kod tekshiruvi (pul/balans, kirish/xavfsizlik, ovozli yordamchi, frontend) — topilgan 20 ta band qo'shildi; 5 ta Yuqori va «Qaysi hamyondan?» savolidagi maqsad hamyoni bandi shu kuni tuzatildi.
 
 ### O'rta
-4. **Klaviaturada maqsad yoki doimiy to'lov kartochkasidagi tugma Enter bilan bosilmaydi.** Keydown handlerlari (`app.js:3891`, `app.js:4044`) `closest('[data-goal-id]')` bilan ichki tugmani ham ushlaydi va `preventDefault` qiladi. «+ Pul qo'shish» yoki o'chirish o'rniga tahrirlash oynasi ochiladi. Yechim: faqat kartochkaning o'zi (`e.target.matches(...)`).
-6. **«Pul qo'shish» bekor qilinsa, keyingi oddiy o'tkazmada maqsad ma'lumotlari qoladi.** `unlockTransferTarget()` (`app.js:4114`) faqat qulfni ochadi. Keyin «O'tkazma» bosilsa, «Qaysi hamyonga» = maqsad hamyoni va izoh «Maqsad: …» bo'lib turadi. Yechim: qulf ochilganda `formAddTransfer.reset()`.
 
 ### Past
 7. **Parolni tiklash xati spamga tushadi.** Xat shaxsiy Gmail (`smtp.gmail.com`) orqali ketadi va har qanday manzilga yetadi, lekin yangi qabul qiluvchilarda Spam papkasiga tushishi mumkin (ekranda "spam papkasini ham tekshiring" eslatmasi bor). To'liq yechim — o'z domeningiz + Resend (SPF/DKIM), DEPLOY.md 163-qator; eski Resend sozlamasi `.env` da izoh sifatida turibdi. Gmail limiti — kuniga ~500 xat. Xat endi matn + HTML ko'rinishida (2026-10-21) — bu yordam berishi mumkin, lekin kafolat emas.
 8. **"Dastur haqida" to'ldirilmagan.** Dasturchi ismi va kontaktlari `templates/index.html` dagi "Dastur haqida" blokida hozircha «—».
 9. SQLite summalarni float'da qo'shadi: ko'p yozuvlarning **jami** ~10¹³ dan oshsa, tiyin noaniq bo'lishi mumkin (bitta summa ≤ 10¹² bo'lgani uchun alohida qiymatlar aniq). PostgreSQL'ga o'tilganda o'z-o'zidan yo'qoladi.
-16. **Mikrofon ochilayotgan paytda yopilsa, yonib qolishi mumkin.** `voice.js:209-224`: `getUserMedia` kutilayotganda `releaseMicNow()` hech narsa qilmaydi, keyin kelgan oqim saqlanib qoladi (masalan, sahifa ochilishi bilan boshqa tabga o'tilsa). Yechim: so'rovdan keyin release bo'lgan bo'lsa, `.then` da oqimni darhol to'xtatish.
 
 ---
 
@@ -78,6 +75,7 @@
 | 50 | Qo'llanma to'ldirildi: Kurs sahifasi va kalkulyator, admin bilan chat, maqsad hamyonini o'chirish; «Ilova haqida → Imkoniyatlar» yangilandi; Ovozli yordamchi bo'limi 6 tilga tarjima qilindi (buyruq misollari o'zbekcha qoladi; app.js v4.42, i18n v35) | ✅ Bajarildi | 2026-10-30 |
 | 51 | Serverga chiqish tayyorgarligi: doimiy to'lov yoki maqsadi bor hamyon valyutasi qulflanadi; jadval o'zgarsa bugungi to'lov qayta yozilmaydi; ovozda «3 marta» sana emas, «20 ming 2 kishiga» 20 002 emas, «3 kun oldin» o'tgan sana; DEPLOY.md: gunicorn `--threads 4 --timeout 120`, nginx `6m` va `proxy_read_timeout 120s`, boshlang'ich HSTS 1 soat (testlar: 730 ta) | ✅ Bajarildi | 2026-10-30 |
 | 52 | Kamchiliklar ro'yxatidagi 6 ta band tuzatildi: API faqat JSON obyekt qabul qiladi (massivda 500 emas, 400; `ObjectJSONParser`), email almashganda parol tiklash kodlari bekor bo'ladi, Django admin parol formasida urinish limiti, oxirgi oddiy hamyonni o'chirib bo'lmaydi, doimiy to'lov kursi tranzaksiyadan oldin olinadi, STT/TTS uzilishi 500 bermaydi (testlar: 746 ta; app.js v4.43, i18n v36) | ✅ Bajarildi | 2026-10-30 |
+| 53 | Chuqur tekshiruv: maqsad/doimiy to'lov kartochkasida Enter, bekor qilingan «Pul qo'shish» qoldig'i, mikrofon poygasi; yozuvni o'chirishda eskirgan summa/hamyon bilan qaytarish (`Income/Expense/Transfer.delete`), `quantize_money(float)`, JSON lone surrogate/chuqur ichma-ich/juda katta summa (500 → 400), hamyon o'chirishdagi poyga, ovozda juda katta kun/son, parol kesilishi barcha formalarda bir xil, ro'yxat tartibiga `-id`, `app.js`/`voice.js` mayda xatolari (testlar: 770 ta; app.js v4.49, voice.js v29) | ✅ Bajarildi | 2026-11-01 |
 
 ---
 

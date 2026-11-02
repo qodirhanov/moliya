@@ -8,7 +8,7 @@ import re
 import secrets
 import threading
 from datetime import date, timedelta
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from functools import lru_cache, wraps
 
 from django.utils import timezone
@@ -29,6 +29,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.views import exception_handler as drf_exception_handler
 
 from .models import (
     format_money,
@@ -105,6 +106,15 @@ def strict_int(value):
         except ValueError:
             return None
     return None
+
+
+def api_exception_handler(exc, context):
+    """DRF standart xato ishlovchisi + decimal.InvalidOperation. Juda uzun raqam (28 xonadan ortiq, masalan "1e999999" yoki
+    40 ta "1") Decimal.quantize() ni yiqitadi — bu ArithmeticError, DRF uni bilmaydi va 500 qaytarardi. Hech qaysi
+    haqiqiy miqdor bunchalik katta emas (MAX_AMOUNT), shuning uchun 400 va "miqdor juda katta" xabari"""
+    if isinstance(exc, InvalidOperation):
+        return Response({"error": MAX_AMOUNT_MESSAGE}, status=status.HTTP_400_BAD_REQUEST)
+    return drf_exception_handler(exc, context)
 
 
 def error_text(e):
@@ -1475,29 +1485,36 @@ class WalletViewSet(viewsets.ModelViewSet):
             serializer.save()
 
     def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        if instance.is_goal:
-            return Response({
-                "error": "Bu maqsad hamyoni. Uni Maqsadlar bo'limida maqsad bilan birga o'chiring."
-            }, status=status.HTTP_400_BAD_REQUEST)
-        # Maqsad hamyonidan chiqim/kirim qilib bo'lmaydi: oddiy hamyon qolmasa Chiqim/Kirim oynasi bo'sh qolardi
-        if not Wallet.objects.filter(user_id=instance.user_id, status=True, is_goal=False).exclude(pk=instance.pk).exists():
-            return Response({
-                "error": "Bu oxirgi hamyoningiz — o'chirib bo'lmaydi. Avval boshqa hamyon oching."
-            }, status=status.HTTP_400_BAD_REQUEST)
-        # Puli bor hamyon o'chirilsa pul umumiy hisobdan yo'qolardi; ochiq qarz o'chirilganda esa
-        # qoldig'i o'chirilgan (ko'rinmaydigan) hamyonga qaytardi
-        if instance.summa != 0:
-            return Response({
-                "error": f"Hamyonda {format_money(instance.summa)} {instance.currency} bor. O'chirishdan oldin pulni "
-                         "O'tkazma orqali boshqa hamyonga o'tkazing."
-            }, status=status.HTTP_400_BAD_REQUEST)
-        if instance.debts.filter(status=True, is_settled=False).exists():
-            return Response({
-                "error": "Bu hamyonga to'lanmagan qarz bog'langan. Avval qarzni yoping yoki o'chiring."
-            }, status=status.HTTP_400_BAD_REQUEST)
+        wallet_pk = self.get_object().pk  # begona / o'chirilgan hamyon uchun 404
         try:
-            self.perform_destroy(instance)
+            # Tekshiruvlar va o'chirish bitta tranzaksiyada (SQLite'da u darrov yozuv qulfini oladi): aks holda tekshiruvdan
+            # keyin tushgan kirim pulni o'chirilgan hamyonda qoldirardi, ikki parallel so'rov esa "oxirgi hamyon" qoidasini
+            # chetlab ikkala hamyonni ham o'chira olardi
+            with transaction.atomic():
+                instance = Wallet.objects.select_for_update().filter(pk=wallet_pk, user=request.user, status=True).first()
+                if instance is None:
+                    return Response({"error": "Hamyon topilmadi"}, status=status.HTTP_404_NOT_FOUND)
+                if instance.is_goal:
+                    return Response({
+                        "error": "Bu maqsad hamyoni. Uni Maqsadlar bo'limida maqsad bilan birga o'chiring."
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                # Maqsad hamyonidan chiqim/kirim qilib bo'lmaydi: oddiy hamyon qolmasa Chiqim/Kirim oynasi bo'sh qolardi
+                if not Wallet.objects.filter(user_id=instance.user_id, status=True, is_goal=False).exclude(pk=instance.pk).exists():
+                    return Response({
+                        "error": "Bu oxirgi hamyoningiz — o'chirib bo'lmaydi. Avval boshqa hamyon oching."
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                # Puli bor hamyon o'chirilsa pul umumiy hisobdan yo'qolardi; ochiq qarz o'chirilganda esa
+                # qoldig'i o'chirilgan (ko'rinmaydigan) hamyonga qaytardi
+                if instance.summa != 0:
+                    return Response({
+                        "error": f"Hamyonda {format_money(instance.summa)} {instance.currency} bor. O'chirishdan oldin pulni "
+                                 "O'tkazma orqali boshqa hamyonga o'tkazing."
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                if instance.debts.filter(status=True, is_settled=False).exists():
+                    return Response({
+                        "error": "Bu hamyonga to'lanmagan qarz bog'langan. Avval qarzni yoping yoki o'chiring."
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                self.perform_destroy(instance)
             return Response({"message": "Hamyon muvaffaqiyatli o'chirildi"}, status=status.HTTP_200_OK)
         except (ValueError, DjangoValidationError, DRFValidationError) as e:
             return Response({"error": error_text(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -1731,7 +1748,7 @@ class IncomeViewSet(RestoreMixin, viewsets.ModelViewSet):
     filterset_fields = ["wallet", "category", "status"]
     search_fields = ["description", "category__name", "wallet__name"]
     ordering_fields = ["id", "summa", "date", "created_at"]
-    ordering = ["-date"]
+    ordering = ["-date", "-id"]
 
     def get_queryset(self):
         if not self.request.user.is_authenticated:
@@ -1778,7 +1795,7 @@ class ExpenseViewSet(RestoreMixin, viewsets.ModelViewSet):
     filterset_fields = ["wallet", "category", "member", "status"]
     search_fields = ["description", "location", "category__name", "wallet__name", "member__name"]
     ordering_fields = ["id", "summa", "date", "created_at"]
-    ordering = ["-date"]
+    ordering = ["-date", "-id"]
 
     def get_queryset(self):
         if not self.request.user.is_authenticated:
@@ -1838,7 +1855,7 @@ class TransferViewSet(RestoreMixin, viewsets.ModelViewSet):
     filterset_fields = ["from_wallet", "to_wallet", "status"]
     search_fields = ["description", "from_wallet__name", "to_wallet__name"]
     ordering_fields = ["id", "summa", "date", "created_at"]
-    ordering = ["-date"]
+    ordering = ["-date", "-id"]
 
     def get_queryset(self):
         if not self.request.user.is_authenticated:

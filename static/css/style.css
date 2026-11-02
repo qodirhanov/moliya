@@ -313,14 +313,6 @@
   --emerald: #3CCB8A; --rose: #FF6B6B; --cyan: #6FA3FF; --amber: #FCA311;
 }
 /* Logotip: to'q ko'k plitka ustida oltin o'sish chizig'i */
-:root[data-palette="oltin"] :is(.navbar, .ptr-indicator) .brand-badge-box {
-  background: #14213D;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, #FCA311 35%, transparent), 0 4px 12px color-mix(in srgb, #14213D 30%, transparent);
-}
-:root[data-palette="oltin"] :is(.navbar, .ptr-indicator) .brand-badge-box::after {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FCA311' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 17l6-6 4 4 8-8'/%3E%3Cpath d='M15 7h6v6'/%3E%3C/svg%3E");
-}
-
 :root[data-palette="oltin"][data-theme="light"] { --chart-bar-muted: #E5E5E5; }
 :root[data-palette="oltin"][data-theme="dark"] { --chart-bar-muted: #22335A; }
 
@@ -1312,6 +1304,24 @@ body {
   box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
+/* To'ldirilmagan majburiy maydon: qizil ramka + tagida izoh */
+:root { --field-error: #E5534B; --field-error-glow: rgba(229, 83, 75, 0.25); }
+:root[data-theme="light"] { --field-error: #C62828; --field-error-glow: rgba(198, 40, 40, 0.18); }
+.form-control.field-invalid,
+.form-control.field-invalid:focus,
+.custom-select-trigger.field-invalid,
+.custom-select-trigger.field-invalid:hover,
+.custom-select-trigger.field-invalid:focus {
+  border-color: var(--field-error);
+  box-shadow: 0 0 0 3px var(--field-error-glow);
+}
+.field-error-msg {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--field-error);
+}
+
 select.form-control {
   cursor: pointer;
   appearance: none;
@@ -1695,7 +1705,8 @@ body.has-assistant-fab .toast-container { bottom: calc(88px + env(safe-area-inse
 .brand-badge-box {
   width: 28px;
   height: 28px;
-  background: var(--primary);
+  background: #0B1424 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='9' y='12' width='38' height='26' rx='5' fill='%231C2B45'/%3E%3Crect x='13' y='19' width='38' height='26' rx='5' fill='%233A4E73'/%3E%3Crect x='17' y='26' width='38' height='26' rx='6' fill='%23E6E8EC'/%3E%3Crect x='44' y='35' width='11' height='8' rx='4' fill='%23C2A36B'/%3E%3C/svg%3E") no-repeat center / 100%;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
   border-radius: 8px;
   display: inline-block;
 }
@@ -3710,23 +3721,14 @@ body.has-assistant-fab .toast-container { bottom: calc(88px + env(safe-area-inse
   height: 24px;
   border-radius: 8px;
 }
-.navbar .nav-section-link > .brand-badge-box::after { inset: 6px; }
 
-/* Brend: logotip belgisi (o'sish chizig'i) + serif yozuv */
+/* Brend: logotip belgisi (pog'onali kartalar, .brand-badge-box da) + serif yozuv */
 :is(.navbar, .ptr-indicator) .brand-badge-box {
   position: relative;
   width: 34px;
   height: 34px;
   flex: 0 0 auto;
   border-radius: 11px;
-  background: linear-gradient(145deg, var(--primary), var(--primary-deep));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 4px 12px var(--primary-glow);
-}
-:is(.navbar, .ptr-indicator) .brand-badge-box::after {
-  content: "";
-  position: absolute;
-  inset: 8px;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 17l6-6 4 4 8-8'/%3E%3Cpath d='M15 7h6v6'/%3E%3C/svg%3E") no-repeat center / contain;
 }
 .navbar .brand .brand-title {
   font-family: var(--font-display);
@@ -4629,16 +4631,8 @@ body.has-assistant-fab .toast-container { bottom: calc(88px + env(safe-area-inse
 /* Sozlamalar → Dastur haqida */
 .about-hero { text-align: center; padding: 6px 0 18px; border-bottom: 1px solid var(--border-subtle); }
 .about-logo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: 56px; height: 56px;
   border-radius: 16px;
-  background: var(--primary);
-  color: var(--on-primary);
-  font-family: var(--font-display);
-  font-size: 1.6rem;
-  font-weight: 800;
 }
 .about-hero h4 { margin: 10px 0 2px; font-size: 1.15rem; color: var(--text-main); }
 .about-version { font-size: 0.8rem; color: var(--text-subtle); }
@@ -4869,7 +4863,6 @@ html, body { overscroll-behavior-y: contain; }
   border-radius: 9px;
   transform: scale(calc(0.7 + var(--p) * 0.003)) rotate(calc(var(--p) * -0.9deg));
 }
-.ptr-indicator .brand-badge-box::after { inset: 6px; }
 .ptr-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
 .ptr-ring circle {
   fill: none;

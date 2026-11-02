@@ -314,6 +314,73 @@ function validateAmountInput(el) {
   el.setCustomValidity(msg && (window.i18n?.t(msg) || msg));
 }
 
+// Majburiy maydon to'ldirilmasa brauzerning oddiy pufagi o'rniga: qizil ramka va maydon tagida izoh.
+// `invalid` hodisasi ko'tarilmaydi — shuning uchun capture bosqichida butun hujjatdan ushlanadi
+// Maxsus dropdown (custom-select) da haqiqiy <select> yashirin: qizil ramka va izoh uning tugmasi/o'rami bilan bog'lanadi
+const fieldVisual = (el) => el.closest('.custom-select-wrapper')?.querySelector('.custom-select-trigger') || el;
+const fieldAnchor = (el) => el.closest('.custom-select-wrapper') || el;
+
+function clearFieldError(el) {
+  fieldVisual(el).classList.remove('field-invalid');
+  el.classList.remove('field-invalid');
+  el.removeAttribute('aria-invalid');
+  const msg = el._errEl;
+  if (msg) { msg.remove(); el._errEl = null; }
+}
+
+let _invalidFocusPending = false;
+document.addEventListener('invalid', (e) => {
+  const el = e.target;
+  if (!(el instanceof HTMLElement) || !el.classList.contains('form-control')) return;
+  e.preventDefault();
+  const tr = (s) => window.i18n?.t(s) || s;
+  // Brauzerning o'z xabari (validationMessage) brauzer tilida chiqadi — ilova tilida o'zimiz yozamiz.
+  // customError xabarlarini (miqdor tekshiruvi) ilovaning o'zi allaqachon tarjima qilgan
+  const vs = el.validity;
+  const isDate = el.type === 'date';
+  let text;
+  if (vs.valueMissing) text = tr("Bo'limni to'ldiring");
+  else if (vs.customError) text = el.validationMessage;
+  else if (vs.badInput) text = tr(isDate ? "Sanani to'g'ri kiriting" : "Noto'g'ri qiymat");
+  else if (vs.rangeUnderflow || vs.rangeOverflow) text = tr(isDate ? "Sana ruxsat etilgan oraliqdan tashqarida" : "Qiymat ruxsat etilgan oraliqdan tashqarida");
+  else if (vs.tooShort) text = `${tr('Kamida belgilar soni:')} ${el.minLength}`;
+  else if (vs.typeMismatch) text = tr(el.type === 'email' ? "Elektron pochtani to'g'ri kiriting" : "Noto'g'ri format");
+  else text = tr("Noto'g'ri qiymat");
+  if (!el._errEl) {
+    const msg = document.createElement('div');
+    msg.className = 'field-error-msg';
+    msg.setAttribute('role', 'alert');
+    fieldAnchor(el).insertAdjacentElement('afterend', msg);
+    el._errEl = msg;
+    const clear = () => {
+      // checkValidity() noto'g'ri maydonda `invalid` hodisasini qayta chiqarib, har bosishda fokus/scrollni chaqirardi
+      if (el.validity.valid) {
+        clearFieldError(el);
+        el.removeEventListener('input', clear);
+        el.removeEventListener('change', clear);
+      }
+    };
+    el.addEventListener('input', clear);
+    el.addEventListener('change', clear);
+  }
+  el._errEl.textContent = text;
+  const visual = fieldVisual(el);
+  visual.classList.add('field-invalid');
+  el.classList.add('field-invalid');
+  el.setAttribute('aria-invalid', 'true');
+  // Birinchi to'ldirilmagan maydonga o'tiladi (brauzer pufagi o'chirilgani uchun o'zimiz fokus beramiz)
+  if (!_invalidFocusPending) {
+    _invalidFocusPending = true;
+    visual.focus({ preventScroll: false });
+    visual.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+    setTimeout(() => { _invalidFocusPending = false; }, 0);
+  }
+}, true);
+// Forma tozalansa yoki oyna qayta ochilsa eski xatolar qolmasin
+document.addEventListener('reset', (e) => {
+  e.target.querySelectorAll?.('.field-invalid').forEach(clearFieldError);
+}, true);
+
 function enhanceAmountInput(el) {
   Object.defineProperty(el, 'value', {
     configurable: true,
@@ -670,7 +737,10 @@ function openModal(id) {
   const el = document.getElementById(id);
   if (el) {
     // Yopilganda fokus shu oynani ochgan tugmaga qaytadi (klaviatura bilan ishlaganda joy yo'qolmasin)
-    if (!el.classList.contains('active')) el._returnFocus = document.activeElement;
+    if (!el.classList.contains('active')) {
+      el._returnFocus = document.activeElement;
+      el.querySelectorAll('.field-invalid').forEach(clearFieldError);
+    }
     el.classList.add('active');
     if (id === 'modalExpense') {
       const expDate = document.getElementById('expenseDate');
@@ -698,9 +768,14 @@ function closeModal(id) {
   el._returnFocus = null;
 }
 
-// Close modal when clicking outside
+// Close modal when clicking outside. Bosish ham, qo'yib yuborish ham fonda bo'lsa yopiladi: maydondagi matnni
+// belgilab sichqonchani oyna tashqarisida qo'yib yuborish oynani yopib, yozilganni yo'qotmasin
+let _downOnBackdrop = false;
+window.addEventListener('mousedown', (e) => {
+  _downOnBackdrop = !!e.target.classList?.contains('modal-backdrop');
+}, true);
 window.addEventListener('click', (e) => {
-  if (e.target.classList.contains('modal-backdrop')) closeModal(e.target.id);
+  if (e.target.classList.contains('modal-backdrop') && _downOnBackdrop) closeModal(e.target.id);
 });
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -864,6 +939,7 @@ function enhanceCustomSelect(select) {
       if (p !== panel) p.classList.remove('open');
     });
     buildPanel();
+    kbIndex = -1;
     position();
     panel.classList.add('open');
     wrapper.classList.add('open');
@@ -877,6 +953,37 @@ function enhanceCustomSelect(select) {
   trigger.addEventListener('click', (e) => {
     e.stopPropagation();
     panel.classList.contains('open') ? close() : open();
+  });
+
+  // Klaviatura: yopiq vaqtda ↑/↓ qiymatni almashtiradi (native select kabi), ochiq vaqtda ro'yxat bo'ylab yuradi, Enter tanlaydi
+  // (Esc umumiy ishlovchida; Space tugmaning o'z bosilishi bilan ochadi/yopadi)
+  let kbIndex = -1;
+  const enabledOptions = () => Array.from(select.options).filter(o => !o.disabled);
+  const kbHighlight = (i) => {
+    const items = Array.from(panel.querySelectorAll('.custom-select-option:not(.disabled)'));
+    if (!items.length) return;
+    kbIndex = (i + items.length) % items.length;
+    items.forEach((it, j) => { it.style.background = j === kbIndex ? 'var(--bg-sunken)' : ''; });
+    items[kbIndex].scrollIntoView({ block: 'nearest' });
+  };
+  trigger.addEventListener('keydown', (e) => {
+    const down = e.key === 'ArrowDown', up = e.key === 'ArrowUp';
+    const isOpen = panel.classList.contains('open');
+    if (e.key === 'Enter' && isOpen && kbIndex >= 0) {
+      e.preventDefault();
+      panel.querySelectorAll('.custom-select-option:not(.disabled)')[kbIndex]?.click();
+    } else if ((down || up) && isOpen) {
+      e.preventDefault();
+      kbHighlight(kbIndex + (down ? 1 : -1));
+    } else if ((down || up) && !select.disabled) {
+      e.preventDefault();
+      const opts = enabledOptions();
+      const i = opts.findIndex(o => o.value === select.value) + (down ? 1 : -1);
+      if (i < 0 || i >= opts.length) return;
+      select.value = opts[i].value;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      sync();
+    }
   });
 
   window.addEventListener('scroll', () => {
@@ -1287,7 +1394,7 @@ function renderWeeklyExpenseChart(weeklyData = []) {
     const clickable = d.expense > 0;
     return `
       <div class="weekly-rank-row${d.is_max ? ' is-max' : ''}${clickable ? ' is-clickable' : ''}"${clickable ? ` data-action="openWeekdayTxFilter" data-stop data-args="${actionArgs(d.label, fullName)}"` : ''}>
-        <span class="weekly-rank-day">${fullName}</span>
+        <span class="weekly-rank-day">${escapeHtml(fullName)}</span>
         <div class="weekly-rank-track"><div class="weekly-rank-fill" style="width: ${pct}%;"></div></div>
         <span class="weekly-rank-value" title="${escapeHtml(valueLabel)}">${escapeHtml(valueLabel)}</span>
       </div>
@@ -1882,6 +1989,7 @@ document.getElementById('ratesConvTo')?.addEventListener('change', updateRatesCo
 document.getElementById('ratesConvSwap')?.addEventListener('click', () => {
   const a = document.getElementById('ratesConvFrom'), b = document.getElementById('ratesConvTo');
   [a.value, b.value] = [b.value, a.value];
+  [a, b].forEach(s => s._csSync?.());  // value DOM o'zgarishisiz almashadi — tugma matnini qo'lda yangilaymiz
   updateRatesConverter();
 });
 
@@ -2706,28 +2814,30 @@ function openTxDetail(key, type, id) {
     `);
   };
 
+  // Sana va qo'shilgan vaqt bitta qatorda: amal o'sha kuni kiritilgan bo'lsa vaqti ham ko'rsatiladi,
+  // orqa sana bilan kiritilgan bo'lsa (vaqt chalg'itardi) — faqat tanlangan sana
+  const addedSameDay = raw.created_at && formatUzDate(raw.created_at, { year: true }) === formatUzDate(raw.date, { year: true });
   const fullDate = formatUzDate(raw.date, { year: true });
+  const dateText = addedSameDay ? formatUzDate(raw.created_at, { year: true, time: true }) : fullDate;
 
   if (type === 'expense') {
     addRow(icon('tag'), 'Turkum', raw.category_name);
     addRow(icon('wallet'), 'Hamyon', raw.wallet_name);
     addRow(memberIcon(raw.member_kind), 'Kimga', raw.member_name);
     addRow(icon('note'), 'Izoh', raw.description);
-    addRow(icon('calendar'), 'Sana', fullDate);
+    addRow(icon('calendar'), 'Sana', dateText);
   } else if (type === 'income') {
     addRow(icon('folder'), 'Manba', raw.category_name);
     addRow(icon('wallet'), 'Hamyon', raw.wallet_name);
     addRow(icon('note'), 'Izoh', raw.description);
-    addRow(icon('calendar'), 'Sana', fullDate);
+    addRow(icon('calendar'), 'Sana', dateText);
   } else if (type === 'transfer') {
     addRow(icon('up'), 'Chiqdi', raw.from_wallet_name);
     addRow(icon('down'), 'Tushdi', raw.to_wallet_name);
     if (transferAmountText(raw)) addRow(icon('transfer'), 'Kurs', formatRateText(raw.from_currency, raw.to_currency, Number(raw.rate)));
     addRow(icon('note'), 'Izoh', raw.description);
-    addRow(icon('calendar'), 'Sana', fullDate);
+    addRow(icon('calendar'), 'Sana', dateText);
   }
-
-  addRow(icon('clock'), 'Qo\'shildi', formatUzDate(raw.created_at, { year: true, time: true }));
 
   document.getElementById('detailRows').innerHTML = rows.join('') ||
     '<p style="color:var(--text-subtle); font-size:0.83rem;">Qo\'shimcha ma\'lumot yo\'q</p>';
@@ -3644,13 +3754,14 @@ async function updateRepayConvertHint() {
   }
   const verb = debt.debt_type === 'give' ? "qo'shiladi" : 'yechiladi';
   try {
-    const q = `from=${encodeURIComponent(debt.currency)}&to=${encodeURIComponent(wallet.currency)}&amount=${amount}`;
+    const debtCur = debt.currency || 'UZS';  // yuqoridagi tekshiruv ham shu zaxira bilan; aks holda "undefined" yuborilardi
+    const q = `from=${encodeURIComponent(debtCur)}&to=${encodeURIComponent(wallet.currency)}&amount=${amount}`;
     const res = await fetch(`${API_BASE}/rates/convert/?${q}`);
     const data = await res.json().catch(() => ({}));
     if (seq !== _repayHintSeq) return;
     hint.textContent = res.ok
-      ? `Hamyonga Markaziy bank kursi bo'yicha ${formatNumber(data.result)} ${wallet.currency} ${verb} (${formatRateText(debt.currency, wallet.currency, Number(data.rate))}).`
-      : `${debt.currency} → ${wallet.currency} kursini aniqlab bo'lmadi.`;
+      ? `Hamyonga Markaziy bank kursi bo'yicha ${formatNumber(data.result)} ${wallet.currency} ${verb} (${formatRateText(debtCur, wallet.currency, Number(data.rate))}).`
+      : `${debtCur} → ${wallet.currency} kursini aniqlab bo'lmadi.`;
   } catch (err) {
     if (seq === _repayHintSeq) hint.textContent = '';
   }
@@ -3996,7 +4107,7 @@ document.getElementById('recurringList')?.addEventListener('click', e => {
 });
 document.getElementById('recurringList')?.addEventListener('keydown', e => {
   const card = e.target.closest('[data-recurring-id]');
-  if (card && (e.key === 'Enter' || e.key === ' ')) {
+  if (card && e.target === card && (e.key === 'Enter' || e.key === ' ')) {
     e.preventDefault();
     openRecurringModal(Number(card.dataset.recurringId));
   }
@@ -4149,7 +4260,7 @@ document.getElementById('goalsList')?.addEventListener('click', e => {
 });
 document.getElementById('goalsList')?.addEventListener('keydown', e => {
   const card = e.target.closest('[data-goal-id]');
-  if (card && (e.key === 'Enter' || e.key === ' ')) {
+  if (card && e.target === card && (e.key === 'Enter' || e.key === ' ')) {
     e.preventDefault();
     openGoalModal(Number(card.dataset.goalId));
   }
@@ -4264,7 +4375,10 @@ function unlockTransferTarget() {
   const to = document.getElementById('transferToWallet');
   if (!to?.disabled) return;
   to.disabled = false;
-  to._csSync?.();
+  // Bekor qilingan «Pul qo'shish»: maqsad hamyoni va «Maqsad: …» izohi keyingi oddiy o'tkazmaga o'tib qolmasin
+  document.getElementById('formAddTransfer')?.reset();
+  syncTransferTargets();
+  [to, document.getElementById('transferFromWallet')].forEach(el => el?._csSync?.());
 }
 
 // Helper
@@ -4538,8 +4652,8 @@ document.getElementById('formForgotPassword')?.addEventListener('submit', async 
       return;
     }
 
-    const newPassword = document.getElementById('forgotNewPassword').value;
-    const newPassword2 = document.getElementById('forgotNewPassword2').value;
+    const newPassword = document.getElementById('forgotNewPassword').value.trim();
+    const newPassword2 = document.getElementById('forgotNewPassword2').value.trim();
 
     if (newPassword.length < 8) {
       showToast("Yangi parol kamida 8 ta belgidan iborat bo'lishi kerak", 'error');
@@ -4789,7 +4903,7 @@ onSubmitOnce('formRegisterMain', async (e) => {
 function renderUserNav() {
   const user = state.currentUser;
   if (!user) return;
-  const display = user.name || user.username;
+  const display = user.first_name || user.name || user.username;  // navbarda faqat ism (familiya qo'shilmaydi)
   const userName = document.getElementById('userName');
   const userAvatar = document.getElementById('userAvatar');
   if (userName) userName.textContent = display;
@@ -5534,7 +5648,7 @@ onSubmitOnce('formSettingsProfile', async (e) => {
     phone: document.getElementById('settingsPhone').value.trim(),
   };
   if (settingsEmailChanged()) {
-    payload.password = document.getElementById('settingsEmailPassword').value;
+    payload.password = document.getElementById('settingsEmailPassword').value.trim();
   }
 
   try {
@@ -5597,9 +5711,9 @@ async function confirmProfileEmail() {
 
 onSubmitOnce('formSettingsPassword', async (e) => {
   e.preventDefault();
-  const oldPassword = document.getElementById('settingsOldPassword').value;
-  const newPassword = document.getElementById('settingsNewPassword').value;
-  const newPassword2 = document.getElementById('settingsNewPassword2').value;
+  const oldPassword = document.getElementById('settingsOldPassword').value.trim();
+  const newPassword = document.getElementById('settingsNewPassword').value.trim();
+  const newPassword2 = document.getElementById('settingsNewPassword2').value.trim();
 
   if (newPassword !== newPassword2) {
     showToast('Yangi parollar bir-biriga mos kelmadi', 'error');
@@ -5656,7 +5770,7 @@ document.getElementById('btnDeleteAccount')?.addEventListener('click', () => {
 
 onSubmitOnce('formDeleteAccount', async (e) => {
   e.preventDefault();
-  const password = document.getElementById('deleteAccountPassword').value;
+  const password = document.getElementById('deleteAccountPassword').value.trim();
 
   try {
     const res = await fetch(`${API_BASE}/auth/delete-account/`, {

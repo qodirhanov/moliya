@@ -37,8 +37,7 @@
   const UNKNOWN_CLOSE_MS = 3000;
   // Umumiy qo'riqchi: shuncha vaqt hech narsa aytilmasa/yozilmasa — orb har qanday holatda yopiladi
   // (shovqin «gap» deb olinib «Eshitmadim» → qayta tinglash aylanasi, yozish rejimi, mikrofon ruxsati yo'q...)
-  const IDLE_CLOSE_MS = 5000;
-  const VOICE_ACTIVE_MS = 1500;  // mikrofonda shuncha vaqt ichida ovoz bo'lgan — gapirilmoqda, yopilmaydi
+  const IDLE_CLOSE_MS = 2000;
   const MAX_UNDO = 5;
   // Server orqali tanish (VAD — gap tugaganini ovoz balandligidan aniqlash)
   const SPEECH_START_MS = 150;        // shuncha davom etgan ovoz — gap boshlandi
@@ -155,17 +154,29 @@
 
   // Foydalanuvchi biror narsa aytdi yoki yozdi — qo'riqchi qaytadan sanaydi. Javob kutilayotgan yoki o'qilayotgan
   // paytda yopilmaydi, faqat keyinga suriladi
-  function armIdle() {
+  function armIdle(ms = IDLE_CLOSE_MS) {
     clearTimeout(v.idleTimer);
     v.idleTimer = setTimeout(() => {
       if (layer.hidden) return;
-      // Javob kutilmoqda/o'qilmoqda yoki foydalanuvchi aynan hozir gapirmoqda — keyinga suriladi
-      if (v.busy || v.mode === 'think' || v.mode === 'speak' || Date.now() - (v.voiceAt || 0) < VOICE_ACTIVE_MS) {
+      // Javob kutilmoqda/o'qilmoqda — keyinga suriladi
+      if (v.busy || v.mode === 'think' || v.mode === 'speak') {
         armIdle();
         return;
       }
+      // Yordamchi savol berdi yoki javobdan keyin suhbat davomini kutmoqda: foydalanuvchiga o'ylash uchun to'liq
+      // vaqt beriladi — uni tinglash taymerlari (LISTEN_TIMEOUT_MS / FOLLOWUP_MS / NO_SPEECH_MS) o'zi yopadi
+      if (v.awaiting) {
+        armIdle();
+        return;
+      }
+      // Foydalanuvchi hozirgina gapirgan — jimlik so'nggi ovozdan IDLE_CLOSE_MS o'tganda hisoblanadi
+      const sinceVoice = Date.now() - (v.voiceAt || 0);
+      if (sinceVoice < IDLE_CLOSE_MS) {
+        armIdle(IDLE_CLOSE_MS - sinceVoice);
+        return;
+      }
       closeOrb();
-    }, IDLE_CLOSE_MS);
+    }, ms);
   }
 
   function openOrb() {
@@ -197,6 +208,7 @@
     layer.hidden = true;
     navBtn?.classList.remove('is-active');
     v.busy = false;
+    v.awaiting = false;
     v.preferServer = false;
     v.followUp = false;
     delete layer.dataset.follow;
@@ -275,14 +287,20 @@
   let micStream = null;
   let micPromise = null;
   let micReleaseTimer = null;
+  let micWanted = 0;  // releaseMicNow() har chaqirilganda oshadi: kutilayotgan so'rov bekor qilinganini bildiradi
 
   // Umumiy mikrofon oqimi: ochiq bo'lsa qayta so'ralmaydi
   async function acquireMic() {
     clearTimeout(micReleaseTimer);
     if (micStream?.getAudioTracks().some(t => t.readyState === 'live')) return micStream;
     if (!micPromise) {
+      const wanted = micWanted;
       micPromise = navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } })
-        .then(stream => { micStream = stream; v.micAllowed = true; v.micDenied = false; return stream; })
+        .then(stream => {
+          // So'rov kutilayotganda mikrofon yopilgan bo'lsa, kech kelgan oqim saqlanib yonib qolmasin
+          if (micWanted !== wanted) { stream.getTracks().forEach(t => t.stop()); throw new DOMException('Mikrofon yopildi', 'AbortError'); }
+          micStream = stream; v.micAllowed = true; v.micDenied = false; return stream;
+        })
         .finally(() => { micPromise = null; });
     }
     return micPromise;
@@ -290,6 +308,7 @@
 
   function releaseMicNow() {
     clearTimeout(micReleaseTimer);
+    micWanted++;
     micStream?.getTracks().forEach(t => t.stop());
     micStream = null;
   }
@@ -317,6 +336,7 @@
       cap.stream = await acquireMic();
     } catch (e) {
       if (v.capture === cap) v.capture = null;
+      if (e?.name === 'AbortError') return;  // mikrofon so'rov paytida yopildi — rad etilgan emas
       if (vad) onDone?.(null, false, 'denied');
       return;  // ruxsat yo'q — orb oddiy animatsiya bilan ishlayveradi
     }
@@ -706,7 +726,11 @@
     const name = state.currentUser?.first_name || state.currentUser?.username || '';
     const text = name ? `Ha, ${name}?` : 'Ha?';
     showReply(text);
-    speak(text, () => listen());
+    speak(text, () => {
+      v.awaiting = true;
+      armIdle();
+      listen();
+    });
   }
 
   // ---------- Ovozli javob ----------
@@ -901,6 +925,7 @@
   async function submit(text) {
     text = String(text || '').trim();
     if (!text || v.busy) return;
+    v.awaiting = false;
     armIdle();
     const followUp = v.followUp;
     v.followUp = false;
@@ -941,6 +966,7 @@
 
   async function submitAudio(blob) {
     if (v.busy) return;
+    v.awaiting = false;
     const followUp = v.followUp;
     v.followUp = false;
     startThinking('');
@@ -959,6 +985,8 @@
   // Javobdan keyin: suhbat rejimi yoqilgan bo'lsa qisqa tinglash, aks holda orb yopiladi
   function afterTurn(closeMs) {
     if (v.conversation && !layer.hidden && currentEngine() !== 'type') {
+      v.awaiting = true;
+      armIdle();
       clearTimeout(v.closeTimer);
       v.closeTimer = setTimeout(() => {
         if (!layer.hidden && !v.busy && (v.mode === 'done' || v.mode === 'speak' || v.mode === 'error')) listen({ followUp: true });
@@ -976,6 +1004,8 @@
     if (data.done?.length) remember(data.done);
     if (data.refresh) refreshAll();
     if (data.client) data.text = (await runClientAction(data.client)) || data.text;
+    // «Yop» buyrug'i orbni yopdi — javob endi ko'rsatilmaydi va aytilmaydi
+    if (data.client?.action === 'close' && layer.hidden) return;
 
     if (data.status === 'none') {
       closeOrb();
@@ -1005,7 +1035,11 @@
         // Javob chiqqanidan UNKNOWN_CLOSE_MS o'tib yopiladi; ovozda o'qish uzoqroq bo'lsa — gap tugashi bilan
         setOrb('done');
         closeLater(Math.max(0, UNKNOWN_CLOSE_MS - (Date.now() - shownAt)));
-      } else if (data.expect_reply) listen();
+      } else if (data.expect_reply) {
+        v.awaiting = true;
+        armIdle();
+        listen();
+      }
       else {
         setOrb(kind ? 'error' : 'done');
         if (data.end) closeLater(2600);
@@ -1294,7 +1328,8 @@
       finishCapture(v.capture);
     } else if (v.mode === 'listen') {
       // Gapirib bo'lingan bo'lsa — eshitilgan matn darhol yuboriladi
-      const text = heardEl.textContent.replace(/^«|»$/g, '').trim();
+      // Faqat tanilgan gap «...» ichida turadi; ruxsat yo'q kabi ogohlantirish buyruq sifatida yuborilmasin
+      const text = (heardEl.textContent.match(/^«([\s\S]*)»$/) || [, ''])[1].trim();
       if (text) { stopRecognition(); submit(text); }
       else closeOrb();
     } else if (v.mode === 'speak') {

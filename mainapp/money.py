@@ -13,6 +13,9 @@ _AMOUNT_RE = re.compile(r"-?[0-9]+(?:\.[0-9]+)?")
 
 def quantize_money(value):
     """Decimal (yoki son) ni 2 xonaga yaxlitlaydi, 0.005 yuqoriga (ROUND_HALF_UP)"""
+    if isinstance(value, float):
+        # Decimal(1.005) = 1.00499999999999989... -> 1.00; float'ning qisqa yozuvi (1.005) olinadi
+        value = Decimal(repr(value))
     return Decimal(value).quantize(CENT, rounding=ROUND_HALF_UP)
 
 

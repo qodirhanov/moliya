@@ -257,6 +257,12 @@ def check_not_goal_wallet(wallet, message=GOAL_WALLET_SPEND_MESSAGE):
         raise ValidationError(message)
 
 
+def _wallet_for(instance, wallet_id, attr="wallet"):
+    """instance.<attr> hamyoni wallet_id ga mos bo'lsa o'sha nusxa, aks holda bazadan (eskirgan nusxada hamyon boshqa bo'lishi mumkin)"""
+    current = getattr(instance, attr)
+    return current if current.pk == wallet_id else Wallet.objects.get(pk=wallet_id)
+
+
 def apply_wallet_changes(new_effects, old_effects=()):
     """Yozuv saqlanganda hamyonlarga SOF farqni qo'llaydi. Effekt — (hamyon, ±summa) juftligi: musbat — hamyonga
     kiradi, manfiy — chiqadi. Yangi effektlardan eskilari ayirilib, hamyon id si bo'yicha yig'iladi: summa o'zgarmagan
@@ -464,7 +470,9 @@ class Income(models.Model):
         with transaction.atomic():
             # Qatorni atomik "egallaymiz": view'dagi get_object() eskirgan bo'lishi mumkin — ikki parallel DELETE ikkalasi ham status=True ko'rardi
             if Income.objects.filter(pk=self.pk, status=True).update(status=False, updated_at=timezone.now()) == 1:
-                self.wallet.withdraw_money(self.summa)
+                # Summa va hamyon egallashdan KEYIN bazadan o'qiladi: eskirgan nusxada tahrirdan oldingi qiymat bo'lishi mumkin
+                summa, wallet_id = Income.objects.values_list("summa", "wallet_id").get(pk=self.pk)
+                _wallet_for(self, wallet_id).withdraw_money(summa)
             self.status = False
         return (1, {self._meta.label: 1})
 
@@ -531,7 +539,8 @@ class Expense(models.Model):
         with transaction.atomic():
             # Qatorni atomik "egallaymiz": view'dagi get_object() eskirgan bo'lishi mumkin — ikki parallel DELETE ikkalasi ham status=True ko'rardi
             if Expense.objects.filter(pk=self.pk, status=True).update(status=False, updated_at=timezone.now()) == 1:
-                self.wallet.add_money(self.summa)
+                summa, wallet_id = Expense.objects.values_list("summa", "wallet_id").get(pk=self.pk)
+                _wallet_for(self, wallet_id).add_money(summa)
             self.status = False
         return (1, {self._meta.label: 1})
 
@@ -593,8 +602,10 @@ class Transfer(models.Model):
         with transaction.atomic():
             # Qatorni atomik "egallaymiz": view'dagi get_object() eskirgan bo'lishi mumkin — ikki parallel DELETE ikkalasi ham status=True ko'rardi
             if Transfer.objects.filter(pk=self.pk, status=True).update(status=False, updated_at=timezone.now()) == 1:
-                self.from_wallet.add_money(self.summa)
-                self.to_wallet.withdraw_money(self.to_summa)
+                summa, to_summa, from_id, to_id = Transfer.objects.values_list(
+                    "summa", "to_summa", "from_wallet_id", "to_wallet_id").get(pk=self.pk)
+                _wallet_for(self, from_id, "from_wallet").add_money(summa)
+                _wallet_for(self, to_id, "to_wallet").withdraw_money(to_summa)
             self.status = False
         return (1, {self._meta.label: 1})
 

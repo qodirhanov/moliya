@@ -31,7 +31,7 @@
 
   <form method="post" class="chat-form" id="supportReplyForm">
     {% csrf_token %}
-    <textarea name="text" class="form-control" rows="3" maxlength="{{ max_length }}" placeholder="Javob yozing… (Ctrl+Enter — yuborish)" required>{{ draft }}</textarea>
+    <textarea name="text" class="form-control" rows="3" maxlength="{{ max_length }}" placeholder="Javob yozing… (Ctrl+Enter — yuborish)" aria-label="Javob matni" required>{{ draft }}</textarea>
     {% if error %}<p class="chat-error">{{ error }}</p>{% endif %}
     <div class="chat-form-actions">
       <button type="submit" class="btn btn-primary">Yuborish</button>

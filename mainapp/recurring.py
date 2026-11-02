@@ -71,5 +71,5 @@ def process_payment(payment, today=None):
 def process_due(user):
     """Foydalanuvchining muddati kelgan barcha doimiy to'lovlarini yozadi"""
     today = timezone.localdate()
-    due = RecurringPayment.objects.filter(user=user, status=True, next_date__lte=today).select_related("wallet")
+    due = RecurringPayment.objects.filter(user=user, status=True, next_date__lte=today).select_related("wallet", "user", "income_category", "expense_category", "member")
     return sum(process_payment(payment, today) for payment in due)

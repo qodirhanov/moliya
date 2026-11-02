@@ -315,6 +315,8 @@ if not MAIL_IN_BACKGROUND:
 REST_FRAMEWORK = {
     # Summalar (Decimal) JSON'da satr emas, son bo'lib qaytadi — frontend Number() bilan o'qiydi
     "COERCE_DECIMAL_TO_STRING": False,
+    # decimal.InvalidOperation (juda uzun raqam) 500 emas, 400 qaytarsin — qarang: mainapp/views.py api_exception_handler
+    "EXCEPTION_HANDLER": "mainapp.views.api_exception_handler",
     "DEFAULT_PARSER_CLASSES": [
         "mainapp.parsers.ObjectJSONParser",
         "rest_framework.parsers.FormParser",

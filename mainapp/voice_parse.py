@@ -252,7 +252,10 @@ def find_date(text_loose, today, future=False):
             count = Decimal("0.5") if n == "yarim" else Decimal(n) if n.isdigit() else Decimal(_UNITS.get(n, 1))
             unit = m.group(2)
             days = {"kun": 1, "hafta": 7, "oy": 30, "yil": 365}[unit] * count
-            return today + timedelta(days=int(days)), m.span()
+            # Juda katta son date/timedelta chegarasidan chiqib OverflowError bermasin (10 yildan uzoq muddat — sana emas)
+            if days <= 3650:
+                return today + timedelta(days=int(days)), m.span()
+            return None, None
         if "ertaga" in words or "zavtra" in words:
             return today + timedelta(days=1), None
         if "indinga" in words or "indin" in words:
@@ -766,6 +769,8 @@ def number_words(value, pause=True):
     n = int(value)
     if n == 0:
         return "nol"
+    if n >= 10 ** 12:
+        return str(n)  # trillion va undan katta — so'zlar jadvali yetmaydi (IndexError); raqam holicha qoladi
     joiner = ", " if pause and n >= PAUSE_FROM else " "
     parts = []
     for size, name in ((10 ** 9, "milliard"), (10 ** 6, "million"), (1000, "ming")):

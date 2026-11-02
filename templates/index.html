@@ -6,11 +6,12 @@
   <title>Moliya — Shaxsiy Byudjet va Xarajatlar Kalkulyatori</title>
   <meta name="description" content="O'zbekistondagi eng qulay shaxsiy moliya boshqaruvi: kirim, chiqim, hamyondan hamyonga o'tkazma va qarzlar daftari.">
   <script src="/static/js/theme-init.js?v=4"></script>
-  <script src="/static/js/i18n.js?v=36"></script>
+  <script src="/static/js/i18n.js?v=38"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..800&display=swap">
-  <link rel="stylesheet" href="/static/css/style.css?v=10.90">
+  <link rel="icon" type="image/svg+xml" href="/static/img/logo.svg">
+  <link rel="stylesheet" href="/static/css/style.css?v=10.93">
 </head>
 <body>
 
@@ -385,7 +386,7 @@
             </div>
             <select id="expenseCategorySelect" class="form-control" required></select>
             <div id="expenseCustomCategoryGroup" style="display: none; margin-top: 8px;">
-              <input type="text" id="expenseCustomCategory" class="form-control" placeholder="Yangi xarajat turkumi nomini yozing...">
+              <input type="text" id="expenseCustomCategory" class="form-control" placeholder="Yangi xarajat turkumi nomini yozing..." aria-label="Yangi xarajat turkumi nomini yozing...">
             </div>
           </div>
 
@@ -444,7 +445,7 @@
             </div>
             <select id="incomeCategorySelect" class="form-control" required></select>
             <div id="incomeCustomCategoryGroup" style="display: none; margin-top: 8px;">
-              <input type="text" id="incomeCustomCategory" class="form-control" placeholder="Yangi kirim manbayi nomini yozing...">
+              <input type="text" id="incomeCustomCategory" class="form-control" placeholder="Yangi kirim manbayi nomini yozing..." aria-label="Yangi kirim manbayi nomini yozing...">
             </div>
           </div>
 
@@ -1108,7 +1109,7 @@
       <div class="settings-help" id="settingsAbout" data-settings-panel="about" hidden>
         <div class="modal-body">
           <div class="about-hero">
-            <span class="about-logo" aria-hidden="true">M</span>
+            <span class="brand-badge-box about-logo" aria-hidden="true"></span>
             <h4>Moliya</h4>
             <p class="about-tagline">Loyihamiz sizni yaxshi amallarga yetaklab, yomonlaridan yiroq tutsin.</p>
             <p class="about-text">Moliya — shaxsiy va oilaviy byudjetingizni bir joyda yuritadigan ilova. Kirim-chiqimni yozing, qarz va to'lovlarni kuzating, maqsad sari jamg'aring — pulingiz qayerga ketayotganini aniq ko'ring.</p>
@@ -1163,7 +1164,7 @@
         </div>
 
         <form id="formAddCategory" class="cat-add-row">
-          <input type="text" id="newCategoryName" class="form-control" placeholder="Yangi turkum nomi" maxlength="255" required>
+          <input type="text" id="newCategoryName" class="form-control" placeholder="Yangi turkum nomi" aria-label="Yangi turkum nomi" maxlength="255" required>
           <button type="submit" class="btn btn-primary">Qo'shish</button>
         </form>
 
@@ -1304,7 +1305,7 @@
 
     <!-- Sticky header -->
     <div class="tx-page-header">
-      <button class="tx-page-back" data-action="closeTxPage">
+      <button class="tx-page-back" data-action="closeTxPage" aria-label="Orqaga">
         <svg width="20" height="20" data-icon="chevronLeft" aria-hidden="true"></svg>
       </button>
       <div class="tx-page-heading">
@@ -1604,7 +1605,7 @@
 
 
 
-  <script src="/static/js/app.js?v=4.43"></script>
-  <script src="/static/js/voice.js?v=26"></script>
+  <script src="/static/js/app.js?v=4.49"></script>
+  <script src="/static/js/voice.js?v=29"></script>
 </body>
 </html>
