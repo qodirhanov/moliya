@@ -4445,6 +4445,7 @@ async function checkAuth() {
     try { localStorage.removeItem(`moliyaNotifs:${data.user.id}`); } catch (e) { /* e'tiborsiz */ }
 
     // Show main app, hide auth screen
+    document.body.classList.remove('is-auth');
     if (authSection) authSection.style.display = 'none';
     if (mainApp) mainApp.style.display = 'block';
     if (userProfileNav) userProfileNav.style.display = 'flex';
@@ -4476,6 +4477,7 @@ async function checkAuth() {
   stopSupportUnreadPolling();
   _setNotifPanel(false);
 
+  document.body.classList.add('is-auth');
   if (authSection) authSection.style.display = 'flex';
   if (mainApp) mainApp.style.display = 'none';
   if (userProfileNav) userProfileNav.style.display = 'none';

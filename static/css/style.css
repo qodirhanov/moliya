@@ -298,118 +298,66 @@
   --chart-bar-muted: color-mix(in srgb, var(--text-muted) 22%, transparent);
 }
 
-/* 1. Oltin — standart mavzu: to'q ko'k (#14213D), oltin (#FCA311), oq, kulrang (#E5E5E5), qora.
-   Oltin tugmalar ustida to'q ko'k yozuv; oq fonda oltin matn o'qilmagani uchun matnga to'q oltin (--primary-ink) */
-:root[data-palette="oltin"][data-theme="light"] {
-  --bg-body: #EDEDED; --bg-surface: #FFFFFF; --border-subtle: #E5E5E5;
-  --text-main: #14213D; --text-muted: #5B6478;
-  --primary: #FCA311; --on-primary: #14213D; --primary-ink: #9A6100;
-  --emerald: #1E8E5A; --rose: #D1495B; --cyan: #2D5DA8; --amber: #9A6100;
+/* ===================================================
+   YANGI RANG TIZIMI (moliya-ranglar.css) bilan ulanish.
+   Manba: --bg, --surface, --border, --text, --accent*, --income, --expense, --transfer, --debt.
+   Eski nomlar (--bg-body, --primary, --emerald ...) shularga ulangan nom-sinonimlar:
+   shu sabab quyidagi kod va panel.css o'zgarmaydi. Mavzular faqat --accent* ni almashtiradi.
+   Eslatma: moliya-ranglar.css style.css DAN KEYIN ulanadi.
+   =================================================== */
+:root[data-palette] {
+  --bg-body: var(--bg);
+  --bg-surface: var(--surface);
+  --border-subtle: var(--border);
+  --text-main: var(--text);
+  --primary: var(--accent-fill);
+  --on-primary: var(--on-accent);
+  --primary-ink: var(--accent);
+  --emerald: var(--income);
+  --rose: var(--expense);
+  --cyan: var(--transfer);
+  --amber: var(--debt);
 }
-:root[data-palette="oltin"][data-theme="dark"] {
-  --bg-body: #000000; --bg-surface: #14213D; --border-subtle: #22335A;
-  --text-main: #FFFFFF; --text-muted: #A9B3C7;
-  --primary: #FCA311; --on-primary: #14213D; --primary-ink: #FCA311;
-  --emerald: #3CCB8A; --rose: #FF6B6B; --cyan: #6FA3FF; --amber: #FCA311;
+:root[data-palette]:not([data-palette="oltin"]) {
+  --accent-bg: color-mix(in srgb, var(--accent-fill) 16%, transparent);
 }
-/* Logotip: to'q ko'k plitka ustida oltin o'sish chizig'i */
-:root[data-palette="oltin"][data-theme="light"] { --chart-bar-muted: #E5E5E5; }
-:root[data-palette="oltin"][data-theme="dark"] { --chart-bar-muted: #22335A; }
+:root[data-palette="oltin"][data-theme="light"] { --chart-bar-muted: var(--border); }
+:root[data-palette="oltin"][data-theme="dark"] { --chart-bar-muted: var(--border); }
 
-/* Balans kartochkasi — to'q ko'k "bank kartasi": ichidagi ranglar shu kartochka uchun qayta beriladi */
+/* Balans kartochkasi — to'q "bank kartasi": ichidagi ranglar shu kartochka uchun qayta beriladi */
 :root[data-palette="oltin"] .hero-balance-banner {
-  --text-main: #FFFFFF;
-  --text-muted: #A9B3C7;
+  --text-main: var(--hero-text);
+  --text-muted: var(--hero-muted);
   --bg-sunken: rgba(255, 255, 255, 0.08);
   --bg-hover: rgba(255, 255, 255, 0.14);
   --border-subtle: rgba(255, 255, 255, 0.12);
-  --sage: #FCA311;
-  background: #14213D;
-  border-color: #14213D;
-  color: #FFFFFF;
+  --sage: var(--accent-fill);
+  background: var(--hero-bg);
+  border-color: var(--hero-bg);
+  color: var(--hero-text);
 }
-/* Tunda sahifa kartochkalari ham #14213D: balans kartasi bir pog'ona yorug'roq, chegarasi bilan ajraladi */
 :root[data-palette="oltin"][data-theme="dark"] .hero-balance-banner {
-  background: #15254A;
   border-color: rgba(255, 255, 255, 0.07);
 }
-:root[data-palette="oltin"] .hero-balance-sum .hero-curr { color: #FCA311; }
+:root[data-palette="oltin"] .hero-balance-sum .hero-curr { color: var(--accent-fill); }
 
 /* Eng ko'p sarflangan kun va avatar — oltin */
 :root[data-palette="oltin"] .weekly-rank-row.is-max .weekly-rank-fill { background: var(--primary); }
 :root[data-palette="oltin"] .weekly-rank-row.is-max .weekly-rank-day,
 :root[data-palette="oltin"] .weekly-rank-row.is-max .weekly-rank-value { color: var(--primary-ink); }
-:root[data-palette="oltin"] .avatar { background: #FCA311; color: #14213D; }
+:root[data-palette="oltin"] .avatar { background: var(--accent-fill); color: var(--on-accent); }
 
-/* 2. Zumrad — yorqin yashil, yangi va tetik */
-:root[data-palette="zumrad"][data-theme="light"] {
-  --bg-body: #EFF8F4; --bg-surface: #FFFFFF; --border-subtle: #D3EADF;
-  --text-main: #0F2A20; --text-muted: #4E6B5F;
-  --primary: #047857; --on-primary: #FFFFFF;
-  --emerald: #047857; --rose: #DC4C3E; --cyan: #2563EB; --amber: #B45309;
-}
-:root[data-palette="zumrad"][data-theme="dark"] {
-  --bg-body: #07140F; --bg-surface: #0E1F18; --border-subtle: #1C3529;
-  --text-main: #E3F4EC; --text-muted: #8DB3A2;
-  --primary: #34D399; --on-primary: #062018;
-  --emerald: #34D399; --rose: #F87171; --cyan: #60A5FA; --amber: #FBBF24;
-}
-
-/* 7. Firuza — Samarqand: firuza, lojuvard, oltin */
-:root[data-palette="firuza"][data-theme="light"] {
-  --bg-body: #EEF6F6; --bg-surface: #FFFFFF; --border-subtle: #D2E6E6;
-  --text-main: #10283A; --text-muted: #4F6773;
-  --primary: #0E7C86; --on-primary: #FFFFFF;
-  --emerald: #2E8B57; --rose: #C0392B; --cyan: #1F4E9A; --amber: #C08A1E;
-}
-:root[data-palette="firuza"][data-theme="dark"] {
-  --bg-body: #08161C; --bg-surface: #0F2129; --border-subtle: #1C3743;
-  --text-main: #E4F2F3; --text-muted: #8FB0B8;
-  --primary: #2EC4C9; --on-primary: #062126;
-  --emerald: #55C98A; --rose: #F07F70; --cyan: #6F9BE8; --amber: #E6B655;
-}
-
-/* 11. Lojuvard — lojuvard ko'k va oltin, fil suyagi fon */
-:root[data-palette="lojuvard"][data-theme="light"] {
-  --bg-body: #F7F4EC; --bg-surface: #FFFDF8; --border-subtle: #E6DFCC;
-  --text-main: #1A2240; --text-muted: #5C6380;
-  --primary: #2643A8; --on-primary: #FFFFFF;
-  --emerald: #2E7D5B; --rose: #B83A32; --cyan: #1F7A8C; --amber: #B8862B;
-}
-:root[data-palette="lojuvard"][data-theme="dark"] {
-  --bg-body: #0A0F24; --bg-surface: #121A36; --border-subtle: #24305A;
-  --text-main: #EAEDF8; --text-muted: #98A2C8;
-  --primary: #7D96F0; --on-primary: #0A0F24;
-  --emerald: #5CC69A; --rose: #F27D72; --cyan: #5EC4D6; --amber: #E0B654;
-}
-
-/* 20. Zaytun — zaytun yashil va qaymoq rang */
-:root[data-palette="zaytun"][data-theme="light"] {
-  --bg-body: #F5F3EA; --bg-surface: #FFFEF8; --border-subtle: #E4E0CC;
-  --text-main: #23251A; --text-muted: #66694F;
-  --primary: #556B2F; --on-primary: #FFFFFF;
-  --emerald: #556B2F; --rose: #B4462B; --cyan: #3F6B8C; --amber: #B5852A;
-}
-:root[data-palette="zaytun"][data-theme="dark"] {
-  --bg-body: #12130C; --bg-surface: #1C1E14; --border-subtle: #303322;
-  --text-main: #F0F1E4; --text-muted: #A7AB8A;
-  --primary: #A9BC6A; --on-primary: #161A08;
-  --emerald: #A9BC6A; --rose: #EB8466; --cyan: #84AFCF; --amber: #E0B866;
-}
-
-/* 10. Olcha — to'q qizil-vino, nafis */
-:root[data-palette="olcha"][data-theme="light"] {
-  --bg-body: #F8F1F3; --bg-surface: #FFFFFF; --border-subtle: #EBDCE1;
-  --text-main: #2A1219; --text-muted: #6E5560;
-  --primary: #8B1E3F; --on-primary: #FFFFFF;
-  --emerald: #2E7D4F; --rose: #D9480F; --cyan: #2F5FA8; --amber: #A16207;
-}
-:root[data-palette="olcha"][data-theme="dark"] {
-  --bg-body: #140A0E; --bg-surface: #1F1116; --border-subtle: #382029;
-  --text-main: #F6E8EC; --text-muted: #B7969F;
-  --primary: #E26D8F; --on-primary: #1A0A10;
-  --emerald: #5CC08A; --rose: #FF8A4C; --cyan: #7FA6E8; --amber: #E7B45A;
-}
+/* Qolgan mavzular: faqat urg'u rangi (--accent: matn/havola, --accent-fill: tugma/faol bo'lim) */
+:root[data-palette="zumrad"][data-theme="light"] { --accent: #047857; --accent-fill: #047857; --on-accent: #FFFFFF; }
+:root[data-palette="zumrad"][data-theme="dark"]  { --accent: #34D399; --accent-fill: #34D399; --on-accent: #062018; }
+:root[data-palette="firuza"][data-theme="light"] { --accent: #0E7C86; --accent-fill: #0E7C86; --on-accent: #FFFFFF; }
+:root[data-palette="firuza"][data-theme="dark"]  { --accent: #2EC4C9; --accent-fill: #2EC4C9; --on-accent: #062126; }
+:root[data-palette="lojuvard"][data-theme="light"] { --accent: #2643A8; --accent-fill: #2643A8; --on-accent: #FFFFFF; }
+:root[data-palette="lojuvard"][data-theme="dark"]  { --accent: #7D96F0; --accent-fill: #7D96F0; --on-accent: #0A0F24; }
+:root[data-palette="zaytun"][data-theme="light"] { --accent: #556B2F; --accent-fill: #556B2F; --on-accent: #FFFFFF; }
+:root[data-palette="zaytun"][data-theme="dark"]  { --accent: #A9BC6A; --accent-fill: #A9BC6A; --on-accent: #161A08; }
+:root[data-palette="olcha"][data-theme="light"] { --accent: #8B1E3F; --accent-fill: #8B1E3F; --on-accent: #FFFFFF; }
+:root[data-palette="olcha"][data-theme="dark"]  { --accent: #E26D8F; --accent-fill: #E26D8F; --on-accent: #1A0A10; }
 
 /* ===================================================
    "MUZLATILGAN SHISHA" (iOS tab bar uslubi): navbar, segmentli tugmalar, oynalar, toast, ochiladigan panellar.
@@ -602,7 +550,7 @@ body {
 .brand-icon {
   width: 44px;
   height: 44px;
-  background: linear-gradient(135deg, var(--primary), #818cf8);
+  background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 65%, var(--bg-surface)));
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
@@ -615,7 +563,7 @@ body {
   font-family: var(--font-display);
   font-size: 1.35rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--text-main);
   letter-spacing: -0.02em;
 }
 
@@ -785,7 +733,7 @@ body {
   font-family: var(--font-display);
   font-size: 1.75rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--text-main);
   letter-spacing: -0.02em;
 }
 
@@ -839,10 +787,10 @@ body {
   opacity: 0.7;
 }
 
-.stat-card.card-balance::before { background: linear-gradient(90deg, var(--primary), #818cf8); }
-.stat-card.card-income::before { background: linear-gradient(90deg, var(--emerald), #34d399); }
-.stat-card.card-expense::before { background: linear-gradient(90deg, var(--rose), #fb7185); }
-.stat-card.card-debt::before { background: linear-gradient(90deg, var(--amber), #fbbf24); }
+.stat-card.card-balance::before { background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 65%, var(--bg-surface))); }
+.stat-card.card-income::before { background: linear-gradient(90deg, var(--emerald), color-mix(in srgb, var(--emerald) 65%, var(--bg-surface))); }
+.stat-card.card-expense::before { background: linear-gradient(90deg, var(--rose), color-mix(in srgb, var(--rose) 65%, var(--bg-surface))); }
+.stat-card.card-debt::before { background: linear-gradient(90deg, var(--amber), color-mix(in srgb, var(--amber) 65%, var(--bg-surface))); }
 
 .stat-header {
   display: flex;
@@ -869,17 +817,17 @@ body {
   font-size: 18px;
 }
 
-.card-balance .stat-icon { background: rgba(99, 102, 241, 0.15); color: var(--primary-ink); }
-.card-income .stat-icon { background: rgba(16, 185, 129, 0.15); color: var(--emerald); }
-.card-expense .stat-icon { background: rgba(244, 63, 94, 0.15); color: var(--rose); }
-.card-debt .stat-icon { background: rgba(245, 158, 11, 0.15); color: var(--amber); }
+.card-balance .stat-icon { background: color-mix(in srgb, var(--primary) 15%, transparent); color: var(--primary-ink); }
+.card-income .stat-icon { background: color-mix(in srgb, var(--emerald) 15%, transparent); color: var(--emerald); }
+.card-expense .stat-icon { background: color-mix(in srgb, var(--rose) 15%, transparent); color: var(--rose); }
+.card-debt .stat-icon { background: color-mix(in srgb, var(--amber) 15%, transparent); color: var(--amber); }
 
 .stat-value {
   font-family: var(--font-display);
   font-size: 1.85rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  color: #fff;
+  color: var(--text-main);
   margin-bottom: 6px;
 }
 
@@ -896,8 +844,8 @@ body {
   padding: 2px 6px;
   border-radius: 4px;
 }
-.stat-tag.positive { background: rgba(16, 185, 129, 0.15); color: var(--emerald); }
-.stat-tag.negative { background: rgba(244, 63, 94, 0.15); color: var(--rose); }
+.stat-tag.positive { background: color-mix(in srgb, var(--emerald) 15%, transparent); color: var(--emerald); }
+.stat-tag.negative { background: color-mix(in srgb, var(--rose) 15%, transparent); color: var(--rose); }
 
 /* ===================================================
    MAIN LAYOUT GRID
@@ -940,7 +888,7 @@ body {
   font-family: var(--font-display);
   font-size: 1.15rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-main);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -980,14 +928,14 @@ body {
   text-transform: uppercase;
   padding: 3px 8px;
   border-radius: var(--radius-full);
-  background: rgba(99, 102, 241, 0.18);
-  color: #a5b4fc;
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+  color: var(--primary-ink);
 }
 
 .wallet-name {
   font-size: 0.95rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-main);
   margin-bottom: 4px;
 }
 
@@ -1025,8 +973,8 @@ body {
 }
 
 .tab-btn.active {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: color-mix(in srgb, var(--text-main) 10%, transparent);
+  color: var(--text-main);
 }
 
 .tx-list {
@@ -1068,14 +1016,14 @@ body {
   flex-shrink: 0;
 }
 
-.tx-icon-box.expense { background: rgba(244, 63, 94, 0.15); color: var(--rose); }
-.tx-icon-box.income { background: rgba(16, 185, 129, 0.15); color: var(--emerald); }
-.tx-icon-box.transfer { background: rgba(6, 182, 212, 0.15); color: var(--cyan); }
+.tx-icon-box.expense { background: color-mix(in srgb, var(--rose) 15%, transparent); color: var(--rose); }
+.tx-icon-box.income { background: color-mix(in srgb, var(--emerald) 15%, transparent); color: var(--emerald); }
+.tx-icon-box.transfer { background: color-mix(in srgb, var(--cyan) 15%, transparent); color: var(--cyan); }
 
 .tx-details h4 {
   font-size: 0.92rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-main);
   margin-bottom: 2px;
 }
 
@@ -1142,7 +1090,7 @@ body {
 .debt-info h5 {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-main);
 }
 
 .debt-type-badge {
@@ -1153,8 +1101,8 @@ body {
   display: inline-block;
   margin-top: 4px;
 }
-.debt-type-badge.give { background: rgba(16, 185, 129, 0.15); color: var(--emerald); }
-.debt-type-badge.take { background: rgba(245, 158, 11, 0.15); color: var(--amber); }
+.debt-type-badge.give { background: color-mix(in srgb, var(--emerald) 15%, transparent); color: var(--emerald); }
+.debt-type-badge.take { background: color-mix(in srgb, var(--amber) 15%, transparent); color: var(--amber); }
 
 .debt-amount-col {
   text-align: right;
@@ -1164,7 +1112,7 @@ body {
   font-family: var(--font-display);
   font-size: 0.95rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--text-main);
 }
 
 .debt-actions {
@@ -1305,8 +1253,8 @@ body {
 }
 
 /* To'ldirilmagan majburiy maydon: qizil ramka + tagida izoh */
-:root { --field-error: #E5534B; --field-error-glow: rgba(229, 83, 75, 0.25); }
-:root[data-theme="light"] { --field-error: #C62828; --field-error-glow: rgba(198, 40, 40, 0.18); }
+:root { --field-error: var(--rose); --field-error-glow: color-mix(in srgb, var(--rose) 25%, transparent); }
+:root[data-theme="light"] { --field-error-glow: color-mix(in srgb, var(--rose) 18%, transparent); }
 .form-control.field-invalid,
 .form-control.field-invalid:focus,
 .custom-select-trigger.field-invalid,
@@ -1570,7 +1518,7 @@ select.form-control option {
   justify-content: center;
   border: 1px solid var(--glass-edge);
   background: var(--primary);
-  color: #fff;
+  color: var(--on-primary);
   font-size: 1.45rem;
   box-shadow: var(--glass-shine), 0 8px 24px rgba(0, 0, 0, 0.28);
   cursor: pointer;
@@ -1705,8 +1653,8 @@ body.has-assistant-fab .toast-container { bottom: calc(88px + env(safe-area-inse
 .brand-badge-box {
   width: 28px;
   height: 28px;
-  background: #0B1424 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='9' y='12' width='38' height='26' rx='5' fill='%231C2B45'/%3E%3Crect x='13' y='19' width='38' height='26' rx='5' fill='%233A4E73'/%3E%3Crect x='17' y='26' width='38' height='26' rx='6' fill='%23E6E8EC'/%3E%3Crect x='44' y='35' width='11' height='8' rx='4' fill='%23C2A36B'/%3E%3C/svg%3E") no-repeat center / 100%;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='b' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23F8F8F6'/%3E%3Cstop offset='1' stop-color='%23E6E6E1'/%3E%3C/linearGradient%3E%3ClinearGradient id='c' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%231D2129'/%3E%3Cstop offset='1' stop-color='%230E1015'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23b)'/%3E%3Crect x='.5' y='.5' width='63' height='63' rx='15.5' fill='none' stroke='%23000' stroke-opacity='.08'/%3E%3Cg transform='rotate(-10 32 32)'%3E%3Crect x='17' y='13' width='38' height='26' rx='5' fill='%232FA37A' opacity='.45'/%3E%3Crect x='11' y='22' width='40' height='27' rx='5.5' fill='url(%23c)'/%3E%3Crect x='17' y='30' width='9' height='7' rx='2' fill='%232FA37A'/%3E%3Cpath d='M36 31c2.5 2.5 2.5 6.5 0 9M41 29c4 4 4 10.5 0 14' fill='none' stroke='%23fff' stroke-opacity='.8' stroke-width='2.4' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E") no-repeat center / 100%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
   border-radius: 8px;
   display: inline-block;
 }
@@ -2399,6 +2347,49 @@ body.has-assistant-fab .toast-container { bottom: calc(88px + env(safe-area-inse
   fill: none;
   display: block;
 }
+
+/* Kirish / ro'yxatdan o'tish: logotip ranglari (krem fon, zumrad urg'u, grafit matn).
+   Mavzudan qat'i nazar doim yorqin — body.is-auth ni app.js qo'yadi/olib tashlaydi. */
+body.is-auth {
+  --bg-body: #F5F2EA;
+  --bg-surface: #FFFFFF;
+  --bg-sunken: #EEF1EC;
+  --bg-hover: #E6EBE5;
+  --border-subtle: rgba(29, 33, 41, 0.10);
+  --border-strong: rgba(29, 33, 41, 0.20);
+  --text-main: #1D2129;
+  --text-muted: #55606B;
+  --text-subtle: #8A939C;
+  --primary: #2FA37A;
+  --primary-strong: #279068;
+  --primary-deep: #1F7A59;
+  --primary-ink: #1B7F5D;
+  --primary-tint: #2FA37A;
+  --primary-glow: rgba(47, 163, 122, 0.28);
+  --on-primary: #08140F;
+  --border-focus: rgba(47, 163, 122, 0.6);
+  --shadow-lg: 0 18px 44px rgba(29, 33, 41, 0.12);
+  color-scheme: light;
+  background-color: #F5F2EA;
+  background-image:
+    radial-gradient(60% 50% at 50% 28%, rgba(47, 163, 122, 0.16), transparent 70%),
+    radial-gradient(40% 40% at 90% 95%, rgba(29, 33, 41, 0.06), transparent 70%);
+}
+body.is-auth .navbar { background: #F5F2EA; border-bottom-color: rgba(29, 33, 41, 0.08); box-shadow: none; }
+body.is-auth .navbar::before { background: #F5F2EA; backdrop-filter: none; -webkit-backdrop-filter: none; }
+body.is-auth { --glass-pill: #FFFFFF; --glass-pill-shadow: 0 1px 3px rgba(29, 33, 41, 0.18); }
+body.is-auth .auth-card .btn-primary { background: linear-gradient(135deg, #3CBE8F, #2FA37A); }
+body.is-auth .auth-card .btn-primary:hover { background: linear-gradient(135deg, #34B284, #278F69); }
+body.is-auth .auth-card {
+  border: 1px solid rgba(29, 33, 41, 0.08);
+}
+body.is-auth .form-control { background: #F7F8F5; }
+body.is-auth .form-control:focus { background: #fff; }
+body.is-auth .auth-card .btn-primary { font-weight: 800; }
+body.is-auth .auth-tabs { background: #EAEDE6; box-shadow: none; }
+body.is-auth .auth-tabs .glass-thumb { background: #fff; box-shadow: 0 1px 4px rgba(29, 33, 41, 0.2), inset 0 0 0 1.5px #2FA37A; backdrop-filter: none; -webkit-backdrop-filter: none; }
+body.is-auth .auth-tabs::before { background: #fff; box-shadow: 0 1px 4px rgba(29, 33, 41, 0.2), inset 0 0 0 1.5px #2FA37A; }
+body.is-auth .auth-tabs > button.active { color: #14603F; font-weight: 700; }
 
 /* ===================================================
    COMPACT TRANSACTION LIST + DETAIL DRAWER

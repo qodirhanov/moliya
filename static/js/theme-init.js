@@ -20,4 +20,11 @@
   if (['oltin', 'zumrad', 'firuza', 'lojuvard', 'zaytun', 'olcha'].indexOf(palette) !== -1) {
     document.documentElement.setAttribute('data-palette', palette);
   }
+  // Brauzer paneli rangi (theme-color): rejimga qarab; rejim keyin almashsa ham yangilanadi (moliya-ranglar.css dagi --bg bilan bir xil)
+  var meta = document.querySelector('meta[name="theme-color"]');
+  function syncThemeColor() {
+    if (meta) meta.setAttribute('content', document.documentElement.getAttribute('data-theme') === 'dark' ? '#000000' : '#EDEDED');
+  }
+  syncThemeColor();
+  try { new MutationObserver(syncThemeColor).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] }); } catch (e) { /* eski brauzer */ }
 })();

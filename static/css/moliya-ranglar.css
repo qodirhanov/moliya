@@ -1,0 +1,59 @@
+/* ===================================================
+   MOLIYA — YANGI RANG TIZIMI (mavjud "Oltin" mavzusidan olingan)
+   Qiymatlar style.css dagi :root[data-palette="oltin"] dan ko'chirilgan;
+   o'zgarishi mumkin bo'lgan yagona qiymat — --debt (quyida izoh).
+   Rejim: <html data-theme="light|dark"> (loyihadagi mavjud mexanizm).
+   =================================================== */
+
+:root,
+:root[data-theme="light"] {
+  --bg: #EDEDED;
+  --surface: #FFFFFF;
+  --surface-2: #F6F6F6;
+  --border: #E5E5E5;
+  --text: #14213D;
+  --text-muted: #5B6478;
+
+  /* Oltin: --accent — MATN/havola/ikon uchun (oq fonda o'qiladigan to'q oltin);
+     --accent-fill — tugma, faol bo'lim, jamg'arma to'ldirmasi uchun (yorqin oltin) */
+  --accent: #9A6100;
+  --accent-fill: #FCA311;
+  --on-accent: #14213D;
+  --accent-bg: rgba(252, 163, 17, 0.16);   /* faqat fon; ustiga matn --accent yoki --text */
+
+  --income: #1E8E5A;
+  --expense: #D1495B;
+  --transfer: #2D5DA8;
+  --debt: #6C5CE7;
+
+  /* Balans kartochkasi (to'q "bank kartasi") */
+  --hero-bg: #14213D;
+  --hero-text: #FFFFFF;
+  --hero-muted: #A9B3C7;
+}
+
+:root[data-theme="dark"] {
+  --bg: #000000;
+  --surface: #14213D;
+  --surface-2: #15254A;
+  --border: #22335A;
+  --text: #FFFFFF;
+  --text-muted: #A9B3C7;
+
+  --accent: #FCA311;
+  --accent-fill: #FCA311;
+  --on-accent: #14213D;
+  --accent-bg: rgba(252, 163, 17, 0.18);
+
+  --income: #3CCB8A;
+  --expense: #FF6B6B;
+  --transfer: #6FA3FF;
+  --debt: #9B8CFF;
+
+  --hero-bg: #15254A;
+  --hero-text: #FFFFFF;
+  --hero-muted: #A9B3C7;
+}
+
+/* Shisha navbar: style.css da --glass-bar / --nav-bg orqali; @supports not (backdrop-filter) zaxirasi
+   o'sha yerda (--glass-bar → to'liq yopiq --nav-bg). */
