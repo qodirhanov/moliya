@@ -3713,7 +3713,7 @@ body.is-auth .auth-tabs > button.active { color: #14603F; font-weight: 700; }
   border-radius: 8px;
 }
 
-/* Brend: logotip belgisi (pog'onali kartalar, .brand-badge-box da) + serif yozuv */
+/* Brend: logotip belgisi (karta + chip, .brand-badge-box da) + serif yozuv */
 :is(.navbar, .ptr-indicator) .brand-badge-box {
   position: relative;
   width: 34px;
