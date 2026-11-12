@@ -365,6 +365,30 @@ class ServerSttTests(TestCase):
         self.assertEqual(out["status"], "reply")
         self.assertTrue(out["expect_reply"])
 
+    def test_wake_returns_only_text_and_runs_nothing(self):
+        """Fonda «Salom Moliya» eshitish: faqat matn qaytadi, buyruq bajarilmaydi (hisobga hech narsa yozilmaydi)"""
+        with self.fake_openai("Salom Moliya tushlikka 45 ming so'm sarfladim"):
+            res = self.api.post("/api/v1/voice/wake/", {"audio": self.audio()}, format="multipart")
+        self.assertEqual(res.status_code, 200, res.content)
+        self.assertEqual(res.json(), {"heard": "Salom Moliya tushlikka 45 ming so'm sarfladim"})
+        self.assertEqual(Expense.objects.count(), 0)
+
+    def test_wake_skips_long_recordings_without_calling_provider(self):
+        with self.fake_openai("hech narsa") as urlopen:
+            res = self.api.post("/api/v1/voice/wake/", {"audio": self.audio(b"x" * (500 * 1024))}, format="multipart")
+        self.assertEqual(res.json(), {"heard": ""})
+        urlopen.assert_not_called()
+
+    def test_wake_failure_gives_empty_text(self):
+        with mock.patch("mainapp.stt.urllib.request.urlopen", side_effect=OSError("ulanib bo'lmadi")):
+            res = self.api.post("/api/v1/voice/wake/", {"audio": self.audio()}, format="multipart")
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json(), {"heard": ""})
+
+    def test_wake_requires_login_and_audio(self):
+        self.assertEqual(APIClient().post("/api/v1/voice/wake/", {}, format="multipart").status_code, 401)
+        self.assertEqual(self.api.post("/api/v1/voice/wake/", {}, format="multipart").status_code, 400)
+
     def test_openai_failure_is_reported(self):
         import urllib.error
         error = urllib.error.HTTPError("u", 401, "Unauthorized", {}, None)

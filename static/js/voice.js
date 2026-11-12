@@ -326,10 +326,11 @@
   }
 
   // record — yozib olish (serverga yuborish uchun); vad — gap tugaganda onDone(blob, hadSpeech) chaqiriladi
-  async function startCapture({ record = false, vad = false, onDone = null, onBarge = null } = {}) {
+  async function startCapture({ record = false, vad = false, onDone = null, onBarge = null,
+                                noSpeechMs = NO_SPEECH_MS, maxMs = MAX_RECORD_MS } = {}) {
     if (v.capture || !navigator.mediaDevices?.getUserMedia) return;
     const cap = { raf: 0, hadSpeech: false, chunks: [], recorder: null, finished: false, onDone, vad, onBarge,
-                  startedAt: performance.now(), loudSince: 0, quietSince: 0, floor: 0.05 };
+                  noSpeechMs, maxMs, startedAt: performance.now(), loudSince: 0, quietSince: 0, floor: 0.05 };
     if (onBarge) cap.barge = bargeDetector(cap.startedAt);
     v.capture = cap;
     try {
@@ -396,8 +397,8 @@
       if (cap.vad) {
         const elapsed = now - cap.startedAt;
         if ((cap.hadSpeech && cap.quietSince && now - cap.quietSince > SPEECH_END_SILENCE_MS)
-            || (!cap.hadSpeech && elapsed > NO_SPEECH_MS)
-            || elapsed > MAX_RECORD_MS) {
+            || (!cap.hadSpeech && elapsed > cap.noSpeechMs)
+            || elapsed > cap.maxMs) {
           finishCapture(cap);
           return;
         }
@@ -439,6 +440,69 @@
     const hadSpeech = cap.hadSpeech;
     const blob = await stopCapture();
     cap.onDone?.(blob, hadSpeech);
+  }
+
+  // ---------- Server orqali «Salom Moliya» (Android ilovasi, Firefox: brauzerda nutq xizmati yo'q) ----------
+  // Ilova ochiq turganda mikrofon qisqa oynalarda tinglanadi: gap boshlansa — yozib, serverga yuboriladi (matnga
+  // aylantiriladi, buyruq bajarilmaydi). Matnda «Salom Moliya» topilsa yordamchi ochiladi. Gap bo'lmasa hech narsa yuborilmaydi
+  const WAKE_WINDOW_MS = 3000;     // jim turganda yozuv oynasi shuncha davom etadi va qayta boshlanadi
+  const WAKE_MAX_MS = 6000;        // «Salom Moliya» qisqa: bundan uzun gap yuborilmaydi
+  const WAKE_MIN_GAP_MS = 2500;    // serverga yuborishlar orasidagi eng kam vaqt (limit va kredit tejash)
+  const serverWake = () => serverStt() && (v.noSpeechService || !canListen);
+
+  function runWakeCapture() {
+    if (!v.wakeLoop || v.capture) return;
+    startCapture({ record: true, vad: true, onDone: onWakeUtterance, noSpeechMs: WAKE_WINDOW_MS, maxMs: WAKE_MAX_MS });
+  }
+
+  function startWakeLoop() {
+    if (!serverWake() || !layer.hidden || v.busy || document.hidden) return;
+    v.wakeLoop = true;
+    runWakeCapture();
+  }
+
+  function stopWakeLoop() {
+    if (!v.wakeLoop) return;
+    v.wakeLoop = false;
+    stopCapture(true);
+  }
+
+  async function onWakeUtterance(blob, hadSpeech, problem) {
+    if (!v.wakeLoop) return;
+    if (problem === 'denied') {
+      v.wakeLoop = false;
+      v.micAllowed = false;
+      renderSettings();
+      return;
+    }
+    if (!layer.hidden || v.busy) return;  // yordamchi shu orada qo'lda ochilgan — sikl keyin o'zi qayta boshlanadi
+    let wait = 0;
+    if (blob && hadSpeech) {
+      wait = Math.max(0, WAKE_MIN_GAP_MS - (Date.now() - (v.wakeSentAt || 0)));
+      v.wakeSentAt = Date.now() + wait;
+      const session = v.session;
+      let heard = '';
+      try {
+        if (wait) await new Promise(r => setTimeout(r, wait));
+        const form = new FormData();
+        form.append('audio', blob, `wake.${(blob.type.split('/')[1] || 'webm').split(';')[0]}`);
+        const res = await fetch(`${API_BASE}/voice/wake/`, { method: 'POST', body: form });
+        if (res.ok) heard = String((await res.json().catch(() => ({}))).heard || '');
+      } catch (e) { /* internet yo'q — keyingi gapda qayta uriniladi */ }
+      if (!v.wakeLoop || session !== v.session || !layer.hidden || v.busy) return;
+      const wake = findWake(heard);
+      if (wake) {
+        v.wakeLoop = false;
+        openOrb();
+        setOrb('listen');
+        chime('listen');
+        if (wake.rest) submit(wake.rest);
+        else greetAndListen();
+        return;
+      }
+      wait = 0;
+    }
+    runWakeCapture();
   }
 
   // ---------- Qisqa ovozli signal (tinglash boshlandi / bajarildi) ----------
@@ -507,6 +571,7 @@
   }
 
   function stopRecognition() {
+    stopWakeLoop();
     const rec = v.rec;
     v.rec = null;
     v.recMode = null;
@@ -517,7 +582,12 @@
   }
 
   function startRecognition(mode) {
-    if (!canListen) return;
+    // Bu qurilmada nutq xizmati yo'q (ilova, Firefox): fonda eshitish server orqali, tinglash esa listen() da
+    if (serverWake()) {
+      if (mode === 'wake') startWakeLoop();
+      return;
+    }
+    if (!canListen || v.noSpeechService) return;
     if (v.rec && v.recMode === mode) return;
     stopRecognition();
     if (document.hidden) return;  // yashirin varaqda tinglanmaydi — qaytganda qayta yoqiladi
@@ -547,22 +617,44 @@
     }
   }
 
+  // Mikrofon brauzer sozlamasida aniq bloklanganmi (so'rab bo'lmasa — noma'lum, bloklangan deb hisoblanmaydi)
+  async function micBlocked() {
+    try { return (await navigator.permissions.query({ name: 'microphone' })).state === 'denied'; }
+    catch (e) { return false; }
+  }
+
+  function showMicDenied() {
+    v.micAllowed = false;  // tanlov saqlanadi: ruxsat keyin berilsa «Salom Moliya» yana ishlaydi
+    stopRecognition();
+    if (!layer.hidden) {
+      // Yordamchining savoli (masalan «Qaysi hamyondan?») o'chmasin — ogohlantirish eshitilgan matn o'rnida
+      heardEl.textContent = "Mikrofonga ruxsat yo'q — manzil satridagi qulf belgisidan yoqing yoki javobni yozing.";
+      if (!replyEl.textContent) setOrb('error');
+      typeForm.hidden = false;
+      typeInput.focus();
+    } else {
+      showToast("Mikrofonga ruxsat yo'q — «Salom Moliya» ishlashi uchun manzil satridagi qulf belgisidan mikrofonni yoqing", 'error');
+    }
+    renderSettings();
+  }
+
   function onError(error) {
     // Nutq xizmati brauzerda o'chirilgan (siyosat, Brave va h.k.), mikrofon esa bor — server taniydi
     if (error === 'service-not-allowed' && useServerFallback()) return;
     if (error === 'not-allowed' || error === 'service-not-allowed') {
-      v.micAllowed = false;  // tanlov saqlanadi: ruxsat keyin berilsa «Salom Moliya» yana ishlaydi
-      stopRecognition();
-      if (!layer.hidden) {
-        // Yordamchining savoli (masalan «Qaysi hamyondan?») o'chmasin — ogohlantirish eshitilgan matn o'rnida
-        heardEl.textContent = "Mikrofonga ruxsat yo'q — manzil satridagi qulf belgisidan yoqing yoki javobni yozing.";
-        if (!replyEl.textContent) setOrb('error');
-        typeForm.hidden = false;
-        typeInput.focus();
-      } else {
-        showToast("Mikrofonga ruxsat yo'q — «Salom Moliya» ishlashi uchun manzil satridagi qulf belgisidan mikrofonni yoqing", 'error');
+      // Android ilovasi (WebView): nutq tanish xizmati yo'q va u ham «not-allowed» beradi, mikrofonning o'zi esa
+      // ishlaydi. Mikrofon sozlamada aniq bloklanmagan bo'lsa — mikrofonga ruxsat so'ralmaydi, server taniydi
+      if (serverStt() && !v.noSpeechService) {
+        v.noSpeechService = true;
+        stopRecognition();
+        micBlocked().then(blocked => {
+          if (blocked) { v.noSpeechService = false; showMicDenied(); return; }
+          useServerFallback();
+          if (layer.hidden && wakeActive()) startRecognition('wake');  // fonda «Salom Moliya» — server orqali
+        });
+        return;
       }
-      renderSettings();
+      showMicDenied();
       return;
     }
     if (error === 'language-not-supported') {
@@ -1137,7 +1229,7 @@
 
   // Fonda tinglash: foydalanuvchi yoqgan (standart) va mikrofonga ruxsat bergan bo'lsa
   function wakeActive() {
-    return v.wake && v.started && v.micAllowed && canListen;
+    return v.wake && v.started && v.micAllowed && (canListen || serverWake());
   }
 
   function beginWake() {
@@ -1199,7 +1291,7 @@
     v.started = true;
     if (navBtn) navBtn.style.display = '';
     setOrb('off');
-    if (v.wake && canListen) checkMicPermission();
+    if (v.wake && (canListen || serverStt())) checkMicPermission();
   }
 
   function stop() {
@@ -1263,10 +1355,12 @@
       }
     }
     toggle.checked = v.wake;
-    toggle.disabled = !canListen;
+    toggle.disabled = !canListen && !serverStt();
     const server = serverStt() ? ' Brauzer tanimasa — ovoz server orqali aniqroq taniladi.' : '';
-    if (!canListen && serverStt()) {
-      status.textContent = `Bu brauzerda «Salom ${BRAND}» ishlamaydi, lekin mikrofon tugmasi (Alt + M) bilan gapirsangiz — ovoz server orqali taniladi.`;
+    if (serverWake()) {
+      status.textContent = v.wake && v.micAllowed
+        ? `Yoqilgan: ilova ochiq turganda «Salom ${BRAND}» deyishingiz kifoya. Bu qurilmada gaplaringiz tanish uchun serverga yuboriladi.`
+        : `Bu qurilmada «Salom ${BRAND}» server orqali eshitiladi: mikrofonga ruxsat bering. Mikrofon tugmasi ham ishlaydi.`;
       status.className = 'settings-account-hint voice-status';
     } else if (!canListen) {
       status.textContent = "Bu brauzer ovozni tanimaydi. Chrome, Edge yoki Safari'da oching — bu yerda esa buyruqni yozib yuborishingiz mumkin.";

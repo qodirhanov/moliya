@@ -353,6 +353,8 @@ REST_FRAMEWORK = {
         "voice_stt": "20/min",
         # Ovozli javob (server ovozi) — takroriy gaplar keshdan, yangilari pullik/limitli
         "voice_tts": "40/min",
+        # Fonda «Salom Moliya» eshitish (ilova): har bir qisqa gap tanishga yuboriladi — kredit tugamasin
+        "voice_wake": "20/min",
     },
     "NUM_PROXIES": NUM_PROXIES,
     # LimitOffsetPagination + ?limit= uchun yuqori chegara (200) — qarang: mainapp/pagination.py

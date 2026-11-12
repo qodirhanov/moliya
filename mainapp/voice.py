@@ -1670,6 +1670,36 @@ def voice_api(request):
     return Response(out)
 
 
+class VoiceWakeRateThrottle(UserRateThrottle):
+    scope = "voice_wake"
+
+
+# Uyg'otish so'zi qisqa gap: bundan katta yozuv («Salom Moliya» emas) tanishga yuborilmaydi
+WAKE_MAX_AUDIO_BYTES = 400 * 1024
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+@throttle_classes([UserRateThrottle, VoiceWakeRateThrottle])
+def voice_wake_api(request):
+    """Fonda «Salom Moliya» eshitish (brauzerda nutq xizmati yo'q: Android ilovasi, Firefox): multipart {audio} —
+    qisqa yozuv serverda matnga aylantiriladi va FAQAT matn qaytariladi: {heard}. Buyruq bajarilmaydi, hisobga
+    hech narsa yozilmaydi — uyg'otish so'zi topilsa, brauzer o'zi yordamchini ochadi"""
+    if not stt.is_enabled():
+        return Response({"error": "Ovozni server orqali tanish yoqilmagan"}, status=status.HTTP_400_BAD_REQUEST)
+    upload = request.FILES.get("audio")
+    problem = stt.check_upload(upload)
+    if problem:
+        return Response({"error": problem}, status=status.HTTP_400_BAD_REQUEST)
+    if upload.size > WAKE_MAX_AUDIO_BYTES:
+        return Response({"heard": ""})
+    try:
+        heard = stt.transcribe(upload)[:MAX_TEXT_LENGTH]
+    except stt.SttError:
+        return Response({"heard": ""})
+    return Response({"heard": heard})
+
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @throttle_classes([UserRateThrottle, VoiceTtsRateThrottle])

@@ -37,7 +37,7 @@ from .views import (
 )
 from .notices import notices_api, notices_read_api
 from .support import assistant_api, support_messages_api, support_unread_api
-from .voice import voice_api, voice_tts_api
+from .voice import voice_api, voice_tts_api, voice_wake_api
 
 router = routers.DefaultRouter()
 router.register(r"users", UserViewSet)
@@ -84,6 +84,7 @@ urlpatterns = [
     # Ovozli yordamchi («Salom Moliya»): tanilgan gapni tushunib bajaradi
     path("voice/", voice_api, name="api-voice"),
     path("voice/tts/", voice_tts_api, name="api-voice-tts"),
+    path("voice/wake/", voice_wake_api, name="api-voice-wake"),
     # Admin yuborgan xabarlar (navbar qo'ng'irog'i)
     path("notices/", notices_api, name="api-notices"),
     path("notices/read/", notices_read_api, name="api-notices-read"),
