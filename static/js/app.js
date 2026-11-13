@@ -1479,8 +1479,21 @@ function walletCardHtml(w) {
     </div>`;
 }
 
+// Bosh sahifadagi Doimiy to'lovlar / Maqsadlar / A'zolar kartochkasida ro'yxatdan faqat 1 ta yozuv ko'rsatiladi
+// (kartochka bosilsa butun ro'yxat sahifasi ochiladi). Ma'lumot bo'lmasa kartochka faqat sarlavha bo'lib qoladi
+function renderHomePreview(id, html) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = html || '';
+  el.closest('.card-header-only')?.classList.toggle('has-preview', !!html);
+}
+
 function renderMembers() {
   updateHomeListCount();
+  const first = state.members[0];
+  renderHomePreview('membersPreview', first
+    ? `<div class="member-compact-card"><div style="font-weight: 500; font-size: 0.95rem; color: var(--text-main);">${memberIcon(first.kind)} ${escapeHtml(first.name)}</div></div>`
+    : '');
   const container = document.getElementById('membersList');
   if (!container) return;
 
@@ -4009,33 +4022,38 @@ async function fetchRecurring() {
   }
 }
 
-function renderRecurring() {
-  updateHomeListCount();
-  const container = document.getElementById('recurringList');
-  if (!container) return;
-  if (!state.recurring.length) {
-    container.innerHTML = `<p style="color: var(--text-subtle); font-size: 0.85rem; padding: 6px 0;">Ijara, kommunal, obuna yoki maosh kabi har oy takrorlanadigan to'lovlarni qo'shing — ular o'zi yoziladi</p>`;
-    return;
-  }
-  container.innerHTML = state.recurring.map(r => {
-    const days = daysUntil(r.next_date);
-    const when = days === 0 ? 'bugun' : days === 1 ? 'ertaga' : formatUzDate(r.next_date + 'T00:00:00');
-    const sign = r.kind === 'income' ? '+' : '-';
-    const status = r.last_error
-      ? `<span class="debt-due-overdue" title="${escapeHtml(r.last_error)}">${icon('warning')} yozilmadi</span>`
-      : `<span class="${days <= r.remind_days ? 'debt-due-soon' : 'debt-due-normal'}"><span>${escapeHtml(RECURRING_FREQ_LABELS[r.frequency])}</span> · <span>${escapeHtml(when)}</span></span>`;
-    return `
-      <div class="member-compact-card is-clickable" data-recurring-id="${r.id}" role="button" tabindex="0" title="Tahrirlash">
+function recurringCardHtml(r, preview = false) {
+  const days = daysUntil(r.next_date);
+  const when = days === 0 ? 'bugun' : days === 1 ? 'ertaga' : formatUzDate(r.next_date + 'T00:00:00');
+  const sign = r.kind === 'income' ? '+' : '-';
+  const status = r.last_error
+    ? `<span class="debt-due-overdue" title="${escapeHtml(r.last_error)}">${icon('warning')} yozilmadi</span>`
+    : `<span class="${days <= r.remind_days ? 'debt-due-soon' : 'debt-due-normal'}"><span>${escapeHtml(RECURRING_FREQ_LABELS[r.frequency])}</span> · <span>${escapeHtml(when)}</span></span>`;
+  return `
+      <div class="member-compact-card${preview ? '' : ' is-clickable'}"${preview ? '' : ` data-recurring-id="${r.id}" role="button" tabindex="0" title="Tahrirlash"`}>
         <div>
           <div style="font-weight: 500; font-size: 0.95rem; color: var(--text-main);">${icon('repeat')} ${escapeHtml(r.name)}</div>
           <div style="font-size: 0.75rem;">${status}</div>
         </div>
         <div style="display: flex; align-items: center; gap: 10px;">
           <div class="recurring-amount ${r.kind}">${sign}${formatNumber(r.summa)} <span>${escapeHtml(r.wallet_currency)}</span></div>
-          <button class="btn-icon" style="width: 24px; height: 24px; font-size: 0.72rem; opacity: 0.6;" title="O'chirish" data-action="deleteRecurring" data-stop data-args="${actionArgs(r.id)}">${icon('trash')}</button>
+          ${preview ? '' : `<button class="btn-icon" style="width: 24px; height: 24px; font-size: 0.72rem; opacity: 0.6;" title="O'chirish" data-action="deleteRecurring" data-stop data-args="${actionArgs(r.id)}">${icon('trash')}</button>`}
         </div>
       </div>`;
-  }).join('');
+}
+
+function renderRecurring() {
+  updateHomeListCount();
+  // Bosh sahifada eng yaqin to'lov (sanasi bo'yicha birinchisi)
+  const nearest = [...state.recurring].sort((a, b) => String(a.next_date).localeCompare(String(b.next_date)))[0];
+  renderHomePreview('recurringPreview', nearest ? recurringCardHtml(nearest, true) : '');
+  const container = document.getElementById('recurringList');
+  if (!container) return;
+  if (!state.recurring.length) {
+    container.innerHTML = `<p style="color: var(--text-subtle); font-size: 0.85rem; padding: 6px 0;">Ijara, kommunal, obuna yoki maosh kabi har oy takrorlanadigan to'lovlarni qo'shing — ular o'zi yoziladi</p>`;
+    return;
+  }
+  container.innerHTML = state.recurring.map(r => recurringCardHtml(r)).join('');
 }
 
 // Eslatmalar: yozilmay qolgan (masalan pul yetmagan) va muddati yaqinlashganlar
@@ -4187,42 +4205,46 @@ async function fetchGoals() {
   }
 }
 
-function renderGoals() {
-  updateHomeListCount();
-  const container = document.getElementById('goalsList');
-  if (!container) return;
-  if (!state.goals.length) {
-    container.innerHTML = `<p style="color: var(--text-subtle); font-size: 0.85rem; padding: 6px 0;">Mashina, ta'til yoki uy uchun maqsad qo'ying — qancha yig'ilganini ko'rib borasiz</p>`;
-    return;
+function goalCardHtml(g, preview = false) {
+  const saved = Math.max(0, Number(g.saved));
+  const target = Number(g.target);
+  const pct = Math.min(100, Math.floor(saved / target * 100));
+  const done = saved >= target;
+  // Har bo'lak alohida <span>: i18n.js matnni butun bo'lak bo'yicha tarjima qiladi
+  let note = done ? `${icon('check')} <span>Maqsadga yetildi</span>`
+    : `<span>Yana ${formatNumber(target - saved)} ${escapeHtml(g.wallet_currency)}</span>`;
+  if (!done && g.deadline) {
+    const days = daysUntil(g.deadline);
+    note += days < 0 ? ` · <span>muddat o'tgan</span>` : ` · <span>${days} kun qoldi</span>`;
   }
-  container.innerHTML = state.goals.map(g => {
-    const saved = Math.max(0, Number(g.saved));
-    const target = Number(g.target);
-    const pct = Math.min(100, Math.floor(saved / target * 100));
-    const done = saved >= target;
-    // Har bo'lak alohida <span>: i18n.js matnni butun bo'lak bo'yicha tarjima qiladi
-    let note = done ? `${icon('check')} <span>Maqsadga yetildi</span>`
-      : `<span>Yana ${formatNumber(target - saved)} ${escapeHtml(g.wallet_currency)}</span>`;
-    if (!done && g.deadline) {
-      const days = daysUntil(g.deadline);
-      note += days < 0 ? ` · <span>muddat o'tgan</span>` : ` · <span>${days} kun qoldi</span>`;
-    }
-    return `
-      <div class="goal-card is-clickable" data-goal-id="${g.id}" role="button" tabindex="0" title="Tahrirlash">
+  const actions = preview ? '' : `
+          <span class="goal-actions">
+            ${done ? '' : `<button class="btn btn-subtle btn-xs" data-action="fundGoal" data-stop data-args="${actionArgs(g.id)}">+ Pul qo'shish</button>`}
+            <button class="btn-icon" style="width: 24px; height: 24px; font-size: 0.72rem; opacity: 0.6;" title="O'chirish" data-action="deleteGoal" data-stop data-args="${actionArgs(g.id)}">${icon('trash')}</button>
+          </span>`;
+  return `
+      <div class="goal-card${preview ? '' : ' is-clickable'}"${preview ? '' : ` data-goal-id="${g.id}" role="button" tabindex="0" title="Tahrirlash"`}>
         <div class="goal-head">
           <span class="goal-name">${icon('target')} ${escapeHtml(g.name)}</span>
           <span class="goal-sum">${formatNumber(saved)} / ${formatNumber(target)} <small>${escapeHtml(g.wallet_currency)}</small></span>
         </div>
         <div class="goal-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width: ${pct}%"></span></div>
         <div class="goal-foot">
-          <span class="${done ? 'goal-done' : ''}"><span>${pct}%</span> · ${note}</span>
-          <span class="goal-actions">
-            ${done ? '' : `<button class="btn btn-subtle btn-xs" data-action="fundGoal" data-stop data-args="${actionArgs(g.id)}">+ Pul qo'shish</button>`}
-            <button class="btn-icon" style="width: 24px; height: 24px; font-size: 0.72rem; opacity: 0.6;" title="O'chirish" data-action="deleteGoal" data-stop data-args="${actionArgs(g.id)}">${icon('trash')}</button>
-          </span>
+          <span class="${done ? 'goal-done' : ''}"><span>${pct}%</span> · ${note}</span>${actions}
         </div>
       </div>`;
-  }).join('');
+}
+
+function renderGoals() {
+  updateHomeListCount();
+  renderHomePreview('goalsPreview', state.goals.length ? goalCardHtml(state.goals[0], true) : '');
+  const container = document.getElementById('goalsList');
+  if (!container) return;
+  if (!state.goals.length) {
+    container.innerHTML = `<p style="color: var(--text-subtle); font-size: 0.85rem; padding: 6px 0;">Mashina, ta'til yoki uy uchun maqsad qo'ying — qancha yig'ilganini ko'rib borasiz</p>`;
+    return;
+  }
+  container.innerHTML = state.goals.map(g => goalCardHtml(g)).join('');
 }
 
 function updateGoalTargetLabel() {

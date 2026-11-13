@@ -4807,7 +4807,9 @@ a.about-contact:hover { color: var(--primary-ink); }
 /* "Hamyonlarim ›" sarlavhasi bosilsa barcha hamyonlar sahifasi ochiladi (kartochkada faqat 2 tasi) */
 
 /* Takroriy to'lovlar / Maqsadlarim / A'zolarim — bosh sahifada faqat sarlavha; bosilsa ro'yxat sahifasi ochiladi */
-.card-header-only .card-surface-header { margin-bottom: 0; }
+.card-header-only:not(.has-preview) .card-surface-header { margin-bottom: 0; }
+/* Bosh sahifadagi kartochkada ro'yxatdan faqat 1 ta yozuv (app.js: renderHomePreview) */
+.card-preview { pointer-events: none; }
 .card-header-only:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .card-open-chevron .ico { width: 15px; height: 15px; vertical-align: -2px; opacity: 0.6; }
 /* Ro'yxat sahifasida "+ Qo'shish" tugmasi ro'yxat ustida, o'ngda */
