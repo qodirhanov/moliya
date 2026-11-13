@@ -2375,6 +2375,22 @@ body.is-auth {
     radial-gradient(60% 50% at 50% 28%, rgba(47, 163, 122, 0.16), transparent 70%),
     radial-gradient(40% 40% at 90% 95%, rgba(29, 33, 41, 0.06), transparent 70%);
 }
+/* Kirish ekrani doim yorqin: xabar (toast) foni ham yorqin bo'lsin. --glass-panel :root da qorong'u mavzu bo'yicha
+   hisoblab qo'yilgani uchun matn (yorqin mavzudan) o'qilmay qolardi. Xato — och marjon rangida */
+body.is-auth .toast {
+  background: #FFFFFF;
+  border-color: rgba(29, 33, 41, 0.10);
+  color: #1D2129;
+  box-shadow: 0 10px 28px rgba(29, 33, 41, 0.14);
+}
+body.is-auth .toast.error {
+  background: #FBEDE6;
+  border-color: rgba(181, 84, 45, 0.30);
+  border-left-color: #B5542D;
+  color: #7A3418;
+}
+body.is-auth .toast.error .ico { color: #B5542D; }
+body.is-auth .toast.success { background: #E7F5EE; border-left-color: #2FA37A; color: #17604A; }
 body.is-auth .navbar { background: #F5F2EA; border-bottom-color: rgba(29, 33, 41, 0.08); box-shadow: none; }
 body.is-auth .navbar::before { background: #F5F2EA; backdrop-filter: none; -webkit-backdrop-filter: none; }
 body.is-auth { --glass-pill: #FFFFFF; --glass-pill-shadow: 0 1px 3px rgba(29, 33, 41, 0.18); }
