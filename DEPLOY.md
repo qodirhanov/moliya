@@ -214,6 +214,40 @@ Windows — Task Scheduler (loyiha `C:\moliya\app`, virtual muhit `myenv` bo'lsa
 schtasks /Create /SC WEEKLY /D SUN /ST 03:30 /TN "Moliya clearsessions" /TR "cmd /c cd /d C:\moliya\app && myenv\Scripts\python.exe manage.py clearsessions"
 ```
 
+### Uzoq kirilmagan akkauntlarni o'chirish (kuniga/haftasiga bir marta)
+
+Foydalanuvchi **30 kun** hisobiga kirmasa, akkaunt va uning BARCHA ma'lumotlari (email, login nomi, hamyon, kirim/chiqim,
+qarz va h.k.) bazadan butunlay o'chadi. Bu **qaytarib bo'lmaydi** — avval `--dry-run` bilan ro'yxatni ko'ring:
+
+```bash
+python manage.py delete_inactive_accounts --dry-run     # faqat ro'yxat, hech narsa o'chmaydi
+python manage.py delete_inactive_accounts               # haqiqiy o'chirish
+```
+
+Qanday ishlaydi:
+- Faollik = `last_login`, ro'yxatdan o'tgan sana va qurilmalarning oxirgi so'rov vaqti (`UserDevice.last_seen`) ichidagi eng yangisi.
+  Sessiya uzoq saqlangani uchun ilovani har kuni ochadigan odamning `last_login` i yangilanmaydi — shu sababli qurilma ham hisobga olinadi.
+- **Hech qachon o'chmaydi:** superuser, `is_staff` (admin) va bloklangan (`is_active=False`) akkauntlar.
+- Himoya: bir ishga tushirishda `--max-delete` (standart 100) dan ko'p akkaunt o'chmaydi — oshib ketsa buyruq xato bilan to'xtaydi
+  (masalan bazani qayta tiklagandan keyin hamma `last_login` eski bo'lib qolsa). Ro'yxatni tekshirib, keyin `--max-delete 500` bering.
+- Har akkaunt alohida tranzaksiyada o'chadi; har o'chirish `security` logiga (`inactive_account_deleted user_id=... username=...`) yoziladi.
+- Muddatni `--days 45` bilan o'zgartirish mumkin (standart 30).
+- Foydalanuvchilar bundan ro'yxatdan o'tishda, Sozlamalar → Ilova haqida va Yordam bo'limida ogohlantiriladi.
+
+Linux — `moliya` crontab'iga qator qo'shing (har kuni 03:40):
+
+```cron
+40 3 * * * cd /home/moliya/app && venv/bin/python manage.py delete_inactive_accounts >> /home/moliya/inactive.log 2>&1
+```
+
+Windows — Task Scheduler:
+
+```bat
+schtasks /Create /SC DAILY /ST 03:40 /TN "Moliya inactive accounts" /TR "cmd /c cd /d C:\moliyapp && myenv\Scripts\python.exe manage.py delete_inactive_accounts"
+```
+
+Birinchi marta ishga tushirishdan oldin `.sqlite3` zaxirasini oling (yuqoridagi "Zaxira" bo'limi).
+
 ## 10. Tekshiruv
 
 - `https://moliya.uz` ochiladi, `http://` avtomatik `https://` ga o'tadi.

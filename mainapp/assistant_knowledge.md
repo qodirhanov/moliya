@@ -212,7 +212,10 @@ S: Nega «Boshqa qurilmalardan chiqarish» ishlamayapti?
 J: Xavfsizlik uchun bu amalni faqat kamida 15 kun oldin kirilgan qurilmadan bajarish mumkin. Shunda parolingizni bilib olgan begona odam sizni hisobdan chiqarib yubora olmaydi.
 
 S: Hisobni qanday o'chiraman?
-J: Sozlamalar → Profil bo'limida «Hisobni o'chirish» tugmasini bosing va joriy parolni kiriting. Diqqat: bu amalni ortga qaytarib bo'lmaydi.
+J: Sozlamalar → Profil bo'limida «Hisobni o'chirish» tugmasini bosing va joriy parolni kiriting. Hisob va barcha ma'lumotlaringiz (hamyonlar, kirim, chiqim, qarzlar) butunlay o'chadi — ortga qaytarib bo'lmaydi.
+
+S: Hisobim o'z-o'zidan o'chib ketadimi?
+J: Ha, lekin faqat uzoq kirilmasa: 1 oy (30 kun) davomida hisobga umuman kirilmasa, hisob va barcha ma'lumotlar avtomatik o'chiriladi. Ilovani vaqti-vaqti bilan ochib turing — shunda hisob saqlanadi.
 
 ## Ovozli yordamchi
 

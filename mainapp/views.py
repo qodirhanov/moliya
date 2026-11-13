@@ -516,8 +516,8 @@ def change_password_api(request):
 @permission_classes([IsAuthenticated])
 def delete_account_api(request):
     """Sozlamalar - parolni tasdiqlab, hisobni o'chirish.
-    close_account(): hisobga qayta kirib bo'lmaydi, shaxsiy ma'lumotlar tozalanadi va login nomi bo'shaydi,
-    moliyaviy tarix bazada saqlanadi"""
+    Akkaunt va unga bog'langan BARCHA ma'lumotlar bazadan butunlay o'chadi (qaytarib bo'lmaydi); email va login nomi
+    qayta ro'yxatdan o'tish uchun bo'shaydi"""
     password = password_from(request, "password")
     if not password:
         return Response({"password": "Tasdiqlash uchun parolni kiriting"}, status=status.HTTP_400_BAD_REQUEST)
@@ -526,11 +526,11 @@ def delete_account_api(request):
     if problem:
         return problem
 
-    # close_account() login nomini almashtiradi — logga eski nomi yoziladi
-    username = user.username
-    user.close_account()
+    # O'chirgach pk None bo'ladi — logga yozish uchun oldindan olamiz
+    user_id, username = user.pk, user.username
     logout(request)
-    log_event("account_deleted", request, user_id=user.pk, username=username)
+    user.delete()
+    log_event("account_deleted", request, user_id=user_id, username=username)
     return Response({"message": "Hisob o'chirildi"})
 
 
@@ -1328,11 +1328,8 @@ class UserViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         is_self = instance.pk == request.user.pk
         if is_self:
-            instance.close_account()
-        else:
-            self.perform_destroy(instance)
-        if is_self:
             logout(request)
+        self.perform_destroy(instance)  # User.delete(): qator va bog'langan hamma narsa butunlay o'chadi
         return Response({"message": "Hisob o'chirildi"}, status=status.HTTP_200_OK)
 
 

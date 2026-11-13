@@ -463,7 +463,7 @@ class SecurityLogTests(ResetFlowMixin, APITestCase):
         self.assertEqual(res.status_code, 200)
         text = log_text(logs)
         self.assertIn("account_deleted", text)
-        self.assertIn("username='ali'", text)  # close_account() nomni deleted_N ga almashtirgan bo'lsa ham
+        self.assertIn("username='ali'", text)  # o'chirilgach qator yo'q — logda asl nom qoladi
         self.assertNotIn(PASSWORD, text)
 
 
@@ -489,9 +489,8 @@ class InactiveAccountLoginTests(APITestCase):
     def test_closed_account_stays_a_plain_login_failure(self):
         # O'zi o'chirgan akkaunt: parol yaroqsiz, nom bo'shagan — oddiy "noto'g'ri" xabari
         other = make_user("vali")
-        other.close_account()
+        other.delete()
         self.assertEqual(post_login(self.api, PASSWORD, username="vali").status_code, 401)
-        self.assertEqual(post_login(self.api, PASSWORD, username=other.username).status_code, 401)
 
     def test_django_admin_still_refuses_the_blocked_account(self):
         res = self.client.post(reverse("admin:login"), {"username": "ali", "password": PASSWORD})
@@ -594,7 +593,7 @@ class EnvExampleTests(unittest.TestCase):
 
 
 class AdminDeleteUserTests(TestCase):
-    """Admin o'chirgan hisob ham foydalanuvchi o'zi o'chirgandagidek tozalanadi"""
+    """Admin o'chirgan hisob butunlay o'chadi (email va login nomi bo'shaydi)"""
 
     def setUp(self):
         self.admin = User.objects.create_superuser("boss", "boss@example.com", "BossPass123!")
@@ -602,24 +601,20 @@ class AdminDeleteUserTests(TestCase):
             "Ali", "ali@example.com", "AliPass123!", first_name="Ali", phone="+998901234567",
         )
 
-    def assert_closed(self, user):
-        user.refresh_from_db()
-        self.assertFalse(user.status)
-        self.assertFalse(user.is_active)
-        self.assertTrue(user.username.startswith("deleted_"))
-        self.assertEqual((user.email, user.first_name, user.phone), ("", "", None))
-        self.assertFalse(user.has_usable_password())
+    def assert_gone(self, user):
+        self.assertFalse(User.objects.filter(pk=user.pk).exists())
+        self.assertFalse(User.objects.filter(email__iexact="ali@example.com").exists())
 
-    def test_model_delete_clears_personal_data(self):
+    def test_model_delete_removes_the_row(self):
         self.user.delete()
-        self.assert_closed(self.user)
+        self.assert_gone(self.user)
 
     def test_django_admin_bulk_delete_clears_data_and_frees_username(self):
         self.client.force_login(self.admin)
         url = reverse("admin:mainapp_user_changelist")
         resp = self.client.post(url, {"action": "delete_selected", "_selected_action": [self.user.pk], "post": "yes"})
         self.assertEqual(resp.status_code, 302)
-        self.assert_closed(self.user)
+        self.assert_gone(self.user)
         # Nom va email bo'shadi — shu ma'lumotlar bilan qayta ro'yxatdan o'tish mumkin
         new = User.objects.create_user("ali", "ali@example.com", "AliPass123!")
         self.assertNotEqual(new.pk, self.user.pk)

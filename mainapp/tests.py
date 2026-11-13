@@ -526,15 +526,11 @@ class AccountDeletionTests(APITestCase):
         self.api.force_authenticate(None)
         self.assertIn(self.delete_account(PASSWORD).status_code, (401, 403))
 
-    def test_deleted_account_cannot_log_in_and_personal_data_is_wiped(self):
+    def test_deleted_account_is_removed_completely(self):
         self.assertEqual(self.delete_account(PASSWORD).status_code, 200)
-        self.user.refresh_from_db()
-        self.assertFalse(self.user.is_active)
-        self.assertFalse(self.user.status)
-        self.assertEqual((self.user.first_name, self.user.last_name, self.user.email), ("", "", ""))
-        self.assertIsNone(self.user.phone)
-        self.assertNotEqual(self.user.username, "ali")
-        self.assertFalse(self.user.has_usable_password())
+        # Qator ham, email/ism/telefon ham bazada qolmaydi
+        self.assertFalse(User.objects.filter(pk=self.user.pk).exists())
+        self.assertFalse(User.objects.filter(username="ali").exists())
 
         res = APIClient().post(f"{API}/auth/login/", {"username": "ali", "password": PASSWORD}, format="json")
         self.assertEqual(res.status_code, 401)
@@ -544,10 +540,10 @@ class AccountDeletionTests(APITestCase):
         res = APIClient().post(f"{API}/auth/register/", {"username": "ali", "password": PASSWORD}, format="json")
         self.assertEqual(res.status_code, 201)
 
-    def test_financial_history_is_kept(self):
+    def test_financial_history_is_removed_too(self):
         self.delete_account(PASSWORD)
-        self.assertTrue(Expense.objects.filter(pk=self.expense.pk).exists())
-        self.assertTrue(Wallet.objects.filter(pk=self.wallet.pk).exists())
+        self.assertFalse(Expense.objects.filter(pk=self.expense.pk).exists())
+        self.assertFalse(Wallet.objects.filter(pk=self.wallet.pk).exists())
 
 
 class WalletEditTests(APITestCase):
@@ -1398,16 +1394,6 @@ class UsernameRulesTests(APITestCase):
         res = self.api.patch(f"{API}/auth/profile/", {"username": "deleted_9"}, format="json")
         self.assertEqual(res.status_code, 400)
 
-    def test_account_deletion_survives_taken_placeholder_name(self):
-        user = make_user("ali")
-        User.objects.create_user(username=f"deleted_{user.pk}", password=PASSWORD)  # eski ma'lumotlardagi holat
-        self.login_as(user)
-        res = self.api.post(f"{API}/auth/delete-account/", {"password": PASSWORD}, format="json")
-        self.assertEqual(res.status_code, 200)
-        user.refresh_from_db()
-        self.assertFalse(user.is_active)
-        self.assertTrue(user.username.startswith(f"deleted_{user.pk}_"))
-
     def test_users_endpoint_keeps_case_insensitive_uniqueness(self):
         make_user("ali")
         vali = make_user("vali")
@@ -1595,7 +1581,7 @@ class AdminPanelTests(APITestCase):
         Expense.objects.create(user=self.ali, wallet=wallet, summa=200)
         # O'chirilgan operatsiya hisobga kirmaydi
         Expense.objects.create(user=self.ali, wallet=wallet, summa=100).delete()
-        self.vali.close_account()
+        User.objects.filter(pk=self.vali.pk).update(is_active=False)  # bloklangan (nofaol) akkaunt
         # Manzil .env dagi PANEL_URL ga bog'liq — qattiq yozilmaydi
         self.panel_url = reverse("panel-accounts")
         self.ali_url = reverse("panel-account", args=[self.ali.pk])

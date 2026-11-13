@@ -7,7 +7,7 @@
   <meta name="description" content="O'zbekistondagi eng qulay shaxsiy moliya boshqaruvi: kirim, chiqim, hamyondan hamyonga o'tkazma va qarzlar daftari.">
   <meta name="theme-color" content="#F5F2EA">
   <script src="/static/js/theme-init.js?v=5"></script>
-  <script src="/static/js/i18n.js?v=38"></script>
+  <script src="/static/js/i18n.js?v=39"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..800&display=swap">
@@ -152,6 +152,7 @@
           <input type="text" id="regPhone" class="form-control" placeholder="+998901234567">
         </div>
 
+        <p class="settings-account-hint" style="margin: 0 0 10px;">Diqqat: 1 oy (30 kun) davomida hisobingizga kirmasangiz, hisob va barcha ma'lumotlaringiz avtomatik o'chiriladi.</p>
         <button type="submit" class="btn btn-emerald" style="width: 100%; padding: 12px; font-size: 1rem; margin-top: 6px; justify-content: center;">
           Ro'yxatdan o'tish
         </button>
@@ -1139,6 +1140,7 @@
             <div class="about-contact"><span class="about-contact-label">Elektron pochta</span><span class="about-contact-value" data-no-i18n>—</span></div>
             <div class="about-contact"><span class="about-contact-label">Telefon</span><span class="about-contact-value" data-no-i18n>—</span></div>
           </div>
+          <p class="settings-account-hint" style="margin-top: 14px;">Diqqat: 1 oy (30 kun) davomida hisobingizga kirmasangiz, hisob va barcha ma'lumotlaringiz avtomatik o'chiriladi.</p>
           <p class="settings-account-hint" style="margin-top: 14px;">Savol yoki taklif bo'lsa — Sozlamalar → Yordam bo'limida yozing.</p>
           <p class="about-mission">Bu loyihadan maqsadimiz — ummatga manfaat yetkazish va har bir oilaga halol rizqini barakali boshqarishda ko'maklashish.</p>
         </div>
@@ -1234,7 +1236,7 @@
         <div class="modal-body">
           <div class="settings-danger-zone" style="margin-top: 0;">
             <div class="settings-account-title" style="color: var(--rose);">Diqqat!</div>
-            <div class="settings-account-hint">Hisobingiz o'chiriladi va unga qayta kira olmaysiz. Tasdiqlash uchun joriy parolingizni kiriting.</div>
+            <div class="settings-account-hint">Hisobingiz va barcha ma'lumotlaringiz (hamyonlar, kirim, chiqim, qarzlar) butunlay o'chiriladi — qaytarib bo'lmaydi. Tasdiqlash uchun joriy parolingizni kiriting.</div>
           </div>
           <div class="form-group" style="margin-top: 16px;">
             <label for="deleteAccountPassword">Joriy parol *</label>
@@ -1607,7 +1609,7 @@
 
 
 
-  <script src="/static/js/app.js?v=4.50"></script>
+  <script src="/static/js/app.js?v=4.51"></script>
   <script src="/static/js/voice.js?v=31"></script>
 </body>
 </html>

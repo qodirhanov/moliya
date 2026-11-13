@@ -190,18 +190,10 @@ class UsernameKeySyncTests(APITestCase):
         user.save(update_fields=["username", "username_key"])
         self.assertEqual(key_of(user), "вали")
 
-    def test_close_account_updates_key_and_frees_the_name(self):
+    def test_deleted_account_frees_the_name(self):
         user = make_user("Али")
-        user.close_account()
-        self.assertEqual(key_of(user), f"deleted_{user.pk}")
+        user.delete()
         self.assertEqual(register("али").status_code, 201)
-
-    def test_close_account_avoids_taken_deleted_name_in_any_case(self):
-        user = make_user("али")
-        make_user(f"DELETED_{user.pk}")
-        # "deleted_" bilan boshlanadigan nom ro'yxatdan o'tishda taqiqlangan, lekin eski bazada bo'lishi mumkin
-        user.close_account()
-        self.assertTrue(user.username.startswith(f"deleted_{user.pk}_"))
 
     def test_reserved_prefix_is_case_insensitive(self):
         res = register("DELETED_5")

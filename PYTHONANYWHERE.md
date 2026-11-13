@@ -64,6 +64,23 @@ Agar sahifa cheksiz yo'naltirilsa, `.env` ga `SECURE_SSL_REDIRECT=False` qo'shin
 - Har 3 oyda Web sahifasida **"Run until 3 months from today"** tugmasini bosing, aks holda ilova o'chadi.
 - Faqat bitta ilova va bitta worker. Bazani Files bo'limidan vaqti-vaqti bilan yuklab oling (zaxira).
 
+## Uzoq kirilmagan akkauntlarni o'chirish (Scheduled tasks)
+30 kun kirmagan oddiy akkaunt va uning barcha ma'lumotlari (email, login nomi ham) butunlay o'chadi — **qaytarib bo'lmaydi**.
+Superuser, admin (`is_staff`) va bloklangan akkauntlar o'chmaydi. Batafsil: `DEPLOY.md` ("Uzoq kirilmagan akkauntlarni o'chirish").
+
+1. Avval qo'lda tekshiring (Bash konsol):
+   ```bash
+   cd ~/app && source venv/bin/activate && python manage.py delete_inactive_accounts --dry-run
+   ```
+2. **Tasks** sahifasi → **Scheduled tasks** → vaqtni tanlang (masalan 03:40, kuniga bir marta) va buyruqni yozing:
+   ```bash
+   cd ~/app && venv/bin/python manage.py delete_inactive_accounts >> ~/inactive.log 2>&1
+   ```
+   (bepul tarifda faqat bitta kunlik/soatlik vazifa ruxsat etiladi; `clearsessions` ni ham shu buyruq bilan birga yozish mumkin:
+   `... clearsessions && ... delete_inactive_accounts`.)
+3. Natija `~/inactive.log` da: nechta akkaunt o'chgani va ularning `id`/login nomi.
+4. Bir martada 100 tadan ko'p akkaunt o'chmaydi (himoya). Ko'p bo'lsa, ro'yxatni `--dry-run` bilan ko'rib, `--max-delete 500` bilan qo'lda ishga tushiring.
+
 ## Yangilash
 ```bash
 cd ~/app && git pull && source venv/bin/activate && pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput

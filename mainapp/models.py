@@ -1,4 +1,3 @@
-import secrets
 from decimal import Decimal
 
 from django.db import models, transaction
@@ -143,29 +142,15 @@ class User(AbstractUser):
     def __str__(self):
         return f"{self.first_name} {self.last_name}".strip() or self.username
 
-    def close_account(self):
-        """Foydalanuvchi o'z akkauntini o'chirganda: shaxsiy ma'lumotlar (ism, email, telefon, parol) tozalanadi,
-        login nomi qayta ishlatish uchun bo'shaydi, moliyaviy yozuvlar esa bazada qoladi"""
-        username = f"deleted_{self.pk}"
-        if User.objects.filter(username_key=self.make_username_key(username)).exclude(pk=self.pk).exists():
-            # Bu nom (eski ma'lumotlarda) band bo'lsa ham o'chirish xatosiz bajarilsin
-            username = f"{username}_{secrets.token_hex(4)}"
-        self.username = username
-        self.first_name = ""
-        self.last_name = ""
-        self.email = ""
-        self.phone = None
-        self.set_unusable_password()
-        self.status = False
-        self.is_active = False
-        self.save(update_fields=["username", "first_name", "last_name", "email", "phone", "password", "status", "is_active"])
-        self.password_reset_codes.filter(used=False).update(used=True)
-
     def delete(self, *args, **kwargs):
-        """Soft delete — moliyaviy tarix yo'qolmasligi uchun yozuv qoladi. Admin (Django admin, /users/) o'chirganda ham
-        foydalanuvchi o'zi o'chirgandagidek shaxsiy ma'lumotlar tozalanadi va login nomi bo'shaydi"""
-        self.close_account()
-        return (1, {self._meta.label: 1})
+        """Haqiqiy (qaytarib bo'lmas) o'chirish: foydalanuvchi qatori va unga CASCADE bilan bog'langan hamma narsa
+        (hamyon, kirim/chiqim, o'tkazma, qarz, a'zo, toifa, maqsad, qurilma, kodlar, murojaat...) bazadan butunlay
+        ketadi — email, login nomi va telefon ham. Shuning uchun qayta ro'yxatdan o'tishda ular band bo'lib qolmaydi.
+        Avval bu yerda "soft delete" (close_account) bor edi: qator `deleted_N` nomi bilan qolar, shell/update orqali
+        yoki eski kodda o'chirilgan akkauntlarda email band bo'lib qolardi. Admin (Django admin, /users/), foydalanuvchi
+        o'zi o'chirishi va delete_inactive_accounts buyrug'i — hammasi shu yo'ldan o'tadi"""
+        with transaction.atomic():
+            return super().delete(*args, **kwargs)
 
 
 ####################################################

@@ -5097,7 +5097,9 @@ const HELP_TOPICS = [
     ["Nega «Boshqa qurilmalardan chiqarish» ishlamayapti?",
      "Xavfsizlik uchun bu amalni faqat kamida 15 kun oldin kirilgan qurilmadan bajarish mumkin. Shunda parolingizni bilib olgan begona odam sizni hisobdan chiqarib yubora olmaydi."],
     ["Hisobni qanday o'chiraman?",
-     "Sozlamalar → Profil bo'limida «Hisobni o'chirish» tugmasini bosing va joriy parolni kiriting. Diqqat: bu amalni ortga qaytarib bo'lmaydi."],
+     "Sozlamalar → Profil bo'limida «Hisobni o'chirish» tugmasini bosing va joriy parolni kiriting. Hisob va barcha ma'lumotlaringiz (hamyonlar, kirim, chiqim, qarzlar) butunlay o'chadi — ortga qaytarib bo'lmaydi."],
+    ["Hisobim o'z-o'zidan o'chib ketadimi?",
+     "Ha, lekin faqat uzoq kirilmasa: 1 oy (30 kun) davomida hisobga umuman kirilmasa, hisob va barcha ma'lumotlar avtomatik o'chiriladi. Ilovani vaqti-vaqti bilan ochib turing — shunda hisob saqlanadi."],
   ]},
   { id: 'voice', icon: 'microphone', title: 'Ovozli yordamchi', items: [
     ["Ovoz bilan qanday buyruq beraman?",

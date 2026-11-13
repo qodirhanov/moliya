@@ -52,7 +52,7 @@ def password_errors_uz(error):
     return " ".join(messages)
 
 
-# O'chirilgan akkauntlar shu nom bilan qayta nomlanadi (User.close_account) — foydalanuvchi uni band qila olmaydi
+# Eski "soft delete" o'chirgan akkauntlar shu nom bilan qayta nomlangan edi — nom zaxiralangan holda qoldi
 RESERVED_USERNAME_PREFIX = "deleted_"
 
 
