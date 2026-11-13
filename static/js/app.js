@@ -4932,6 +4932,12 @@ function renderUserNav() {
   const userAvatar = document.getElementById('userAvatar');
   if (userName) userName.textContent = display;
   if (userAvatar) userAvatar.textContent = display[0].toUpperCase();
+  // Admin panel tugmasi: server faqat ruxsati bor foydalanuvchiga panel_url beradi
+  const panelBtn = document.getElementById('btnPanel');
+  if (panelBtn) {
+    panelBtn.href = user.panel_url || '#';
+    panelBtn.style.display = user.panel_url ? 'inline-flex' : 'none';
+  }
 }
 
 // Ro'yxatdagi bo'lim nomi — i18n allaqachon tarjima qilgan matn, sarlavhaga shundayligicha ko'chiriladi

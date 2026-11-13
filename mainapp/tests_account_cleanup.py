@@ -256,3 +256,25 @@ class SeedDemoTests(TestCase):
             call_command("seed_demo", "demo", stdout=StringIO())  # ikkinchi marta qo'shilmaydi
         with self.assertRaises(CommandError):
             call_command("seed_demo", "yoq", stdout=StringIO())
+
+
+class PanelButtonTests(TestCase):
+    """Navbardagi "Admin panel" tugmasi: panel_url faqat panelga ruxsati borlarga beriladi"""
+
+    def payload(self, user):
+        from mainapp.views import user_payload
+        return user_payload(user)
+
+    def test_only_users_with_panel_access_get_the_url(self):
+        from django.contrib.auth.models import Permission
+        from django.urls import reverse
+        plain = User.objects.create_user("oddiy", password=PASSWORD)
+        staff_no_perm = User.objects.create_user("xodim", password=PASSWORD, is_staff=True)
+        viewer = User.objects.create_user("korish", password=PASSWORD, is_staff=True)
+        viewer.user_permissions.add(Permission.objects.get(codename="view_user"))
+        boss = User.objects.create_superuser("boss", "b@example.com", PASSWORD)
+        url = reverse("panel-accounts")
+        self.assertEqual(self.payload(plain)["panel_url"], "")
+        self.assertEqual(self.payload(staff_no_perm)["panel_url"], "")
+        self.assertEqual(self.payload(viewer)["panel_url"], url)
+        self.assertEqual(self.payload(boss)["panel_url"], url)

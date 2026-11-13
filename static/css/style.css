@@ -3795,6 +3795,12 @@ body.is-auth .auth-tabs > button.active { color: #14603F; font-weight: 700; }
   .nav-profile-btn { padding: 2px; margin-left: 2px; }
 }
 
+/* Panel tugmasi (xodimlarda) qo'shilgach navbar 320px da sig'masdi: tugmalar ixchamlashadi */
+@media (max-width: 360px) {
+  .nav-actions .nav-theme-toggle { width: 22px; }
+  .nav-actions { gap: 0; }
+}
+
 /* Tor telefonlar (360px va undan kichik): chetlar va tugmalar biroz ixchamlashadi —
    aks holda navbar ekrandan chiqib, sahifa yonga aylanib qolardi */
 @media (max-width: 400px) {

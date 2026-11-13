@@ -28,9 +28,11 @@ from rest_framework.permissions import AllowAny, BasePermission, SAFE_METHODS, I
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from django_filters.rest_framework import DjangoFilterBackend
+from django.urls import reverse
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.views import exception_handler as drf_exception_handler
 
+from .panel import can_view_panel
 from .models import (
     format_money,
     MAX_AMOUNT, MAX_AMOUNT_MESSAGE, MAX_YEAR, MIN_YEAR, USERNAME_TAKEN_MESSAGE, is_username_conflict,
@@ -374,6 +376,8 @@ def user_payload(user):
         "phone": user.phone,
         # Navbarda "Admin panel" havolasini ko'rsatish uchun
         "is_staff": user.is_staff,
+        # Panel manzili (.env: PANEL_URL) faqat panelga ruxsati borlarga beriladi — boshqalarga navbarda tugma chiqmaydi
+        "panel_url": reverse("panel-accounts") if can_view_panel(user) else "",
         "two_factor_enabled": user.two_factor_enabled,
         # Yordam chatida o'qilmagan admin javoblari (navbar qo'ng'irog'i)
         "support_unread": unread_for_user(user),
