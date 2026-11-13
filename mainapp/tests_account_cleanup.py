@@ -243,3 +243,16 @@ class PurgeClosedAccountsMigrationTests(TestCase):
         self.assertEqual(related_rows(old.pk), 0)
         self.assertTrue(User.objects.filter(pk=blocked.pk).exists())
         self.assertTrue(User.objects.filter(pk=boss.pk).exists())
+
+
+class SeedDemoTests(TestCase):
+    def test_adds_data_once_and_keeps_balances_consistent(self):
+        user = User.objects.create_user("demo", password=PASSWORD)
+        call_command("seed_demo", "demo", stdout=StringIO())
+        self.assertEqual(Wallet.objects.filter(user=user).count(), 4)
+        self.assertGreater(Expense.objects.filter(user=user).count(), 10)
+        self.assertEqual(Debt.objects.filter(user=user).count(), 2)
+        with self.assertRaises(CommandError):
+            call_command("seed_demo", "demo", stdout=StringIO())  # ikkinchi marta qo'shilmaydi
+        with self.assertRaises(CommandError):
+            call_command("seed_demo", "yoq", stdout=StringIO())
