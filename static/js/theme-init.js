@@ -28,9 +28,10 @@
   syncThemeColor();
   try { new MutationObserver(syncThemeColor).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] }); } catch (e) { /* eski brauzer */ }
 
-  // i18n.js endi defer bilan yuklanadi (sahifa chizilishini to'xtatmasin). O'zbekchadan boshqa til tanlangan bo'lsa
-  // sahifa tarjima tugaguncha yashiriladi (style.css: html.i18n-pending) — aks holda o'zbekcha matn bir lahza ko'rinadi.
-  // Faqat i18n.js ulangan sahifada (skript tegida data-i18n). i18n.js yuklanmay qolsa ham 3 soniyadan keyin ochiladi
+  // i18n.js endi defer bilan yuklanadi (sahifa chizilishini to'xtatmasin). O'zbekchadan boshqa til tanlangan bo'lsa:
+  //  - shu tilning lug'ati (static/js/i18n/<til>.js) darhol yuklana boshlaydi — boshqa tillarniki yuklanmaydi;
+  //  - sahifa tarjima tugaguncha yashiriladi (style.css: html.i18n-pending) — aks holda o'zbekcha matn bir lahza ko'rinadi.
+  // Faqat i18n.js ulangan sahifada (skript tegida data-i18n="<lug'at versiyasi>"). Lug'at kelmasa ham 3 soniyadan keyin ochiladi
   var me = document.currentScript;
   if (me && me.hasAttribute('data-i18n')) {
     var lang = 'uz';
@@ -39,6 +40,10 @@
       var root = document.documentElement;
       root.classList.add('i18n-pending');
       setTimeout(function () { root.classList.remove('i18n-pending'); }, 3000);
+      var dict = document.createElement('script');
+      dict.src = '/static/js/i18n/' + lang + '.js?v=' + encodeURIComponent(me.getAttribute('data-i18n') || '1');
+      dict.async = false;
+      document.head.appendChild(dict);
     }
   }
 })();

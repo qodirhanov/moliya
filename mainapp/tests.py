@@ -2083,3 +2083,17 @@ class CounterAtomicityTests(APITestCase):
         self.assertEqual(cache.get("counter:test"), 4)
         refund_limit("counter:yoq", 900)  # mavjud bo'lmagan kalit xato bermaydi
         self.assertIsNone(cache.get("counter:yoq"))
+
+
+class I18nBuildTests(TestCase):
+    """Til lug'atlari (static/js/i18n/<til>.js) i18n/translations.js dan yaratiladi — eskirib qolmasin."""
+
+    def test_dictionaries_are_up_to_date(self):
+        from django.core.management import call_command
+        # Xato bo'lsa: `python manage.py build_i18n` ni ishga tushiring
+        call_command("build_i18n", "--check", stdout=io.StringIO())
+
+    def test_dashboard_passes_dictionary_version(self):
+        res = self.client.get("/")
+        self.assertEqual(res.status_code, 200)
+        self.assertRegex(res.content.decode(), r'theme-init\.js\?v=\d+" data-i18n="[0-9a-f]{10}"')

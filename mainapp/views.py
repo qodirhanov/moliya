@@ -2172,7 +2172,19 @@ def convert_api(request):
     return Response({"from": from_code, "to": to_code, "amount": amount, "result": result, "rate": str(rate)})
 
 
+@lru_cache(maxsize=1)
+def _i18n_version():
+    """Til lug'atlari (static/js/i18n/*.js) mazmunidan qisqa xesh — ?v= sifatida. Lug'at o'zgarsa URL o'zi o'zgaradi,
+    1 yillik keshda eski tarjima qolib ketmaydi (qo'lda ?v= oshirish shart emas). Jarayon qayta ishga tushganda hisoblanadi."""
+    import hashlib
+    from pathlib import Path
+    h = hashlib.sha1()
+    for path in sorted((Path(settings.BASE_DIR) / "static" / "js" / "i18n").glob("*.js")):
+        h.update(path.read_bytes())
+    return h.hexdigest()[:10]
+
+
 @ensure_csrf_cookie
 def dashboard_view(request):
     """Asosiy Web Dashboard interfeysi"""
-    return render(request, "index.html")
+    return render(request, "index.html", {"i18n_version": _i18n_version()})
