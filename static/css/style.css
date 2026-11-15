@@ -5192,3 +5192,6 @@ html, body { overscroll-behavior-y: contain; }
 
 /* Maqsad oynasi (tahrir): pul tushadigan hamyon faqat ko'rsatiladi — almashtirib bo'lmaydi */
 .goal-wallet-fixed { display: flex; align-items: center; color: var(--text-muted); cursor: default; }
+
+/* i18n.js defer bilan yuklanadi: boshqa til tanlanganda sahifa tarjima tugaguncha yashirin (theme-init.js qo'yadi, i18n.js oladi) */
+html.i18n-pending body { visibility: hidden; }

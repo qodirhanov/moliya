@@ -106,6 +106,14 @@ if not DEBUG:
     # DEBUG=False bo'lganda Django CSS/JS fayllarni o'zi bermaydi — ularni WhiteNoise beradi
     # (avval `collectstatic` bilan STATIC_ROOT ga yig'iladi). Lokal ishlab chiqishda runserver o'zi beradi
     MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+    # collectstatic har bir CSS/JS ning .gz nusxasini ham yaratadi — WhiteNoise siqilganini beradi (~4-5 barobar kichik)
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+    }
+    # Kesh 1 yil: fayl o'zgarsa index.html / panel/base.html dagi ?v= raqami oshiriladi — yangi URL, brauzer yangisini oladi.
+    # ?v= ni oshirish esdan chiqsa, foydalanuvchi eski faylni ko'rib qoladi!
+    WHITENOISE_MAX_AGE = int(os.environ.get('WHITENOISE_MAX_AGE', '31536000'))
 
 ROOT_URLCONF = 'config.urls'
 

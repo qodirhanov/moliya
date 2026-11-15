@@ -2,7 +2,7 @@
 // shu lug'at bo'yicha almashtiriladi. Kalit — o'zbekcha matnning o'zi, qiymat — [ru, en, tr, kk, ky, tg].
 // {0}, {1} — o'zgaruvchan qism (ism, summa, sana): kalit naqsh sifatida solishtiriladi, qism ham tarjima qilinadi.
 // MutationObserver app.js chizgan yangi matnlarni ham ushlaydi, shuning uchun app.js dagi matnlarni o'zgartirish shart emas.
-// <head> da sinxron yuklanadi: sahifa chizilishidan oldin ishlaydi (o'zbekcha matn miltillamaydi)
+// defer bilan yuklanadi; boshqa tilda theme-init.js sahifani tarjima tugaguncha yashiradi (o'zbekcha matn miltillamaydi)
 (function () {
   var STORAGE_KEY = 'moliyaLang';
   var LANGS = ['uz', 'tg', 'kk', 'ky', 'ru', 'en', 'tr'];
@@ -1559,6 +1559,8 @@
     }).observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS });
     translateTree(document.documentElement);
   }
+  // Tarjima tugadi — theme-init.js yashirgan sahifa ko'rsatiladi
+  document.documentElement.classList.remove('i18n-pending');
 
   // Sana: uz "20-oktabr, 2026", ru "20 октября 2026", en "October 20, 2026"
   function formatDate(day, month, opts) {

@@ -27,4 +27,18 @@
   }
   syncThemeColor();
   try { new MutationObserver(syncThemeColor).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] }); } catch (e) { /* eski brauzer */ }
+
+  // i18n.js endi defer bilan yuklanadi (sahifa chizilishini to'xtatmasin). O'zbekchadan boshqa til tanlangan bo'lsa
+  // sahifa tarjima tugaguncha yashiriladi (style.css: html.i18n-pending) — aks holda o'zbekcha matn bir lahza ko'rinadi.
+  // Faqat i18n.js ulangan sahifada (skript tegida data-i18n). i18n.js yuklanmay qolsa ham 3 soniyadan keyin ochiladi
+  var me = document.currentScript;
+  if (me && me.hasAttribute('data-i18n')) {
+    var lang = 'uz';
+    try { lang = localStorage.getItem('moliyaLang') || 'uz'; } catch (e) { /* o'zbekcha */ }
+    if (lang !== 'uz' && ['tg', 'kk', 'ky', 'ru', 'en', 'tr'].indexOf(lang) !== -1) {
+      var root = document.documentElement;
+      root.classList.add('i18n-pending');
+      setTimeout(function () { root.classList.remove('i18n-pending'); }, 3000);
+    }
+  }
 })();
