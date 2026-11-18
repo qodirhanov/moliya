@@ -379,6 +379,12 @@ class ServerSttTests(TestCase):
         self.assertEqual(res.json(), {"heard": ""})
         urlopen.assert_not_called()
 
+    def test_wake_skips_tiny_recordings_without_calling_provider(self):
+        with self.fake_openai("hech narsa") as urlopen:
+            res = self.api.post("/api/v1/voice/wake/", {"audio": self.audio(b"x" * 300)}, format="multipart")
+        self.assertEqual(res.json(), {"heard": ""})
+        urlopen.assert_not_called()
+
     def test_wake_failure_gives_empty_text(self):
         with mock.patch("mainapp.stt.urllib.request.urlopen", side_effect=OSError("ulanib bo'lmadi")):
             res = self.api.post("/api/v1/voice/wake/", {"audio": self.audio()}, format="multipart")

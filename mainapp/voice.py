@@ -1676,6 +1676,8 @@ class VoiceWakeRateThrottle(UserRateThrottle):
 
 # Uyg'otish so'zi qisqa gap: bundan katta yozuv («Salom Moliya» emas) tanishga yuborilmaydi
 WAKE_MAX_AUDIO_BYTES = 400 * 1024
+# Juda qisqa yozuv (~0,3 s dan kam: shovqin, tovush, klik) so'z emas — pullik/limitli tanishga yuborilmaydi
+WAKE_MIN_AUDIO_BYTES = 1500
 
 
 @api_view(["POST"])
@@ -1691,7 +1693,7 @@ def voice_wake_api(request):
     problem = stt.check_upload(upload)
     if problem:
         return Response({"error": problem}, status=status.HTTP_400_BAD_REQUEST)
-    if upload.size > WAKE_MAX_AUDIO_BYTES:
+    if upload.size > WAKE_MAX_AUDIO_BYTES or upload.size < WAKE_MIN_AUDIO_BYTES:
         return Response({"heard": ""})
     try:
         heard = stt.transcribe(upload)[:MAX_TEXT_LENGTH]

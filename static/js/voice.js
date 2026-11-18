@@ -447,8 +447,16 @@
   // aylantiriladi, buyruq bajarilmaydi). Matnda «Salom Moliya» topilsa yordamchi ochiladi. Gap bo'lmasa hech narsa yuborilmaydi
   const WAKE_WINDOW_MS = 3000;     // jim turganda yozuv oynasi shuncha davom etadi va qayta boshlanadi
   const WAKE_MAX_MS = 6000;        // «Salom Moliya» qisqa: bundan uzun gap yuborilmaydi
-  const WAKE_MIN_GAP_MS = 2500;    // serverga yuborishlar orasidagi eng kam vaqt (limit va kredit tejash)
+  // Serverga yuborishlar orasidagi eng kam vaqt: server limiti 20/daq (voice_wake) — 3,5 s da ~17/daq, 429 bo'lmaydi
+  const WAKE_MIN_GAP_MS = 3500;
+  const WAKE_BACKOFF_MIN_MS = 5000;   // server xato bersa/ulanmasa: 5 s, keyin 10, 20, 40 s ... gacha (eng ko'pi bilan)
+  const WAKE_BACKOFF_MAX_MS = 60000;
   const serverWake = () => serverStt() && (v.noSpeechService || !canListen);
+  // Ketma-ket xatolarda kutish ikki baravar oshadi: 5 → 10 → 20 → 40 → 60 s
+  function backoffMs() {
+    v.wakeFails = Math.min(8, (v.wakeFails || 0) + 1);
+    return Math.min(WAKE_BACKOFF_MAX_MS, WAKE_BACKOFF_MIN_MS * 2 ** (v.wakeFails - 1));
+  }
 
   function runWakeCapture() {
     if (!v.wakeLoop || v.capture) return;
@@ -482,14 +490,36 @@
       v.wakeSentAt = Date.now() + wait;
       const session = v.session;
       let heard = '';
+      let retryMs = 0;  // > 0: server javob bermadi — shuncha kutib qayta uriniladi (har gapga bolg'a urmaslik uchun)
       try {
         if (wait) await new Promise(r => setTimeout(r, wait));
         const form = new FormData();
         form.append('audio', blob, `wake.${(blob.type.split('/')[1] || 'webm').split(';')[0]}`);
         const res = await fetch(`${API_BASE}/voice/wake/`, { method: 'POST', body: form });
-        if (res.ok) heard = String((await res.json().catch(() => ({}))).heard || '');
-      } catch (e) { /* internet yo'q — keyingi gapda qayta uriniladi */ }
+        if (res.ok) {
+          heard = String((await res.json().catch(() => ({}))).heard || '');
+          v.wakeFails = 0;
+        } else if (res.status === 401) {
+          // Sessiya tugagan: tinglashni to'xtatamiz (kirgandan keyin app o'zi qayta boshlaydi)
+          v.wakeLoop = false;
+          return;
+        } else if (res.status === 429) {
+          const header = parseInt(res.headers.get('Retry-After') || '', 10);
+          retryMs = Math.min(WAKE_BACKOFF_MAX_MS, Math.max(WAKE_BACKOFF_MIN_MS, (header || 15) * 1000));
+        } else if (res.status === 400) {
+          // Server tanishi yoqilmagan — qayta urinishdan ma'no yo'q (sahifa yangilanganda qayta tekshiriladi)
+          v.wakeLoop = false;
+          return;
+        } else {
+          retryMs = backoffMs();
+        }
+      } catch (e) { retryMs = backoffMs(); /* internet yo'q */ }
       if (!v.wakeLoop || session !== v.session || !layer.hidden || v.busy) return;
+      if (retryMs) {
+        // Mikrofon bu vaqtda yopiq turadi (batareya va yozuv tejaladi); keyin tinglash o'zi davom etadi
+        setTimeout(() => { if (v.wakeLoop && layer.hidden && !v.busy && !v.capture) runWakeCapture(); }, retryMs);
+        return;
+      }
       const wake = findWake(heard);
       if (wake) {
         v.wakeLoop = false;
